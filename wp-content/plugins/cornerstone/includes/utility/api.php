@@ -148,6 +148,19 @@ function cornerstone_options_enable_custom_js( $option_name ) {
   return CS()->loadComponent( 'Options_Manager' )->enable_custom_js( $option_name );
 }
 
+
+function cornerstone_headers_register_modules( $modules ) {
+  return CS()->loadComponent( 'Headers' )->register_modules( $modules );
+}
+
+function cornerstone_headers_register_module( $name, $atts ) {
+  return CS()->loadComponent( 'Headers' )->register_module( $name, $atts );
+}
+
+function cornerstone_headers_unregister_module( $name ) {
+  return CS()->loadComponent( 'Headers' )->register_module( $name );
+}
+
 /**
  * Returns the styling created by cornerstone_setup_header_styles
  * @return string

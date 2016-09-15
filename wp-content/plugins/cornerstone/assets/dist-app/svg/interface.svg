@@ -32,19 +32,6 @@
 <symbol id="action-btn-skeleton" viewBox="0 0 16 16"><g><path d="M8,0C4.1,0,1,3.1,1,7c0,2.4,1.2,4.5,3,5.7V15c0,0.6,0.4,1,1,1h1v-2h1v2h2v-2h1v2h1c0.6,0,1-0.4,1-1v-2.3
 	c1.8-1.3,3-3.4,3-5.7C15,3.1,11.9,0,8,0z M5.5,9C4.7,9,4,8.3,4,7.5S4.7,6,5.5,6S7,6.7,7,7.5S6.3,9,5.5,9z M10.5,9C9.7,9,9,8.3,9,7.5
 	S9.7,6,10.5,6S12,6.7,12,7.5S11.3,9,10.5,9z"/></g></symbol>
-<symbol id="builder-index-edit" viewBox="0 0 24 24"><g>
-<path data-color="color-2" d="M1.9,17.3L1,21.8c-0.1,0.3,0,0.7,0.3,0.9C1.5,22.9,1.7,23,2,23c0.1,0,0.1,0,0.2,0l4.5-0.9
-	L1.9,17.3z"/>
-<rect x="3.5" y="9.2" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -5.9706 11.5858)" width="15" height="7.7"/>
-<path data-color="color-2" d="M22.7,5.3l-4-4c-0.4-0.4-1-0.4-1.4,0L15,3.6L20.4,9l2.3-2.3C23.1,6.3,23.1,5.7,22.7,5.3z"/>
-</g></symbol>
-<symbol id="builder-index-preview" viewBox="0 0 24 24"><g>
-<path d="M22.832,11.445C22.656,11.182,18.461,5,12,5C5.506,5,1.34,11.185,1.166,11.448
-	c-0.222,0.335-0.222,0.771,0.002,1.106C1.344,12.818,5.539,19,12,19c6.428,0,10.653-6.179,10.83-6.442
-	C23.056,12.222,23.057,11.782,22.832,11.445z M12,17c-4.35,0-7.635-3.596-8.753-5.002c0.658-0.832,2.075-2.425,4.024-3.59
-	C7.1,8.908,7,9.441,7,10c0,2.757,2.243,5,5,5s5-2.243,5-5c0-0.555-0.099-1.085-0.268-1.582c1.94,1.164,3.357,2.75,4.018,3.581
-	C19.623,13.407,16.324,17,12,17z"/>
-</g></symbol>
 <symbol id="global-nav-builder" viewBox="0 0 64 64"><g transform="translate(0, 0)">
 <polyline data-cap="butt" data-color="color-2" fill="none" stroke-width="4" stroke-miterlimit="10" points="49.5,26 60,32 32,48 
 	4,32 14.5,26 " stroke-linejoin="miter" stroke-linecap="butt"/>
@@ -69,6 +56,17 @@
 	C9.8,62,4,56.2,4,49v0c0-7.2,5.8-13,13-13h30c7.2,0,13,5.8,13,13v0C60,56.2,54.2,62,47,62z" stroke-linejoin="miter"/>
 <circle fill="none" stroke-width="4" stroke-linecap="square" stroke-miterlimit="10" cx="17" cy="15" r="7" stroke-linejoin="miter"/>
 <circle data-color="color-2" fill="none" stroke-width="4" stroke-linecap="square" stroke-miterlimit="10" cx="47" cy="49" r="7" stroke-linejoin="miter"/>
+</g></symbol>
+<symbol id="index-choice-edit" viewBox="0 0 24 24"><g>
+<path data-color="color-2" d="M1.9,17.3L1,21.8c-0.1,0.3,0,0.7,0.3,0.9C1.5,22.9,1.7,23,2,23c0.1,0,0.1,0,0.2,0l4.5-0.9
+	L1.9,17.3z"/>
+<rect x="3.5" y="9.2" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -5.9706 11.5858)" width="15" height="7.7"/>
+<path data-color="color-2" d="M22.7,5.3l-4-4c-0.4-0.4-1-0.4-1.4,0L15,3.6L20.4,9l2.3-2.3C23.1,6.3,23.1,5.7,22.7,5.3z"/>
+</g></symbol>
+<symbol id="index-choice-import" viewBox="0 0 24 24"><g>
+<polygon data-color="color-2" points="17,6 12,0 7,6 11,6 11,17 13,17 13,6 "/>
+<path d="M22,24H2c-0.308,0-0.599-0.142-0.788-0.385s-0.257-0.559-0.182-0.858l3-12C4.141,10.312,4.541,10,5,10h4v2
+H5.781l-2.5,10h17.438l-2.5-10H15v-2h4c0.459,0,0.859,0.312,0.97,0.757l3,12c0.075,0.299,0.007,0.615-0.182,0.858S22.308,24,22,24z"/>
 </g></symbol>
 <symbol id="logo-flat-custom" viewBox="-137 283 336 227">
   <g>

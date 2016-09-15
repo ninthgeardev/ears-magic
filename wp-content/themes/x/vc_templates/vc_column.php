@@ -18,7 +18,9 @@ extract( shortcode_atts( array(
   'last'                  => '',
   'fade'                  => '',
   'fade_animation'        => '',
-  'fade_animation_offset' => ''
+  'fade_animation_offset' => '',
+  'fade_duration'         => '',
+  'bg_color'              => '',
 ), $atts ) );
 
 $id    = ( $id    != '' ) ? 'id="' . esc_attr( $id ) . '"' : '';

@@ -36,7 +36,8 @@ return array(
 			'Common',
 			'Updates',
 			'Integration_Manager',
-      'Options_Bootstrap'
+      'Options_Bootstrap',
+      'CLI'
 		),
 		'init' => array(
 			'Legacy_Elements',
@@ -52,6 +53,7 @@ return array(
 			'Admin',
       'Options_Manager', // MOVE
       'App',
+      'Preview_Frame',
 			'Validation',
 			'Revision_Manager',
 			'Builder',

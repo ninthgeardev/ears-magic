@@ -1332,7 +1332,7 @@ function sf_active_menu_str() {
     echo "<input id='sf_active_menu' name='sf_options[sf_active_menu]' type='hidden' value='{$options['sf_active_menu']}' />";
 	
 	echo "<script>";
-	echo "var sf_menus=" . $options['sf_active_menu'];
+	echo "var sf_menus=" . (isset($options['sf_active_menu']) && !empty($options['sf_active_menu']) ? $options['sf_active_menu'] : '{}') . ";";
 	echo "</script>";
 
     echo '<ul class="sf-menu__list">';
@@ -2236,21 +2236,20 @@ function get_license()
     $val = $options['sf_license_valid'];
     $theme = wp_get_theme();
 
-    if(
-		$theme->get('Name') != 'X' && $theme->get('Author') != 'Themeco' &&
-		($options['sf_license_code'] == '' || $options['sf_license_email'] == '')
-	){
+	if($options['sf_license_code'] == '' || $options['sf_license_email'] == ''){
+		$val = '';
+	}
+
+    /*if($theme->get('Name') != 'X' && $theme->get('Author') != 'Themeco' && $options['sf_license_code'] == ''){
         $val = '';
     }
-	if($theme->get('Name') == 'X' && $theme->get('Author') == 'Themeco'){
-		if($options['sf_license_email'] == ''){
-			$val = '';
-		}
-		if($options['sf_license_email'] != ''){
-			$val = '1';
-		}
+	if($theme->get('Name') == 'X' && $theme->get('Author') == 'Themeco' && $options['sf_license_email'] == ''){
+		$val = '';
 	}
-	
+	if($theme->get('Name') == 'X' && $theme->get('Author') == 'Themeco' && $options['sf_license_email'] != ''){
+		$val = '1';
+	}*/
+
     return $val;
 }
 
@@ -2294,9 +2293,11 @@ function sf_license_code_str(){
 	$val = $options['sf_license_code'];
     $class = $options['sf_license_valid'] && $val ? 'validation-success' : '';
     $theme = wp_get_theme();
+	$isX = $theme->get('Name') == 'X' && $theme->get('Author') == 'Themeco';
 
-	if($theme->get('Name') == 'X' && $theme->get('Author') == 'Themeco'){
+	if($isX){
         echo "<p class='hint validation-success'>Your copy of Superfly is validated with your X theme license</p>";
+		echo "<input data-x='{$isX}' type='hidden' id='sf_license_code' value='{$val}' name='sf_options[sf_license_code]' value>";
     }else{
         echo "<p class='hint'>
 			<a target='_blank' href=\"https://help.market.envato.com/hc/en-us/articles/202822600-Where-Is-My-Purchase-Code-\">

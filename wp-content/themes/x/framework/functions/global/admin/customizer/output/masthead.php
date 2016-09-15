@@ -61,11 +61,10 @@
 <?php endif; ?>
 
 
-
-/* Navbar
+/* Navbar Overflow Scroll
 // ========================================================================== */
 
-<?php if ( $x_navbar_positioning == 'fixed-left' || $x_navbar_positioning == 'fixed-right' ) : ?>
+<?php if ( $x_fixed_menu_scroll == 'overflow-scroll' && $x_navbar_positioning == 'fixed-left' || $x_navbar_positioning == 'fixed-right' ) : ?>
 
   .x-navbar {
     width: <?php echo $x_navbar_width . 'px'; ?>;
@@ -74,6 +73,18 @@
 
 <?php endif; ?>
 
+
+/* Navbar Overflow Visible
+// ========================================================================== */
+
+<?php if( $x_fixed_menu_scroll == 'overflow-visible' && $x_navbar_positioning == 'fixed-left' || $x_navbar_positioning == 'fixed-right' ) : ?>
+
+	.x-navbar {
+		width: <?php echo $x_navbar_width . 'px'; ?>;
+		overflow-y: visible;
+	}
+	
+<?php endif; ?>
 
 
 /* Navbar - Wrapper

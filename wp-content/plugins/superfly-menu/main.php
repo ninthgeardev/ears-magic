@@ -3,15 +3,13 @@
 Plugin Name: Superfly Menu
 Plugin URI: http://superfly.looks-awesome.com
 Description: Off-canvas hamburger menu for WordPress
-Version: 4.1.2
+Version: 4.1.4
 Author: Looks Awesome
 Author URI: http://looks-awesome.com
 License: Commercial License
 Text Domain: superfly-menu
 Domain Path: /lang
 */
-
-use \DrewM\MailChimp\MailChimp;
 
 global $sf_options;
 
@@ -20,7 +18,7 @@ $plugin = array(
     'label' => 'Superfly',
     'prefix' => 'sf',
     'demo_site' => 'http://superfly.looks-awesome.com',
-    'version' => '4.1.2',
+    'version' => '4.1.4',
     'require_php' => '5.3.0',
     'require_ext' => array('zip'),
     'namespace' => 'Superfly',
@@ -44,15 +42,13 @@ if (!defined('SF_VERSION_KEY')) {
 }
 
 if (!defined('SF_VERSION_NUM')) {
-    define('SF_VERSION_NUM', '4.1.2');
+    define('SF_VERSION_NUM', '4.1.4');
 }
 
 if (!defined('SF_ITEM_META')) {
     define('SF_ITEM_META', '_sf_settings');
 }
 
-// composer autoload
-require __DIR__ . '/includes/vendor/autoload.php';
 require __DIR__ . '/includes/vendor/looks_awesome/envato_api/Purchase.php';
 
 add_option(SF_VERSION_KEY, SF_VERSION_NUM);
@@ -175,24 +171,6 @@ function sf_menus_admin()
 
 add_action('wp_ajax_sf_save_item', 'sf_save_item_fn');
 add_action('wp_ajax_sf_validate_envato_license', 'sf_validate_envato_license_fn');
-add_action('wp_ajax_sf_subscribe_to_mailchimp', 'sf_subscribe_to_mailchimp_fn');
-
-function sf_subscribe_to_mailchimp_fn()
-{
-    $fname = isset($_POST['fname']) ? $_POST['fname'] : '';
-    $lname = isset($_POST['lname']) ? $_POST['lname'] : '';
-    if (isset($_POST['email'])) {
-        $MailChimp = new MailChimp('42221f027308691e575d5f0d04a47faf-us11');
-        $lists = $MailChimp->get('lists');
-        $list_id = $_POST['list_id'];
-
-        $MailChimp->post("lists/$list_id/members", array(
-            'email_address' => $_POST['email'],
-            'status' => 'subscribed',
-            'merge_fields' => array('FNAME' => $fname, 'LNAME' => $lname),
-        ));
-    }
-}
 
 function sf_validate_envato_license_fn()
 {
