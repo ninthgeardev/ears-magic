@@ -31,8 +31,7 @@ class MWP_EventListener_MasterRequest_SetRequestSettings implements Symfony_Even
             return;
         }
 
-        // WP_MAX_MEMORY_LIMIT
-        @ini_set('memory_limit', '256M');
+        MWP_System_Utils::setMemoryLimit(MWP_System_Utils::getWPMaxMemoryLimit());
 
         $data = $event->getRequest()->getData();
 
@@ -73,7 +72,7 @@ class MWP_EventListener_MasterRequest_SetRequestSettings implements Symfony_Even
         $context->setConstant('WP_NETWORK_ADMIN', false);
         $context->setConstant('WP_USER_ADMIN', false);
         $context->setConstant('WP_BLOG_ADMIN', true);
-        $context->addAction('wp_loaded', array($this, 'adminWpLoaded'), PHP_INT_MAX - 1);
+        $context->addAction('wp_loaded', array($this, 'adminWpLoaded'), MAX_PRIORITY_HOOK - 1);
     }
 
     /**
@@ -83,13 +82,9 @@ class MWP_EventListener_MasterRequest_SetRequestSettings implements Symfony_Even
     {
         $context = $this->context;
 
-        $memoryLimit = MWP_System_Utils::convertToBytes(ini_get('memory_limit'));
-        if ($memoryLimit !== -1 && $memoryLimit < 268435456) {
-            // WP_MAX_MEMORY_LIMIT
-            @ini_set('memory_limit', '256M');
-        }
-        $this->context->addFilter('http_response', array($this, 'captureCacheUpdateCall'), PHP_INT_MAX, 3);
-        $this->context->addFilter('pre_http_request', array($this, 'interceptCacheUpdateCall'), PHP_INT_MAX, 3);
+        MWP_System_Utils::setMemoryLimit(MWP_System_Utils::getWPMaxMemoryLimit());
+        $this->context->addFilter('http_response', array($this, 'captureCacheUpdateCall'), MAX_PRIORITY_HOOK, 3);
+        $this->context->addFilter('pre_http_request', array($this, 'interceptCacheUpdateCall'), MAX_PRIORITY_HOOK, 3);
         require_once $this->context->getConstant('ABSPATH').'wp-admin/includes/admin.php';
         $context->doAction('admin_init');
         global $wp_current_filter;
@@ -108,8 +103,12 @@ class MWP_EventListener_MasterRequest_SetRequestSettings implements Symfony_Even
         /** @handled function */
         set_current_screen();
         $context->doAction('load-update-core.php');
+
         /** @handled function */
-        wp_version_check(array(), false);
+        wp_version_check();
+
+        /** @handled function */
+        wp_version_check(array(), true);
     }
 
     private function defineWpAjax(array $data)
