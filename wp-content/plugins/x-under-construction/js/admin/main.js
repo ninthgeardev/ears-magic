@@ -77,7 +77,9 @@ jQuery(document).ready(function($) {
   // Datepicker.
   //
 
-  $('.datepicker').datepicker();
+  $('.datepicker').datepicker( {
+	  dateFormat: 'yy-mm-dd'
+  });
 
 
   //
