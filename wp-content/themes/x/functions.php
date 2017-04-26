@@ -145,3 +145,7 @@ if ( X_UBERMENU_IS_ACTIVE ) {
 if ( X_THE_GRID_IS_ACTIVE && x_is_validated() ) {
 	require_once( $plgn_path . '/the-grid.php' );
 }
+
+if ( X_EP_PAYMENT_FORM_IS_ACTIVE ) {
+	require_once $plgn_path . '/estimation-form.php';
+}

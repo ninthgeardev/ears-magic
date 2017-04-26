@@ -68,7 +68,7 @@
 
   .x-navbar {
     width: <?php echo $x_navbar_width . 'px'; ?>;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
 <?php endif; ?>

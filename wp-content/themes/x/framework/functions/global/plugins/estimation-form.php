@@ -1,19 +1,18 @@
+<?php
+
 // =============================================================================
-// JS/X-ICON.JS
+// FUNCTIONS/GLOBAL/PLUGINS/estimation-form.php
 // -----------------------------------------------------------------------------
-// Icon specific functionality needed in <head> element.
+// Plugin setup for theme compatibility.
 // =============================================================================
 
 // =============================================================================
 // TABLE OF CONTENTS
 // -----------------------------------------------------------------------------
-//   01. Imports
+//   01. Disable Licensing and Auto Updates
 // =============================================================================
 
-// Imports
+// Disable Licensing and Auto Updates
 // =============================================================================
 
-// =include "inc/x-icon-*.js"
-// =include "vendor/matchmedia.js"
-// =include "vendor/enquire.js"
-// =include "vendor/nanoscroller.js"
+add_action('init', 'lfb_setThemeMode');
