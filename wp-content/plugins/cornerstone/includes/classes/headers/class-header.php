@@ -44,6 +44,10 @@ class Cornerstone_Header {
       throw new Exception( 'Unable to load header from post.' );
     }
 
+    if ( 'cs_header' !== $post->post_type ) {
+      throw new Exception( 'Attempted to load header from incorrect post_type.' );
+    }
+
     $this->id = $post->ID;
     $this->set_title( $post->post_title ? $post->post_title : '' );
     $this->set_content( cs_maybe_json_decode( $post->post_content ) );
@@ -73,7 +77,7 @@ class Cornerstone_Header {
       ) ) )
     );
 
-    if ( ! is_int( $this->id ) ) {
+    if ( is_int( $this->id ) ) {
       $args['ID'] = $this->id;
     }
 

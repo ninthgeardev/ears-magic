@@ -2,6 +2,7 @@
 
 class Cornerstone_Model_Headers_Header extends Cornerstone_Plugin_Component {
 
+  public $dependencies = array( 'Headers' );
   public $resources = array();
   public $name = 'headers/header';
 
@@ -152,6 +153,25 @@ class Cornerstone_Model_Headers_Header extends Cornerstone_Plugin_Component {
     $header->delete();
 
     return $this->make_response( array( 'id' => $id, 'type' => $this->name ) );
+  }
+
+  public function update( $params ) {
+
+    $atts = $this->atts_from_request( $params );
+
+    if ( ! $atts['id'] ) {
+      throw new Exception( 'Attempting to update Header without specifying an ID.' );
+    }
+
+    $id = (int) $atts['id'];
+
+    $header = new Cornerstone_Header( $id );
+
+    if ( isset( $atts['regions'] ) ) {
+      $header->set_regions( $atts['regions'] );
+    }
+
+    return $this->make_response( $this->to_resource( $header->save() ) );
   }
 
 }

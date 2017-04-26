@@ -149,15 +149,15 @@ function cornerstone_options_enable_custom_js( $option_name ) {
 }
 
 
-function cornerstone_headers_register_modules( $modules ) {
+function cornerstone_register_bar_modules( $modules ) {
   return CS()->loadComponent( 'Headers' )->register_modules( $modules );
 }
 
-function cornerstone_headers_register_module( $name, $atts ) {
+function cornerstone_register_bar_module( $name, $atts ) {
   return CS()->loadComponent( 'Headers' )->register_module( $name, $atts );
 }
 
-function cornerstone_headers_unregister_module( $name ) {
+function cornerstone_unregister_bar_module( $name ) {
   return CS()->loadComponent( 'Headers' )->register_module( $name );
 }
 
@@ -166,8 +166,18 @@ function cornerstone_headers_unregister_module( $name ) {
  * @return string
  */
 function cornerstone_get_header_styles() {
-  $headers = CS()->component( 'Headers' );
+  $headers = CS()->loadComponent( 'Headers' );
   return ( $headers ) ? $headers->get_styles() : '';
+}
+
+/**
+ * Returns the styling created by cornerstone_setup_header_styles
+ * Can be called as early as template_redirect
+ * @return string
+ */
+function cornerstone_get_header_data() {
+  $headers = CS()->loadComponent( 'Headers' );
+  return ( $headers ) ? $headers->get_active_header_data() : '';
 }
 
 /**

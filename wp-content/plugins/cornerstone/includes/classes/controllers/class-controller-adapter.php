@@ -9,6 +9,7 @@ class Cornerstone_Controller_Adapter extends Cornerstone_Plugin_Component {
     $component_name = 'Model_' . cs_to_component_name( $name );
 
     try {
+      $this->plugin->loadComponents( str_replace('_', '/', strtolower( $component_name ) ) );
       $model = $this->plugin->loadComponent( $component_name );
     } catch( Exception $e  ) {
       throw $e;

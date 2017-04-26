@@ -2,11 +2,24 @@
 
 class Cornerstone_Controller_Headers extends Cornerstone_Plugin_Component {
 
-  public function config() {
+  public function save_header( $data ) {
 
-    return array(
-      'i18n' => $this->plugin->i18n( 'headers' )
-    );
 
+    return array( 'updated' => $data );
+
+
+    // $options = $this->plugin->loadComponent( 'Options_Bootstrap' );
+    // $response = array( 'updates' => array() );
+
+    // if ( isset( $data['updates'] ) ) {
+    //   foreach ($data['updates'] as $key => $value) {
+
+    //     $response['updates'][ $key ] = $value;
+    //     $options->update_value( $key, $value );
+    //   }
+    // }
+
+    // return $response;
   }
+
 }

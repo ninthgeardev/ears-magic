@@ -3,12 +3,13 @@
 class Cornerstone_Headers extends Cornerstone_Plugin_Component {
 
   public $header_styles = '';
-  public $dependencies = array( 'Coalescence' );
+  public $dependencies = array( 'Coalescence', 'Header_Builder' );
   public $modules = array();
   public $modules_registered = false;
 
   public function setup() {
     $this->register_post_type();
+    add_action( 'template_redirect', array( $this, 'identify_header' ) );
   }
 
   public function add_styling( $header, $class_prefix, $template_loader ) {
@@ -22,6 +23,59 @@ class Cornerstone_Headers extends Cornerstone_Plugin_Component {
     ) );
 
     $this->header_styles = $coalescence->run();
+
+  }
+
+  public function get_fallback_header_data() {
+    return apply_filters( 'cornerstone_fallback_header_data', array(
+      'modules' => array(),
+      'settings' => array(),
+    ) );
+  }
+
+  public function get_active_header_data() {
+
+    $id = $this->plugin->loadComponent('Header_Assignments')->locate_assignment();
+
+    try {
+      $header = new Cornerstone_Header( $id );
+    } catch( Exception $e ) {
+      return $this->get_fallback_header_data();
+    }
+
+    $modules = array();
+
+    $regions = $header->get_regions();
+    $modules = array();
+    foreach ($regions as $name => $region ) {
+      $region['_type'] = 'region';
+      $region['region'] = $name;
+      $region['_modules'] = $this->populate_module_ids( $region['_modules'] );
+      $modules[] = $region;
+    }
+
+    return array(
+      'id' => $id,
+      'modules' => $modules,
+      'settings' => $header->get_settings(),
+    );
+  }
+
+  public function populate_module_ids( $modules ) {
+
+    static $count = 0;
+
+    foreach ( $modules as $index => $module ) {
+
+      $modules[$index]['_id'] = ++$count;
+
+      if ( isset( $module['_modules'] ) ) {
+        $modules[$index]['_modules'] = x_module_id_populator( $module['_modules'] );
+      }
+
+    }
+
+    return $modules;
 
   }
 
@@ -52,65 +106,90 @@ class Cornerstone_Headers extends Cornerstone_Plugin_Component {
     $module = wp_parse_args( $module, array(
       'title'    => '',
       'defaults' => array(),
+      'conditions' => array(),
       'controls' => array(),
       'control_groups' => array()
     ) );
 
-    $controls = $this->flatten_controls( $module['controls'] );
-
-    if ( isset( $controls['__groups'] ) ) {
-      $module['control_groups'] = array_merge( $controls['__groups'], $module['control_groups'] );
-      unset( $controls['__groups'] );
-    }
-
-    $module['controls'] = array();
-
-    foreach ($controls as $key => $control) {
-      $control['name'] = $key;
-      $module['controls'][] = $control;
-    }
+    $module['controls'] = $this->normalize_controls( $module['controls'] );
 
     $this->modules[ $name ] = $module;
   }
 
-  public function flatten_controls( $controls, $group = '' ) {
+  public function normalize_controls( $controls ) {
+
     $updated_controls = array();
 
-    foreach ( $controls as $key => $control ) {
+    foreach ( $controls as $control ) {
 
       $control = wp_parse_args( $control, array(
-        'type'    => '',
-        'title' => array(),
-        'options' => array(),
+        'type'       => '',
+        'keys'       => array(),
+        'label'      => '',
+        'conditions' => array(),
+        'options'    => array(),
+        'group'      => '',
       ) );
 
-      $parent_group = null;
-
-      if ( $group ) {
-        $key = $group . '_' . $key;
-        $control['group'] = $group;
-        $parent_group = $group;
+      if ( isset( $control['controls'] ) ) {
+        $control['controls'] = $this->normalize_controls( $control['controls'] );
       }
 
-      if ( 'group' === $control['type'] && isset( $control['controls'] ) ) {
-        $child_controls = $this->flatten_controls( $control['controls'], $key );
-        $updated_controls = array_merge( $updated_controls, $child_controls );
-        if ( ! isset( $updated_controls['__groups'] ) ) {
-          $updated_controls['__groups'] = array();
-        }
-
-        $updated_controls['__groups'][ $key ] = array(
-          'parent' => $parent_group,
-          'title' => $control['title']
-        );
-
-      } else {
-        $updated_controls[ $key ] = $control;
+      if ( isset( $control['title'] ) ) {
+        $control['label'] = $control['title'];
+        unset($control['title']);
       }
+
+      if ( isset( $control['key'] ) ) {
+        $control['keys']['value'] = $control['key'];
+        unset($control['key']);
+      }
+
+      if ( isset( $control['condition'] ) ) {
+        $control['conditions'][] = $control['condition'];
+        unset( $control['condition'] );
+      }
+
+      $control['conditions'] = $this->normalize_conditions( $control['conditions'] );
+      $updated_controls[] = $control;
 
     }
 
     return $updated_controls;
+  }
+
+  public function normalize_conditions( $unnormalized ) {
+
+    $ops = array( '=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN' );
+
+    $conditions = array();
+
+    if ( isset( $unnormalized ) && is_array( $unnormalized ) ) {
+      foreach ( $unnormalized as $condition ) {
+
+        if ( isset( $condition['option'] ) && isset( $condition['value'] ) ) {
+
+          $conditions[] = array(
+            'option' => $condition['option'],
+            'value'  => $condition['value'],
+            'op'     => ( isset( $condition['op'] ) && in_array( $condition['op'], $ops, true ) ) ? $condition['op'] : '='
+          );
+
+        } else {
+          // Add shorthand
+          $keys = array_keys( $condition );
+          $conditions[] = array(
+            'option' => $keys[0],
+            'value'  => $condition[ $keys[0] ],
+            'op' => '='
+          );
+        }
+
+      }
+    }
+
+    return $conditions;
+
   }
 
   public function unregister_module( $name ) {
@@ -123,7 +202,7 @@ class Cornerstone_Headers extends Cornerstone_Plugin_Component {
       return;
     }
 
-    do_action( 'cornerstone_headers_register_modules' );
+    do_action( 'cornerstone_register_bar_modules' );
 
     $this->modules_registered = true;
 
@@ -133,5 +212,11 @@ class Cornerstone_Headers extends Cornerstone_Plugin_Component {
     $this->module_registration();
     return $this->modules;
   }
+
+  public function get_module_defaults( $name ) {
+    $modules = $this->get_modules();
+    return $modules[$name]['defaults'];
+  }
+
 
 }

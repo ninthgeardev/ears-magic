@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the Cornerstone package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Cornerstone 1.3.1\n"
+"Project-Id-Version: Cornerstone 1.3.3\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/support/plugin/cornerstone\n"
-"POT-Creation-Date: 2016-08-23 14:08:05+00:00\n"
+"POT-Creation-Date: 2016-10-06 14:34:40+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2338,7 +2338,7 @@ msgid ""
 "any."
 msgstr ""
 
-#. #-#-#-#-#  cornerstone.pot (Cornerstone 1.3.1)  #-#-#-#-#
+#. #-#-#-#-#  cornerstone.pot (Cornerstone 1.3.3)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
 #: includes/classes/common/class-common.php:42
 #: includes/classes/customizer/class-customizer-manager.php:193
@@ -2545,7 +2545,11 @@ msgstr ""
 msgid "Generic Element"
 msgstr ""
 
-#: includes/classes/headers/class-header.php:136
+#: includes/classes/headers/class-header-assignments.php:141
+msgid "All %s"
+msgstr ""
+
+#: includes/classes/headers/class-header.php:140
 msgid "Untitled Header"
 msgstr ""
 
@@ -6115,6 +6119,26 @@ msgstr ""
 
 #: includes/i18n/headers.php:6
 msgid "Are you sure you want to delete this header? This can not be undone."
+msgstr ""
+
+#: includes/i18n/headers.php:7
+msgid ""
+"This context is already assigned to another header. Would you like to move "
+"that assignment here instead?"
+msgstr ""
+
+#: includes/i18n/headers.php:8
+msgid ""
+"You already have a global header assigned. Would you like to use this header "
+"instead?"
+msgstr ""
+
+#: includes/i18n/headers.php:9
+msgid "Yes, make this my new global header."
+msgstr ""
+
+#: includes/i18n/headers.php:10
+msgid "No, keep my current one."
 msgstr ""
 
 #: includes/i18n/options.php:5

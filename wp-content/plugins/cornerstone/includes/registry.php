@@ -18,46 +18,50 @@
 
 return array(
 
-	'files' => array(
-		'preinit' => array(
-			'tco/tco',
-			'utility/helpers',
-			'utility/api',
-			'utility/wp-shortcode-preserver',
-		),
-		'loggedin' => array(
-			'utility/wp-clean-slate',
-		)
-	),
+  'files' => array(
+    'preinit' => array(
+      'tco/tco',
+      'utility/helpers',
+      'utility/api',
+      'utility/wp-shortcode-preserver',
+    ),
+    'loggedin' => array(
+      'utility/wp-clean-slate',
+    )
+  ),
 
-	'components' => array(
-		'preinit' => array(
-			'Tco',
-			'Common',
-			'Updates',
-			'Integration_Manager',
+  'components' => array(
+    'preinit' => array(
+      'Tco',
+      'Common',
+      'Updates',
+      'Integration_Manager',
       'Options_Bootstrap',
       'CLI'
-		),
-		'init' => array(
-			'Legacy_Elements',
-			'Shortcode_Generator',
-			'Element_Orchestrator',
-			'Core_Scripts',
-			'Front_End',
-			'Customizer_Manager',
-			'Style_Loader',
+    ),
+    'init' => array(
+      'Legacy_Elements',
+      'Shortcode_Generator',
+      'Element_Orchestrator',
+      'Core_Scripts',
+      'Front_End',
+      'Customizer_Manager',
+      'Style_Loader',
       'Headers:theme-support:cornerstone_headers'
-		),
-		'loggedin' => array(
-			'Admin',
+    ),
+    'loggedin' => array(
+      'Admin',
       'Options_Manager', // MOVE
       'App',
       'Preview_Frame',
-			'Validation',
-			'Revision_Manager',
-			'Builder',
-			'Layout_Manager'
-		)
-	)
+      'Validation',
+      'Revision_Manager',
+      'Builder',
+      'Layout_Manager'
+    ),
+
+    'model/option' => array(
+      'Header_Assignments'
+    )
+  )
 );
