@@ -93,9 +93,11 @@ class The_Grid_Admin {
 		add_action('admin_init', array($this, 'add_grid_metabox'));
 		// Load admin style sheet and JavaScript.
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+		// Delete grid transients when post created/updated/deleted
+		add_action('save_post', array($this, 'delete_transient_on_save'), 10, 3);
 		
 	}
-	
+
 	/**
 	* Remove notices start
 	* @since 1.3.0
@@ -129,25 +131,18 @@ class The_Grid_Admin {
 		
 		global $tg_admin_notices;
 
-		$dismiss_notices = get_option('tg_admin_notices');
+		/*$dismiss_notices = get_option('tg_admin_notices');
 
 		if (!isset($dismiss_notices['tg-instagram-notice']) || !$dismiss_notices['tg-instagram-notice']) {
 			
-			$plugin_info   = get_option('the_grid_plugin_info', '');
-			$purchase_code = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
-			
-			if ($purchase_code) {
-		
-				$tg_admin_notices = '<div class="notice tg-admin-notice is-dismissible" data-notice-id="tg-instagram-notice">';
-					$tg_admin_notices .= '<span class="tg-admin-notice-logo"><img src="'. TG_PLUGIN_URL .'backend/assets/images/themeone-logo.png"></span>';
-					$tg_admin_notices .= '<p>'. __( "If you are using Instagram, please", "tg-text-domain" ) .' <strong>'. __( "re-generate your Access Token", "tg-text-domain" ) .'</strong> '. __( "in the", "tg-text-domain" ) .' <a href="'.admin_url( 'admin.php?page=the_grid_global_settings').'"> '. __( "Global Settings", "tg-text-domain" ) .'</a></p>';
-				$tg_admin_notices .= '</div>';
+			$tg_admin_notices = '<div class="notice tg-admin-notice is-dismissible" data-notice-id="tg-instagram-notice">';
+				$tg_admin_notices .= '<span class="tg-admin-notice-logo"><img src="'. TG_PLUGIN_URL .'backend/assets/images/themeone-logo.png"></span>';
+				$tg_admin_notices .= '<p>'. __( "If you are using Instagram, please", "tg-text-domain" ) .'</p>';
+			$tg_admin_notices .= '</div>';
 				
-				echo  $tg_admin_notices;
-			
-			}
-		
-		}
+			echo  $tg_admin_notices;
+
+		}*/
 	
 	}
 	
@@ -180,6 +175,79 @@ class The_Grid_Admin {
 		return $protected;
 		
 	}
+	
+	/**
+	* Delete grid transient on save_post action
+	* @since 2.0.5
+	* @modified 2.2.0
+	*/
+	public function delete_transient_on_save($post_id, $post, $update) {
+		
+		// Autosave, do nothing
+		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        	return;
+		}
+		
+		//get all grids which have the current post type
+		$posts = get_posts(array(
+			'post_type'      => 'the_grid',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'meta_key'       => 'the_grid_post_type',
+			'meta_query'   => array(
+				'relation' => 'AND',
+				array(
+					'key'     => 'the_grid_post_type',
+					'value'   => $post->post_type,
+					'compare' => 'LIKE'
+				),
+				array(
+					'key'     => 'the_grid_source_type',
+					'value'   => 'post_type',
+					'compare' => 'LIKE'
+				)
+			)
+		));
+
+		if ($posts) {
+		
+			// transient SQL
+			global $wpdb;
+			$sql = "SELECT `option_name` AS `name`, `option_value` AS `value`
+					FROM  $wpdb->options
+					WHERE `option_name` LIKE '%_transient_timeout_%'
+					ORDER BY `option_name`";
+			
+			$transients = $wpdb->get_results($sql);
+
+			if ($transients) {
+			
+				// loop through each transient option
+				foreach ($transients as $transient) {
+					
+					// if transient option name matched then delete it (only if can expire)
+					if (strpos($transient->name, 'tg_grid') !== false) {
+						
+						foreach($posts as $post) {
+							
+							if (strpos($transient->name, (string) $post) !== false) {
+								$name = str_replace('_transient_timeout_','',$transient->name);
+								delete_transient($name);
+								break;
+							}
+							
+						}
+						
+					}
+					
+				}	
+			
+			}
+		
+		}
+	
+	}
 
 	/**
 	* Register admin menu in Dashboard menu.
@@ -211,6 +279,26 @@ class The_Grid_Admin {
 			array($this, 'display_plugin_admin_grid_settings_page')
 		);
 		
+		// add skins overview submenu page
+		add_submenu_page(
+			$this->plugin_slug,
+			'Skin Builder',
+			__('Skin Builder', 'tg-text-domain'),
+			'manage_options',
+			$this->plugin_slug.'_skins_overview',
+			array($this, 'display_plugin_admin_skin_overview_page')
+		);
+
+		// add skin builder page
+		add_submenu_page(
+			null,
+			'Skin Builder',
+			__('Skin Builder', 'tg-text-domain'),
+			'manage_options',
+			$this->plugin_slug.'_skin_builder',
+			array($this, 'display_plugin_admin_skin_builder_page')
+		);
+		
 		// add import/export submenu page
 		add_submenu_page(
 			$this->plugin_slug,
@@ -230,27 +318,7 @@ class The_Grid_Admin {
 			$this->plugin_slug.'_global_settings',
 			array($this, 'display_plugin_admin_settings_page')
 		);
-		
-		// add skins overview submenu page
-		/*add_submenu_page(
-			$this->plugin_slug,
-			'Skins Builder',
-			__('Skins Builder', 'tg-text-domain'),
-			'manage_options',
-			$this->plugin_slug.'_skins_overview',
-			array($this, 'display_plugin_admin_skin_overview_page')
-		);
-
-		// add skin builder page
-		add_submenu_page(
-			null,
-			'Skin Builder',
-			__('Skin Builder', 'tg-text-domain'),
-			'manage_options',
-			$this->plugin_slug.'_skin_builder',
-			array($this, 'display_plugin_admin_skin_builder_page')
-		);*/
-		
+	
 	}
 	
 	/**
@@ -409,7 +477,10 @@ class The_Grid_Admin {
 			
 			// enqueue skin builder script/styles
 			if (strpos($screen->id, 'the_grid_skin_builder') !== false) {
-			
+				
+				// Wordpress Resizable script
+				wp_enqueue_script('jquery-ui-resizable');
+				
 				wp_enqueue_style($this->plugin_slug .'-admin-page-styles', TG_PLUGIN_URL . 'backend/assets/css/admin-page.css', array(), TG_VERSION);
 				wp_enqueue_style($this->plugin_slug .'-admin-builder', TG_PLUGIN_URL . 'backend/assets/css/admin-builder.css', array(), TG_VERSION);
 				wp_enqueue_script($this->plugin_slug . '-admin-builder-js', TG_PLUGIN_URL . 'backend/assets/js/admin-builder.js', array('jquery'), TG_VERSION, true);

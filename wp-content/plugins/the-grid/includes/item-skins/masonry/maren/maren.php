@@ -17,6 +17,7 @@ $tg_el = The_Grid_Elements();
 
 $format = $tg_el->get_item_format();
 $colors = $tg_el->get_colors();
+$image  = $tg_el->get_attachment_url();
 
 $com_args = array(
 	'icon' => '<i class="tg-icon-chat"></i>'
@@ -39,9 +40,7 @@ $author = preg_replace('/(<a\b[^><]*)>/i', '$1 style="color:'.$colors['content']
 
 if ($format == 'quote' || $format == 'link') {
 		
-	$bg_img = $tg_el->get_attachement_url();
-	
-	$output  = ($bg_img) ? '<div class="tg-item-image" style="background-image: url('.esc_url($bg_img).')"></div>' : null;
+	$output  = ($image) ? '<div class="tg-item-image" style="background-image: url('.esc_url($image).')"></div>' : null;
 	$output .= $tg_el->get_content_wrapper_start();
 		$output .= '<i class="tg-'.$format.'-icon tg-icon-'.$format.'" style="color:'.$colors['content']['title'].'"></i>';
 		$output .= $tg_el->get_the_date();
@@ -57,19 +56,18 @@ if ($format == 'quote' || $format == 'link') {
 } else {
 	
 	$output = null;
-
 	$media_content = $tg_el->get_media();
-	$media_button  = $tg_el->get_media_button();
-	$link_button   = $tg_el->get_link_button();
-	
+
 	if ($media_content) {
 		$output .= $tg_el->get_media_wrapper_start();
 			$output .= $media_content;
-			$output .= ($media_button) ? $tg_el->get_overlay() : null;
-			$output .= ($media_button) ? $tg_el->get_center_wrapper_start() : null;
-				$output .= ($media_button) ? $media_button : null;
-				$output .= ($media_button) ? $link_button : null;
-			$output .= ($media_button) ? $tg_el->get_center_wrapper_end() : null;
+			if ($image || in_array($format, array('gallery', 'video'))) {
+				$output .= $tg_el->get_overlay();
+				$output .= $tg_el->get_center_wrapper_start();
+					$output .= $tg_el->get_media_button();
+					$output .= $tg_el->get_link_button();
+				$output .= $tg_el->get_center_wrapper_end();
+			}
 		$output .= $tg_el->get_media_wrapper_end();
 	}
 	

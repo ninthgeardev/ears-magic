@@ -48,6 +48,19 @@ if (!class_exists('TOMB_Checkbox_List_Field')) {
 			return $field;
 
 		}
+		
+		
+		/**
+		 * Check the value of the checkbox
+		 * @param mixed $new
+		 * @param mixed $old
+		 * @param int   $post_id
+		 * @param array $field
+		 * @return int
+		 */
+		/*static function value($new, $old, $post_id, $field) {
+			return empty($new) ? array() : $new;
+		}*/
 
 	}
 

@@ -244,7 +244,7 @@ class The_Grid_Post_Type {
 		$cache     = get_option('the_grid_caching', false);
 		$orderby   = $this->grid_data['orderby'];
 		
-		// if cache enable nd not in grid preview mode (backend), get cache
+		// if cache enable and not in grid preview mode (backend), get cache
 		if ($cache && !in_array('rand', $orderby) && !$tg_grid_preview && !$this->grid_data['is_template'] && !$this->ajax_data) {
 		
 			$ID   = str_replace('grid-', '', $this->grid_data['ID']);
@@ -337,9 +337,9 @@ class The_Grid_Post_Type {
 	
 	public function run_template_query(){
 		
-		//gets the global query var object
+		//get the global query var object
 		global $wp_query, $tg_is_ajax;
-		
+
 		$main_query = (isset($_POST['main_query']) && !empty($_POST['main_query'])) ? $_POST['main_query'] : null;
 		$this->grid_data['ajax_data'] = 'is_template';
 
@@ -370,11 +370,11 @@ class The_Grid_Post_Type {
 	* @since: 1.0.0
 	*/
 	public function run_custom_query(){
-		
+
 		global $tg_is_ajax;
 		
 		$this->grid_query = new WP_Query($this->post_query());
-		
+				
 		if ($this->grid_query->post_count == 0 && !$tg_is_ajax) {
 			$error_msg  = __( 'No post was found with your current grid settings.', 'tg-text-domain' );
 			$error_msg .= '&#xa;';
@@ -385,7 +385,7 @@ class The_Grid_Post_Type {
 		// store total number of post  & max nb page for load more/pagination
 		$this->grid_data['item_total'] = $this->grid_query->found_posts;
 		$this->grid_data['max_num_pages'] = $this->grid_query->max_num_pages;
-	
+
 	}
 	
 	/**
@@ -439,47 +439,46 @@ class The_Grid_Post_Type {
 		}
 		
 		// Get post order and orderby key
-		$post_order   = $this->grid_data['order'];
+		$post_order = $this->grid_data['order'];
 		$post_orderby = $this->grid_data['orderby'];
-
-		$post_orderby_val = null;
-		if ($post_orderby) {
-			$gap = '';
-			foreach($post_orderby as $orderby) {
-				$post_orderby_val .= $orderby.$gap;
-				$gap = ' ';
-			}
-		}
+		$post_orderby_val = ($this->grid_data['orderby'] && is_array($this->grid_data['orderby'])) ? implode(' ', $this->grid_data['orderby']) : null;
 
 		// Grab custom post ID to preserve post orderby
 		$post_orderby_id = $this->grid_data['orderby_id'];
 		$post_orderby_id = !empty($post_orderby_id) ? explode(',', $post_orderby_id) : array();
 	
-		//get all page ids
-		$all_page = array();
-		if (in_array('page', $post_type)) {
+		// prepare post__in/post_not__in query paramaters
+		$post_in     = array();
+		$post_not_in = array();
+		
+		//get all page ids if more than one post type
+		$all_page    = array();
+		$pages_id = $this->grid_data['pages_id'];
+		if (in_array('page', $post_type) && count($post_type) > 1 && $pages_id) {
+			
 			$all_pages = $this->base->get_all_page_id();
 			$all_page  = array();
+			
 			foreach ($all_pages as $ID => $pages) {
 				$all_page[] = $ID;
 			}
+			
+			$post_not_in = array_diff($all_page, $pages_id);
+			
+		} else if (in_array('page', $post_type) && $pages_id) {
+			
+			$post_in = $pages_id;
+
 		}
-		$pages_id = $this->grid_data['pages_id'];
-		$pages_id = !empty($pages_id) ? $pages_id : $all_page;
 		
 		// excluded items
 		$excluded_items = $this->grid_data['post_not_in'];
 		$excluded_items = (!empty($excluded_items)) ? explode(', ', $excluded_items) : array();
-
-		// revert process : declare page not__in, to get page and post at same time
-		$post_not_in = array_diff($all_page, $pages_id);
-		$post_not_in = array_merge ($post_not_in, $excluded_items);
+		$post_not_in    = array_merge($post_not_in, $excluded_items);
 
 		// preserve post ID order : merge existing page IDs with selected post IDs
 		if (!empty($post_orderby_id) && in_array('post__in', $post_orderby)) {
 			$post_in = array_merge($post_orderby_id, $pages_id);
-		} else {
-			$post_in = array();
 		}
 		
 		// most recently viewed woocommerce product from use cookie
@@ -499,6 +498,7 @@ class The_Grid_Post_Type {
 			array_push($post_status, 'inherit');
 			
 			if (sizeof($post_type) > 1 && $gallery_img) {
+				
 				$ids = get_posts(array(
 					'post_type'        => 'attachment', 
 					'post_status'      => 'inherit', 
@@ -508,26 +508,34 @@ class The_Grid_Post_Type {
 					'no_found_rows'    => true,
 					'cache_results'    => false
 				));
+				
 				$img_ids = array();
 				foreach ($ids as $id) {
 					$img_ids[] = $id;
 				}
-				$img_ids = array_diff($img_ids,$gallery_img);
-				$post_not_in = array_merge($post_not_in,$img_ids);
+				
+				$img_ids = array_diff($img_ids, $gallery_img);
+				$post_not_in = array_merge($post_not_in, $img_ids);
+				
 			} else {
-				$post_orderby_val = 'post__in';
+				
+				$post_orderby_val .= ($post_orderby_val) ? ' post__in' : 'post__in';
 				$post_in = $gallery_img;
+				
 			}
 			
 		}
 
 		// remove filter category and force post_in ids of all cat to keep selected page
-		if ($post_cats && in_array('page', $post_type)) {
-			$post_ids_cat = $this->base->get_post_ids_by_cat($post_type,$tax_query,$post_cats_child,$terms,$tax);
+		if ($post_cats && in_array('page', $post_type) && $pages_id) {
+			$post_ids_cat = $this->base->get_post_ids_by_cat($post_type, $tax_query, $post_cats_child, $terms,$tax);
 			$post_in      = array_merge($pages_id, $post_orderby_id, $post_ids_cat);
 			$tax_query    = null;
 		}
-		
+
+		// remove post ID from post in if complex query with pages
+		$post_in = (!empty($post_in) && !empty($post_not_in)) ? array_diff($post_in, $post_not_in) : $post_in;
+
 		//retrieve meta_key to order by meta_value
 		$meta_key = null;
 		if ($this->base->strpos_array($post_orderby_val,array('meta_value','meta_value_num')) !== false) {
@@ -543,15 +551,18 @@ class The_Grid_Post_Type {
 		$meta_query = $this->meta_query();
 		
 		// retrieve current page
+		$pagination = array_filter($this->grid_data, function($s){ return (is_string($s)) ? strpos($s, 'get_pagination') : false;});
 		$paged  = (get_query_var('paged')) ? max(1, get_query_var('paged')) : max(1, get_query_var('page'));
+		$paged  = $pagination ? $paged : 0;
 		// unassign offset if page equal to 1
 		$offset = ($paged > 1 && !$offset) ? '' : $offset;
 		
-		// check if an ajax method is used in the current grid
-		$ajax_button = $this->check_for_ajax_method();
-		// if not pagination or load more button then suppress SQL_CALC_FOUND_ROWS
-		$no_found_rows = ($ajax_button) ? false : true;
+		// check if a pagination exist (ajax method load more & pagination (ajax also))
+		$pagination_method = $this->check_for_pagination();
 		
+		// if not pagination or load more button then suppress SQL_CALC_FOUND_ROWS
+		$no_found_rows = ($pagination_method) ? false : true;
+
 		// setup the query args
 		// WordPress already takes care of the necessary sanitization in querying the database
 		$this->grid_query_args = array( 
@@ -637,36 +648,87 @@ class The_Grid_Post_Type {
 	public function get_skins() {
 		
 		// check if an ajax method is used in the current grid
-		$ajax_method = $this->check_for_ajax_method();
+		$ajax_method = $this->check_for_pagination(true);
 	
 		// if new item(s) can be appended with ajax
 		if ($ajax_method) {
-			$this->grid_query_args['posts_per_page'] = '-1';
-			$posts = get_posts($this->grid_query_args);
+			$this->grid_data['item_skins'] = $this->get_meta_values();
 		// else only fetch item(s) in the grid
 		} else {
 			$posts = $this->grid_query->posts;
+			$this->grid_data['item_skins'] = !empty($posts) ? wp_list_pluck($posts, 'the_grid_item_skin') : null;
 		}
-
-		// store all skins used in the current grid
-		$item_skins = (isset($posts) && !empty($posts)) ? wp_list_pluck($posts, 'the_grid_item_skin') : null;
-		$this->grid_data['item_skins'] = (is_array($item_skins)) ? array_filter($item_skins, 'strlen' ) : null;
 
 	}
 	
 	/**
-	* Check if an ajax method is used in the current grid
+	* Retrieve grid skins metadata value from current query
+	* @since 2.1.2
+	*/
+	public function get_meta_values() {
+		
+		global $wpdb;
+
+		$post_types  = $this->grid_data['post_type'] ? $this->grid_data['post_type'] : array('post');
+		$post_types  = "'".implode("', '", $post_types)."'";
+		
+		$post_status = $this->grid_data['post_status'] ? $this->grid_data['post_status'] : array('publish');
+		$post_status = "'".implode("', '", $post_status)."'";
+		
+		if ($post_types && $post_types) {
+
+			$response = $wpdb->get_col($wpdb->prepare("
+				SELECT DISTINCT pm.meta_value FROM {$wpdb->postmeta} pm
+				LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = %s
+				AND p.post_status IN (".$post_status.")
+				AND p.post_type IN (".$post_types.")
+			", 'the_grid_item_skin'));
+
+			return (is_array($response)) ? array_filter($response) : array();
+		
+		}
+		
+	}
+	
+	/**
+	* Check if a pagination exist (load more or pagination (ajax optional))
 	* @since 1.0.0
 	*/
-	public function check_for_ajax_method() {
+	public function check_for_pagination($ajax = false) {
+
+		$pagination  = false;
+		$load_more   = false;
+		$ajax_pages  = ($ajax) ? $this->grid_data['ajax_pagination'] : true;
+		$ajax_scroll = ($ajax && $this->grid_data['ajax_method'] == 'on_scroll') ? true : false;
+		$areas = preg_grep('/area_/i', array_keys($this->grid_data));
+			
+		// loop through each area
+		foreach($areas as $area) {
+				
+			$area_content = array();
+			$data = $this->grid_data[$area];
+			$data = json_decode($data, true);
+				
+			if (isset($data['functions']) && !empty($data['functions'])) {
+				foreach($data['functions'] as $function) {
+					if (strpos($function, 'get_pagination')) {
+						$pagination = true;
+						break;
+					} else if (strpos($function, 'get_ajax_button')) {
+						$load_more = true;
+						break;
+					}
+				}
+			}
+				
+			if ($pagination || $load_more) {
+				break;
+			}
+
+		}
 		
-		// check if an ajax method is used in the current grid
-		$ajax_method = array_filter($this->grid_data, function($s){
-			$ajax_button = (is_string($s)) ? strpos($s,'get_pagination') : false;
-			$ajax_pages  = (is_string($s)) ? strpos($s,'get_ajax_button') : false;
-			$ajax_method = ($ajax_button || $ajax_pages) ? true : false;
-			return $ajax_method;
-		});
+		$ajax_method = ($load_more || ($pagination && $ajax_pages) || $ajax_scroll) ? true : false;
 		
 		return $ajax_method;
 		
@@ -677,25 +739,25 @@ class The_Grid_Post_Type {
 	* @since: 1.0.0
 	*/
 	public function post_loop(){
-		
-		if ($this->grid_query->have_posts()) { 
+
+		if ($this->grid_query && $this->grid_query->have_posts()) { 
 			while ($this->grid_query->have_posts()) {
 				$this->grid_query->the_post();
 				$this->get_post_data();
 				$this->get_meta_data();
-				$this->get_product_data();
+				$this->get_product_data();		
 				$this->get_post_format();
 				$this->get_terms();
 				$this->get_media_content();
 				$this->build_posts_array();			
 			}
-		} else if ($this->grid_data['is_template'] == true || $this->ajax_data == 'is_template') {
-			$error_msg  = __('Sorry, no results was found.', 'tg-text-domain' );
+		} else if ($this->grid_data['is_template'] == true && !$this->ajax_data == 'is_template') {
+			$error_msg  = __('Sorry, no results were found.', 'tg-text-domain' );
 			$error_msg .= '&#xa;';
 			$error_msg .= __( 'Please try to search again...', 'tg-text-domain' );
 			throw new Exception($error_msg);
 		}
-		
+
 	}
 
 	/**
@@ -773,7 +835,7 @@ class The_Grid_Post_Type {
 		$this->post_author_link     = get_author_posts_url($this->post_author_ID);
 		$this->post_author_avatar   = get_avatar_data($this->post_author_ID, array('size'=>'46', 'default'=>''));
 		$this->post_author_avatar   = $this->post_author_avatar['url'];
-		
+				
 	}
 	
 	/**
@@ -852,6 +914,7 @@ class The_Grid_Post_Type {
 		if (class_exists('WooCommerce') && $this->post_type == 'product') {
 			
 			global $product;
+
 			$sale_price = $product->get_sale_price();
 			return ($sale_price > 0) ? wc_price($sale_price) : null;
 				
@@ -864,12 +927,21 @@ class The_Grid_Post_Type {
 	* @since: 1.0.0
 	*/
 	public function get_product_rating() {
+
+		if ( class_exists( 'WooCommerce' ) && $this->post_type == 'product' ) {
 		
-		if (class_exists('WooCommerce') && $this->post_type == 'product') {
-		
-			global $product;
-			return preg_replace('#(<span.*?>).*?(</span>)#', '$1$2', $product->get_rating_html());
-			
+			global $woocommerce, $product;
+
+			if( version_compare( $woocommerce->version, '3.0.0', '>=' ) ) {
+
+				$rating = $product->get_average_rating();
+				$rating = wc_get_rating_html( $rating );
+				return preg_replace( '#(<span.*?>).*?(</span>)#', '$1$2', $rating );
+
+			} else {
+				return preg_replace( '#(<span.*?>).*?(</span>)#', '$1$2', $product->get_rating_html() );
+			}
+
 		} 
 		
 	}
@@ -883,7 +955,8 @@ class The_Grid_Post_Type {
 		if (class_exists('WooCommerce') && $this->post_type == 'product') {
 		
 			global $product;
-			return $product->get_rating_html();
+
+			return $product->get_average_rating();
 			
 		} 
 		
@@ -916,6 +989,7 @@ class The_Grid_Post_Type {
 		if (class_exists('WooCommerce') && $this->post_type == 'product') {
 			
 			global $product;
+
 			return $product->add_to_cart_url();
 		
 		}
@@ -927,30 +1001,30 @@ class The_Grid_Post_Type {
 	* @since: 1.0.0
 	*/
 	public function get_product_cart_button() {
-		
+
 		if (class_exists('WooCommerce') && $this->post_type == 'product') {
 		
 			global $product;
 			
 			$ajax_add_to_cart = $product->supports('ajax_add_to_cart') ? ' ajax_add_to_cart' : '';
-			
+
 			ob_start();
-			
+
 			$cart_button = apply_filters( 'woocommerce_loop_add_to_cart_link',
 				sprintf( '<a href="%s" rel="nofollow" data-product_id="%s" data-product_sku="%s" data-quantity="%s" class="button %s product_type_%s">%s</a>',
 					esc_url( $product->add_to_cart_url() ),
-					esc_attr( $product->id ),
+					esc_attr( $product->get_id() ),
 					esc_attr( $product->get_sku() ),
 					esc_attr( isset( $quantity ) ? $quantity : 1 ),
 					$product->is_purchasable() && $product->is_in_stock() ? 'add_to_cart_button'.$ajax_add_to_cart : '',
-					esc_attr( $product->product_type ),
+					esc_attr( $product->get_type() ),
 					esc_html( $product->add_to_cart_text() )
 				),
 			$product);
-			
+
 			$content = ob_get_contents();
 			ob_end_clean();
-			
+
 			// in case the filter echo if modified by a theme
 			$cart = ($cart_button) ? $cart_button : $content;
 			
@@ -1016,7 +1090,7 @@ class The_Grid_Post_Type {
 				
 				foreach ($terms as $term){
 					
-					if(!empty($term) && $taxonomy_slug != 'product_type' && $taxonomy_slug != 'post_format'){
+					if(!empty($term) && $taxonomy_slug != 'product_type'){
 						
 						$term_options = get_option($term->taxonomy.'_'.$term->term_id);
 						$this->post_terms[] = array(
@@ -1025,7 +1099,7 @@ class The_Grid_Post_Type {
 							'name'     => $term->name,
 							'taxonomy' => $term->taxonomy,
 							'url'      => get_term_link($term->term_id),
-							'color'    => $term_options['the_grid_term_color']
+							'color'    => isset($term_options['the_grid_term_color']) ? $term_options['the_grid_term_color'] : null
 						);
 						
 					}
@@ -1063,7 +1137,7 @@ class The_Grid_Post_Type {
 		$this->audio   = null;
 		$this->link    = null;
 		$this->quote   = null;
-		
+
 		$format = $this->post_format;
 
 		if ($format != 'image') {
@@ -1071,6 +1145,11 @@ class The_Grid_Post_Type {
 		}
 		
 		$this->fetch_media_content('image');
+		
+		// if quote or link not set or have an image
+		if (isset($this->{$this->post_format}) && !is_array($this->{$this->post_format}) && in_array($this->post_format, array('quote','link')) ) {
+			$this->post_format = $this->{$this->post_format} ? 'image' : 'standard';
+		}
 		
 		// if format embed audio/video, fecth embed image if missing	
 		if (empty($this->image) && isset($this->{$this->post_format}['type']) && in_array($this->{$this->post_format}['type'], array('youtube','vimeo','wistia','soundcloud'))) {
@@ -1102,12 +1181,12 @@ class The_Grid_Post_Type {
 		);
 		
 		// don't fetch first image if video/audio format
-		if ($format == 'image' && in_array($this->post_format,array('audio','video'))) {
+		if ($format == 'image' && in_array($this->post_format, array('audio','video'))) {
 			unset($sources[1]);
 		}
-		
+
 		foreach($sources as $source) {
-			if (method_exists($this,$source)) {
+			if (method_exists($this, $source)) {
 				$source = $this->$source($format);
 				if (!empty($source)) {
 					$this->$format = $source;
@@ -1115,7 +1194,7 @@ class The_Grid_Post_Type {
 				}
 			}
 		}
-		
+
 		// get image(s) from ID
 		if ($format == 'image' && !empty($source)) {
 			$this->$format = $this->image_data($this->$format);
@@ -1139,13 +1218,13 @@ class The_Grid_Post_Type {
 	*/
 	public function first_content_media($format) {
 		
-		$media = To_First_Media($format);
+		$media = TO_First_Media($format);
 		
 		// set default image if no image found in content and grid item settings
 		if (empty($media)) {
 			$media = $this->grid_data['default_image'];
 		}
-		
+
 		return $media;
 		
 	}
@@ -1157,10 +1236,11 @@ class The_Grid_Post_Type {
 	public function alternative_image() {
 		
 		$image = $this->base->getVar($this->meta_data, 'the_grid_item_image');
-		
+
 		// if format video prevent fetching featured image
 		if (empty($image) && !in_array($this->post_format,array('audio','video'))) {
 			$image = ($this->post_type == 'attachment') ? $this->post_ID : get_post_thumbnail_id($this->post_ID);
+			//$image = ($this->post_type == 'attachment') ? $this->post_ID : $this->base->getVar($this->meta_data, '_thumbnail_id');
 		}
 
 		return $image;
@@ -1179,7 +1259,7 @@ class The_Grid_Post_Type {
 
 		switch ($embed_type) {
 			case 'vimeo':
-				$response = wp_remote_get('https://vimeo.com/api/v2/video/'.$embed_ID.'.json');
+				$response = wp_remote_get('https://vimeo.com/api/v2/video/'.esc_attr($embed_ID).'.json');
 				if (!is_wp_error($response)) {
 					$data = wp_remote_retrieve_body($response);
 					if (!is_wp_error($data)) {
@@ -1189,7 +1269,7 @@ class The_Grid_Post_Type {
 				}
 				break;
 			case 'wistia':
-				$response = wp_remote_get('https://fast.wistia.com/oembed?url=http%3A%2F%2Fhome.wistia.com%2Fmedias%2F'.$embed_ID.'.json');
+				$response = wp_remote_get('https://fast.wistia.com/oembed?url=http%3A%2F%2Fhome.wistia.com%2Fmedias%2F'.esc_attr($embed_ID).'.json');
 				if (!is_wp_error($response)) {
 					$data = wp_remote_retrieve_body($response);
 					if (!is_wp_error($data)) {
@@ -1203,7 +1283,7 @@ class The_Grid_Post_Type {
 				break;
 			case 'soundcloud':
 				$client_ID = '226a27261125c8452c8b002d5731f5ca'; // general & public client ID from Themeone
-				$response = wp_remote_get('https://api.soundcloud.com/tracks/'.$embed_ID.'?client_id='.$client_ID);
+				$response = wp_remote_get('https://api.soundcloud.com/tracks/'.esc_attr($embed_ID).'.json?client_id='.esc_attr($client_ID), array('decompress' => false));
 				if (!is_wp_error($response)) {
 					$data = wp_remote_retrieve_body($response);
 					if (!is_wp_error($data)) {
@@ -1374,7 +1454,7 @@ class The_Grid_Post_Type {
 
 			if ($aq_resizer == true) {
 				
-				$img_full = wp_get_attachment_url($img_ID,'full');
+				$img_full = wp_get_attachment_url($img_ID, 'full');
 				$col_size = $this->column_size();
 				
 				$grid_style      = $this->grid_data['style'];
@@ -1390,9 +1470,9 @@ class The_Grid_Post_Type {
 				
 				// use aqua_resizer to resize on fly
 				if ($grid_style == 'grid') {
-					$img_info = tgaq_resize($img_full,$img_width,$img_height,true,false);
+					$img_info = tgaq_resize($img_full, $img_width, $img_height, true, false, true);
 				} else {
-					$img_info = tgaq_resize($img_full,$img_width,99999,false,false);
+					$img_info = tgaq_resize($img_full, $img_width, 99999, false, false);
 				}
 				
 				if (empty($img_info)) {

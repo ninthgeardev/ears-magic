@@ -54,7 +54,9 @@ if ( ! class_exists( 'TOMB_Url_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
-			return esc_url( $new );
+			
+			return esc_url_raw( $new );
+			
 		}
 
 	}

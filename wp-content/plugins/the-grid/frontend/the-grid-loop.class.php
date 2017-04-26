@@ -144,7 +144,7 @@ class The_Grid_Loop {
 				$this->grid_item = $item;		
 				$this->item_comment_number();
 				$this->item_output();
-				$this->update_count_item();		
+				$this->update_count_item();	
 			}
 			
 		}
@@ -157,9 +157,8 @@ class The_Grid_Loop {
 	*/
 	public function item_comment_number() {
 		
-		$comment = '<!-- The Grid item #'.$this->item_count.' -->';
-		echo $comment;
-		
+		echo '<!-- The Grid item #'.$this->item_count.' -->';
+				
 	}
 	
 	/**
@@ -249,7 +248,7 @@ class The_Grid_Loop {
 		}
 
 		// if current skin do not exist then assign default skin available from registered skins
-		if (!isset($item_skins[$post_type]) || !array_key_exists($item_skins[$post_type], $this->grid_skins)) {
+		if (!isset($item_skins[$post_type]) || !array_key_exists($item_skins[$post_type], $this->grid_skins) || $this->grid_skins[$item_skins[$post_type]]['type'] != $grid_style) {
 
 			$skin = $this->base->default_skin($grid_style);
 			if (!$skin) {
@@ -265,7 +264,7 @@ class The_Grid_Loop {
 		// get slug & content
 		$this->skin_slug = $this->grid_skins[$skin]['slug'];
 		if ($this->grid_skins[$skin]['php'] == 'is_custom_skin') {
-			$this->skin_php = The_Grid_Item($this->skin_slug);
+			$this->skin_php = The_Grid_Item($this->skin_slug, $grid_style);
 		} else {
 			$this->skin_php = include $this->grid_skins[$skin]['php'];
 		}
@@ -422,16 +421,16 @@ class The_Grid_Loop {
 						$data_attr['total-sales'] = $this->base->getVar($meta_data, 'meta_num_total_sales', 0);
 						break;
 					case 'woo_regular_price':
-						$data_attr['regular-price'] = $this->base->getVar($meta_data, '_regular_price', 0);
+						$data_attr['regular-price'] = floatval( $this->base->getVar($meta_data, '_regular_price', 0) );
 						break;
 					case 'woo_sale_price':
-						$data_attr['sale-price'] =  $this->base->getVar($meta_data, '_sale_price', 0);
+						$data_attr['sale-price'] =  floatval( $this->base->getVar($meta_data, '_sale_price', 0) );
 						break;
 					case 'woo_featured':
 						$data_attr[str_replace('woo_','', $sort)] = $this->base->getVar($meta_data, '_featured', 'no');
 						break;
 					case 'woo_SKU':
-						$data_attr[str_replace('woo_','', $sort)] = $this->base->getVar($meta_data, '_featured');
+						$data_attr[str_replace('woo_','', $sort)] = $this->base->getVar($meta_data, '_sku');
 						break;
 					case 'woo_stock':
 						$data_attr[str_replace('woo_','', $sort)] = $this->base->getVar($meta_data, '_stock');

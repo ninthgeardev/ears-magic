@@ -88,6 +88,7 @@ var The_Grid = {
 		//relayout   : function() {},
 		style      : 'grid',
 		layout     : 'vertical',
+		fitrows    : false,
 		fullWidth  : null,
 		fullHeight : null,
 		rtl        : true,
@@ -209,6 +210,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				//relayout    : options.relayout,
 				style       : (data.style)       && data.style,
 				layout      : (data.layout)      && data.layout,
+				fitrows     : (data.fitrows)     && data.fitrows,
 				fullWidth   : (data.fullwidth)   && data.fullwidth,
 				fullHeight  : (data.fullheight)  && data.fullheight,
 				rtl         : (data.rtl)         && data.rtl,
@@ -527,13 +529,13 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 					item_nb = ($ajax.data('item-tt')) ? $ajax.data('item-tt')-$item.length : 99999;
 					if (item_nb <= 0) {
 						$ajax.addClass('tg-no-more');
-						$ajax.find('span').text($ajax.data('no-more'));
+						$ajax.find('span').html($ajax.data('no-more'));
 						setTimeout(function(){
 							$ajax.fadeOut(500);
 						},3000);
 					} else {
 						var button_txt = $ajax.data('button');
-						func = ($ajax.data('remain')) ? $ajax.find('span').text(button_txt+' ('+item_nb+')') : $ajax.find('span').text(button_txt);
+						func = ($ajax.data('remain')) ? $ajax.find('span').html(button_txt+' ('+item_nb+')') : $ajax.find('span').html(button_txt);
 					}
 				}
 			}	
@@ -708,7 +710,8 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				layout[param].rowHeight = $sizer[0];
 				layout[param].columnWidth = $sizer[0];
 				layout[param].isHorizontal = isHorizontal;
-				layout[param].image = The_Grid.itemImg;
+				layout[param].isFitRows = options.fitrows;
+				layout[param].image = The_Grid.itemImg;		
 				layout[param].row = options.row;
 				layout[param].previewMode = $preview;
 				layout.hiddenStyle.opacity = 0;
@@ -782,7 +785,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				}
 			}
 			
-			// load post with ajax
+			// load more ajax pagination
 			$pages.on('click', function(e) {
 				e.preventDefault();
 				var $this = $(this);
@@ -809,7 +812,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				}
 			});
 			
-			// load post with ajax
+			// load more ajax on click
 			$ajax.on('click', function(e) {
 				if (item_nb) {
 					e.preventDefault();
@@ -820,8 +823,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 			// load more ajax on scroll
 			if (options.ajaxMethod == 'on_scroll') {
 				$(window).on('mousewheel resize scroll', function() {
-					var visible = $wrapper.the_grid_visible();
-					func = (visible === true && isInit === true) && load_posts(el);
+					func = (item_nb && $wrapper.length && $wrapper[0].getBoundingClientRect().bottom <  $(this).height() && isInit === true) && load_posts(el);
 				});			
 			}
 			
@@ -851,7 +853,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 					beforeSend : function(){
 						isAjax = true;
 						page   = page + 1;
-						func   = ($ajax.data('loading') && !$ajax.hasClass('tg-no-more')) && $ajax.find('span').text($ajax.data('loading'));
+						func   = ($ajax.data('loading') && !$ajax.hasClass('tg-no-more')) && $ajax.find('span').html($ajax.data('loading'));
 						func   = ($($ajaxMsg).length > 0 && $ajax.length === 0) && $($ajaxMsg).addClass('tg-loading');			
 					},
 					success : function(data){
@@ -861,7 +863,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 							message   = data.message,
 							content   = data.content,
 							ajax_data = data.ajax_data;
-						
+
 						// assign new ajax data (check if json)
 						var is_json = true;
 						try {
@@ -875,8 +877,8 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						if (!success) {
 							$ajax.add($($ajaxMsg)).add($pages).removeClass('tg-loading');
 							$loader.find('> div').html(message);
-							$ajax.find('span').text(message);
-							$($ajaxMsg).children('div').text(message);
+							$ajax.find('span').html(message);
+							$($ajaxMsg).children('div').html(message);
 							page = page - 1;
 							return false;
 						}
@@ -885,7 +887,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						if (!content) {
 							$ajax.data('item-tt',-1);
 							count_items();
-							$($ajaxMsg).children('div').text($($ajaxMsg).children('div').data('no-more'));
+							$($ajaxMsg).children('div').html($($ajaxMsg).children('div').data('no-more'));
 							setTimeout(function(){
 								$($ajaxMsg).fadeOut(400);
 							}, 1000);
@@ -1006,7 +1008,9 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 			img_url = /^url\((['"]?)(.*)\1\)$/.exec(img_url);
 			img_url = img_url ? img_url[2] : null;
 			img_url = (!img_url && $(this).is('img')) ? $(this).attr('src') : img_url;
-			img_url = (img_url && img_url.match(/\.(jpg|jpeg|png|bmp|gif|tif|tiff|jif|jfif)/g)) ? img_url : null;
+			img_url = (img_url && (img_url.match(/\.(jpg|jpeg|png|bmp|gif|tif|tiff|jif|jfif)/g)
+					  || img_url.indexOf('external.xx.fbcdn') >= 0
+					  || img_url.indexOf('drscdn.500px.org') >= 0)) ? img_url : null;
 			if (img_url && $.inArray(img_url, tg_img_arr) == -1) {
 				preload.push(img_url);
 				tg_img_arr.push(img_url);			
@@ -1040,42 +1044,6 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		}
 
 	};
-
-	// ======================================================
-	// Custom script (Themeone) : Viewport check bottom grid visibility
-	// ======================================================
-
-    var $w = $(window);
-	
-    $.fn.the_grid_visible = function(){
-
-        if (this.length < 1) {
-            return;
-		}
-
-        var $t        = this.length > 1 ? this.eq(0) : this,
-            t         = $t.get(0),
-            vpHeight  = $w.height(),
-			hVisible  = false;
-
-		if (typeof t.getBoundingClientRect === 'function'){
-
-            // Use this native browser method, if available.
-            var rec      = t.getBoundingClientRect();
-                hVisible = rec.bottom <  vpHeight;
-			
-		} else {
-
-            var viewTop    = $w.scrollTop(),
-                viewBottom = viewTop + vpHeight,
-                offset     = $t.offset(),
-                top        = offset.top,
-                bottom     = top + $t.height();
-				hVisible   = viewBottom >  bottom;
-		}
-		
-		return hVisible;
-    };
 	
 	// ======================================================
 	// Custom script (Themeone) : DropDown list (to prevent overflow issue)
@@ -1386,11 +1354,13 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				
 				// reset the src of the iframe because of a cache issue from VIMEO API
 				$(this).attr('src', $(this).attr('src'));
-				
+
 				var player = $f(this);
-				
+
 				player.addEvent('ready', function() {
-					player.api('play');
+					if (!tg_is_mobile) {
+						player.api('play');
+					}
 					$.TG_Media_Ready($this,player,'VM');
 					player.addEvent('play', function(){
 						$.TG_Media_Play($this);
@@ -1402,6 +1372,21 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						$.TG_Media_Pause($this);
 					});
 				});
+
+				/*$(this).attr('src', $(this).attr('src'));
+				var player = new Vimeo.Player($(this));
+				
+				player.play();
+				$.TG_Media_Ready($this,player,'STD');
+				player.on('play', function(){
+					$.TG_Media_Play($this);
+				});
+				player.on('pause', function(){
+					$.TG_Media_Pause($this);
+				});
+				player.on('finish', function(){
+					$.TG_Media_Pause($this);
+				});*/
 				
 			}
 				
@@ -1520,6 +1505,15 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		el.removeClass('tg-is-playing tg-force-play');
 	};
 	
+	// detect fullscreen player mode (prevent to add undesired css transform)
+	$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange',function(e){
+		var el = $(e.target);
+		$('.tg-item-media').removeClass('tg-item-media-fullscreen');
+		if (el && el.hasClass('tg-item-media')) {
+			el.addClass('tg-item-media-fullscreen');
+		}
+	});
+	
 	// on first play build iframe and init script
 	$(document).on('click', '.tg-item:not(.tg-media-init) .tg-item-button-play', function(e) {
 		
@@ -1543,8 +1537,14 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		var $this  = $(this).closest('.tg-item'),
 			method = $this.data('pause-method'),
 			player = $this.data('media-player');
+		
+		// pause and return if media is playing
+		if ($this.is('.tg-force-play, .tg-is-playing')){
+			$.TG_Pause_Players();
+			return false;
+		}
 
-		// check if player & init
+		// check if player & init, and play
 		if (player && $this.hasClass(tg_media_init)) {
 			$this.find('.tg-item-media').show();
 			$.TG_Pause_Players();
@@ -1946,7 +1946,8 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 			maxHeight();	
 		});
 		
-		$(document).on('click',media_data, function() {	
+		$(document).on('click', media_data, function(e) {
+			e.preventDefault();	
 			$.TG_Pause_Players();
 			$(video+','+image).remove();
 			checkLightbox();
@@ -1982,6 +1983,15 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		$('body').append($(TO_LB_Markup));
 	
 	};
+	
+	// auto click lightbox (prevent duplicate content)
+	$(document).on('click', '[data-tolb-id]', function(e) {
+		e.preventDefault();
+		var id = $(this).data('tolb-id');
+		if (id) {
+			$('#'+id).trigger('click');
+		}
+	});
 
 	// ======================================================
 	// Custom panZoom/Apple TV Effects
@@ -2099,54 +2109,24 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
     TG_atv();
 
 	// ======================================================
-	// Social share link
+	// Social share links
 	// ======================================================
 
-	
-	$(document).on('click', '.tg-facebook', function(e){
+	$(document).on('click', '.tg-social-share:not(.tg-social-disabled)', function(e){
+		
 		e.preventDefault();
-		var data = data_share($(this));
-		window.open('http://www.facebook.com/share.php?u=' + data.url + '&t=' + data.text, 'fbShareWin', data.props);
+		
+		var href = $(this)[0].href,
+			left = Math.round(window.screenX + (window.outerWidth - 626) / 2),
+			top  = Math.round(window.screenY + (window.outerHeight - 436) / 2);
+console.log(href);
+		if (href) {
+			window.open(href, 'tg_share', 'status=0,resizable=1,location=1,toolbar=0,width=626,height=436,top='+top+',left='+left);
+		}
+		
 		return false;
+		
 	});
-	
-	$(document).on('click', '.tg-twitter', function(e){
-		e.preventDefault();
-		var data = data_share($(this));
-		window.open('http://twitter.com/share?url=' + data.url + '&text=' + data.title, 'ttShareWin', data.props);
-		return false;
-	});
-	
-	$(document).on('click', '.tg-pinterest', function(e){
-		e.preventDefault();
-		var data = data_share($(this));
-		window.open('http://pinterest.com/pin/create/button/?url='+data.url+'&description='+data.title+'&media='+data.img, 'ptShareWin', data.props);
-		return false;
-	});
-	
-	$(document).on('click', '.tg-google1', function(e){
-		e.preventDefault();
-		var data = data_share($(this));
-		window.open('https://plus.google.com/share?url='+data.url, 'g1ShareWin', data.props) ;
-		return false;
-	});
-	
-	function data_share(el) {
-		var data   = [],
-			width  = 626,
-			height = 436,
-			l = Math.round(window.screenX + (window.outerWidth - width) / 2),
-			t = Math.round(window.screenY + (window.outerHeight - height) / 2);
-
-		data.url   = encodeURIComponent(el.closest('.tg-item').find('.tg-item-title a').attr('href'));
-		data.title = encodeURIComponent(el.closest('.tg-item').find('.tg-item-title a').text());
-		data.text  = encodeURIComponent(el.closest('.tg-item').find('.tg-item-excerpt').text());
-		if(data.title.length > 140){ data.title = data.title.substring(0, 140); }
-		if(data.text.length > 120){ data.text = data.text.substring(0, 120); }
-		data.img   = encodeURIComponent(el.closest('.tg-item').find('img.tg-item-image').attr('src'));
-		data.props = ['width='+width,'height='+height,'left='+l,'top='+t,'status=0','resizable=1', 'location=0', 'toolbar=0'].join(',');
-		return data;
-	}
 
 	// ======================================================
 	// Init The Grid Plugin

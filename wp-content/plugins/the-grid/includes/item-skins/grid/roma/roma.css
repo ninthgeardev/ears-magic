@@ -1,8 +1,7 @@
 .roma a,
 .roma a:active,
 .roma a:focus,
-.roma .tg-item-title,
-.roma .tg-media-button {
+.roma .tg-item-title {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;

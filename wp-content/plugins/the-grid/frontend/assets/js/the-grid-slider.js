@@ -166,7 +166,7 @@
 				lastPagesCount = pages.length,
 				data = $slidee.data('TG_Layout'),
 				itemGutter = (data) ? data.options[data.options.layoutMode].gutter.offsetWidth : 0;
-			
+
 			// for backend
 			if (!data) { return false; }
 			
@@ -226,7 +226,7 @@
 					item.el = element;
 					item.size = new_pos_item[i];
 					item.half = item.size / 2;
-					item.start = slideeSize -itemMarginStart;
+					item.start = slideeSize - itemMarginStart;
 					item.center = item.start - round(frameSize / 2 - item.size / 2);
 					item.end = item.start - frameSize + item.size;
 					
@@ -293,7 +293,7 @@
 							pages.push(item.center);
 						} else if (item.start + item.size > tempPagePos && tempPagePos <= pos.end) {
 							tempPagePos = item.start;
-							pages.push(tempPagePos);
+							pages.push(item.size < frameSize && data.options.layoutMode === 'justified' ? item.start+(item.size-frameSize)/2 : item.start);
 							tempPagePos += frameSize;
 							if (tempPagePos > pos.end && tempPagePos < pos.end + frameSize) {
 								pages.push(pos.end);
@@ -875,6 +875,7 @@
 					if (center === false && slideePos <= items[i].center + items[i].half) {
 						center = i;
 					}
+
 
 					// Last item
 					if (i === il - 1 || slideePos <= items[i].end + items[i].half) {

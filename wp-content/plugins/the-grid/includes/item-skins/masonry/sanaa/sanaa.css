@@ -1,6 +1,4 @@
 .sanaa a,
-.sanaa a:hover,
-.sanaa .tg-media-button,
 .sanaa a:active,
 .sanaa a:focus,
 .sanaa .tg-item-overlay,
@@ -115,7 +113,7 @@
 .sanaa .tg-item-on-sale span {
 	margin: 0;
 	padding: 4px 10px;
-	color: #ffffff;
+	color: #ffffff !important;
 	background: #FF4F57;
 	font-size: 12px;
 	text-transform: uppercase;

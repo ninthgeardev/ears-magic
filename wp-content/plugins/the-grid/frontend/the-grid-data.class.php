@@ -40,13 +40,6 @@ class The_Grid_Data {
 	}
 	
 	/**
-	* Serialization disabled
-	* @since 1.0.0
-	*/
-	private function __sleep() {
-	}
-	
-	/**
 	* De-serialization disabled
 	* @since 1.0.0
 	*/
@@ -166,7 +159,7 @@ class The_Grid_Data {
 		// Default source settings
 		$options[] = array(
 			'source_type'      => 'post_type',
-			'item_number'      => get_option('posts_per_page'),
+			'item_number'      => 0,
 			'offset'           => 0,
 			'post_type'        => array('post'),
 			'gallery'          => '',
@@ -214,6 +207,46 @@ class The_Grid_Data {
 			'vimeo_channel' => ''
 		);
 		
+		// Facebook default settings
+		$options[] = array(
+			'facebook_source'   => 'page_timeline',
+			'facebook_page'     => '',
+			'facebook_album_id' => '',
+			'facebook_group_id' => ''
+		);
+		
+		// Twitter default settings
+		$options[] = array(
+			'twitter_source'    => 'user_timeline',
+			'twitter_username'  => '',
+			'twitter_listname'  => '',
+			'twitter_searchkey' => '',
+			'twitter_include'   => array()
+		);
+		
+		// Flickr default settings
+		$options[] = array(
+			'flickr_source'      => 'public_photos',
+			'flickr_user_url'    => '',
+			'flickr_group_url'   => '',
+			'flickr_gallery_url' => '',
+			'flickr_photoset_id' => ''
+		);
+		
+		// NexGen default settings
+		$options[] = array(
+			'nextgen_source'       => 'gallery',
+			'nextgen_gallery_id'   => '',
+			'nextgen_album_id'     => '',
+			'nextgen_image_ids'    => '',
+			'nextgen_search_query' => ''
+		);
+		
+		// RSS feed default settings
+		$options[] = array(
+			'rss_feed_url' => '',
+		);
+		
 		// Default media settings
 		$options[] = array(
 			'default_image'      => '',
@@ -229,6 +262,7 @@ class The_Grid_Data {
 			'style'                => 'grid',
 			'item_x_ratio'         => 4,
 			'item_y_ratio'         => 3,
+			'item_fitrows'         => '',
 			'item_force_size'      => '',
 			'items_col'            => 1,
 			'items_row'            => 1,
@@ -441,6 +475,10 @@ class The_Grid_Data {
 	*/
 	public function check_data() {
 		
+		// set default blog item number if item number is null
+		$this->grid_data['item_number'] = (int)$this->grid_data['item_number'] == 0 ? get_option('posts_per_page') : $this->grid_data['item_number'];
+		$this->grid_data['item_number'] = ($this->grid_data['source_type'] != 'post_type' && (int)$this->grid_data['item_number'] < 0)  ? 10 : $this->grid_data['item_number'];
+		
 		// media image size
 		$aqua_resizer       = $this->grid_data['aqua_resizer'];
 		// get the grid main data
@@ -457,12 +495,12 @@ class The_Grid_Data {
 		// grid filter on load
 		$filter_onload      = $this->grid_data['filter_onload'];
 		// columns number
-		$col_desktop_large  = $this->grid_data['desktop_large'];
-		$col_desktop_medium = $this->grid_data['desktop_medium'];
-		$col_desktop_small  = $this->grid_data['desktop_small'];
-		$col_tablet         = $this->grid_data['tablet'];
-		$col_tablet_small   = $this->grid_data['tablet_small'];
-		$col_mobile         = $this->grid_data['mobile'];
+		$col_desktop_large  = (int) $this->grid_data['desktop_large'];
+		$col_desktop_medium = (int) $this->grid_data['desktop_medium'];
+		$col_desktop_small  = (int) $this->grid_data['desktop_small'];
+		$col_tablet         = (int) $this->grid_data['tablet'];
+		$col_tablet_small   = (int) $this->grid_data['tablet_small'];
+		$col_mobile         = (int) $this->grid_data['mobile'];
 		// rows height
 		$row_desktop_large  = (int) $this->grid_data['desktop_large_row'];
 		$row_desktop_medium = (int) $this->grid_data['desktop_medium_row'];
@@ -571,7 +609,7 @@ class The_Grid_Data {
 			// disable preloader
 			$this->grid_data['preloader'] = null;
 		}
-		
+
 	}
 	
 	/**

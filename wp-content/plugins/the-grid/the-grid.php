@@ -2,13 +2,14 @@
 /**
  * @package   The_Grid
  * @author    Themeone <themeone.master@gmail.com>
+ * @link      https://codecanyon.net/item/the-grid-responsive-wordpress-grid-plugin/13306812
  * @copyright 2015 Themeone
  *
  * @wordpress-plugin
  * Plugin Name:  The Grid
  * Plugin URI:   http://www.theme-one.com/the-grid/
  * Description:  The Grid - Create advanced grids for any post type with endless possibilities (no programming knowledge required)
- * Version:      1.6.0
+ * Version:      2.3.5
  * Author:       Themeone
  * Author URI:   http://www.theme-one.com/
  * Text Domain:  tg-text-domain
@@ -33,7 +34,17 @@ if (!class_exists('The_Grid_Plugin')) {
 		*
 		* @var string
 		*/
-		public $plugin_version = '1.6.0';
+		public $plugin_version = '2.3.5';
+		
+		/**
+		* Plugin Slug
+		*
+		* @since 1.0.0
+		* @access public
+		*
+		* @var string
+		*/
+		public $plugin_slug = 'the_grid';
 		
 		/**
 		* Plugin Prefix
@@ -46,27 +57,10 @@ if (!class_exists('The_Grid_Plugin')) {
 		public $plugin_prefix = 'the_grid_';
 		
 		/**
-		* Plugin Slug
-		*
-		* @since 1.0.0
-		* @access public
-		*
-		* @var string
-		*/
-		public $plugin_slug = 'the_grid';	
-		
-		/**
 		* Cloning disabled
 		* @since 1.0.0
 		*/
 		private function __clone() {
-		}
-	
-		/**
-		* Serialization disabled
-		* @since 1.0.0
-		*/
-		private function __sleep() {
 		}
 	
 		/**
@@ -101,7 +95,7 @@ if (!class_exists('The_Grid_Plugin')) {
 			define('TG_SLUG',$this->plugin_slug);
 			define('TG_PREFIX', $this->plugin_prefix);
 			
-			// for themeone metabox framework (TOMB)
+			// For Themeone metabox framework (TOMB)
 			if (!defined('TOMB_DIR')) {
 				define('TOMB_DIR', TG_PLUGIN_PATH . 'includes/metabox/');
 			}
@@ -114,30 +108,38 @@ if (!class_exists('The_Grid_Plugin')) {
 		/**
 		* Include required core files for Backend/Frontend.
 		* @since 1.0.0
+		* @modified 1.7.0
 		*/
 		public function includes() {
 
 			// Aqua Resizer Class
 			require_once(TG_PLUGIN_PATH . '/includes/aqua-resizer.class.php');
+			
 			// Attachment taxonomy
 			require_once(TG_PLUGIN_PATH . '/includes/media-taxonomies.php');
+			
 			// Grid base Class (main functionnalities)
 			require_once(TG_PLUGIN_PATH . '/includes/the-grid-base.class.php');
-			// Grid custom table Class
-			require_once(TG_PLUGIN_PATH . '/includes/custom-table.class.php');
+			
 			// Load skins classes
 			require_once(TG_PLUGIN_PATH . '/includes/item-skin.class.php');
 			require_once(TG_PLUGIN_PATH . '/includes/preloader-skin.class.php');
 			require_once(TG_PLUGIN_PATH . '/includes/navigation-skin.class.php');
 			require_once(TG_PLUGIN_PATH . '/includes/item-animation.class.php');
-			// post like class
+			
+			// Grid custom table Class
+			require_once(TG_PLUGIN_PATH . '/includes/custom-table.class.php');
+			
+			// Post like class
 			require_once(TG_PLUGIN_PATH . '/includes/post-like/post-like.php');
-			// deprecated class to retrieve item element
+			
+			// Deprecated class to retrieve item element
 			require_once(TG_PLUGIN_PATH . '/includes/deprecated/the-grid-element.class.php');
+			
 			// Load frontend classes
 			require_once(TG_PLUGIN_PATH . '/frontend/the-grid-init.class.php');
-			require_once(TG_PLUGIN_PATH . '/frontend/the-grid-item.class.php');
 			require_once(TG_PLUGIN_PATH . '/includes/first-media.class.php');
+			
 			// Load backend classes
 			if (is_admin()) {
 				require_once(TG_PLUGIN_PATH . '/includes/element-animation.class.php');
@@ -147,15 +149,16 @@ if (!class_exists('The_Grid_Plugin')) {
 				require_once(TG_PLUGIN_PATH . '/backend/admin-init.php');
 				require_once(TG_PLUGIN_PATH . '/includes/wpml.class.php');	
 			}
+			
 			// Register shortcode & add Tinymce button/popup & add Visual Composer element
 			require_once(TG_PLUGIN_PATH . '/backend/admin-shortcode.php');
-
+	
 		}
 		
 		/**
 		* Hook into actions and filters
 		* @since 1.0.0
-		* @modified 1.3.0
+		* @modified 1.9.0
 		*/
 		public function init_hooks() {
 
@@ -167,13 +170,15 @@ if (!class_exists('The_Grid_Plugin')) {
 			add_action( 'current_screen', array( &$this, 'post_formats' ) );
 			// Register The Grid additionnal image sizes
 			add_action( 'after_setup_theme', array( &$this, 'add_image_size' ) );
+			
+			// Allow new css properties for wp_kses
+			add_filter( 'safe_style_css', array( &$this, 'allowed_css_rules' ) );
 			// Add plugin edit button in plugin list page
-			add_filter( 'plugin_action_links_'. plugin_basename(__FILE__), array( &$this, 'action_links'), 10, 4 );
-			// Make changes after important update on plugin activation
+			add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), array( &$this, 'action_links' ), 10, 4 );
+			
+			// Make changes on plugin activation
 			register_activation_hook( __FILE__, array( &$this, 'plugin_activated' ) );
-			// Create custom table on plugin activation
-			register_activation_hook( __FILE__, array( 'The_Grid_Custom_Table', 'create_tables' ) );
-			// Remove uncessary data on plugin deactivation
+			// Make changes on plugin deactivation
 			register_deactivation_hook( __FILE__, array( &$this, 'plugin_deactivated' ) );
 			
 		}
@@ -232,9 +237,10 @@ if (!class_exists('The_Grid_Plugin')) {
 					),
 			);
 			
-			// register The_Grid post type
+			// Register The_Grid post type
 			register_post_type( $this->plugin_slug, $args );
-			// remove unecessary post type field
+			
+			// Remove unecessary post type field
 			remove_post_type_support( $this->plugin_slug, 'title' );
 			remove_post_type_support( $this->plugin_slug, 'editor' );
 			
@@ -247,17 +253,23 @@ if (!class_exists('The_Grid_Plugin')) {
 		public function post_formats() {
 			
 			$post_format = get_option('the_grid_post_formats', false);
-			// add post formats support if option enable in global settings
+			
+			// Add post formats support if option enable in global settings
 			if ($post_format == true) {
-				// post formats supported by The Grid Plugin
+				
+				// Post formats supported by The Grid Plugin
 				add_theme_support('post-formats', array('gallery', 'video', 'audio', 'quote', 'link'));
-				// retireve all post types
+				
+				// Retireve all post types
 				$post_types = The_Grid_Base::get_all_post_types();
-				// remove post format for attacment post type
+				
+				// Remove post format for attacment post type
 				unset($post_types['attachment']);
+				
 				foreach ($post_types as $slug => $name) {
 					add_post_type_support($slug, 'post-formats');
 				}
+				
 			}
 			
 		}
@@ -269,20 +281,41 @@ if (!class_exists('The_Grid_Plugin')) {
 		*/
 		public function add_image_size() {
 			
-			// default image sizes
+			// Default image sizes
 			$def = array(
 				'w' => array(500, 500, 1000, 1000, 500),
 				'h' => array(500, 1000, 500, 1000, 99999),
 				'c' => array(true, true, true, true, '')
 			);
 			
-			// add image sizes with values from global settings
+			// Add image sizes with values from global settings
 			for ($i = 0; $i <= 4; $i++) {
+				
 				$w = get_option('the_grid_size'. ($i+1) .'_width', $def['w'][$i]);
 				$h = get_option('the_grid_size'. ($i+1) .'_height', $def['h'][$i]);
 				$c = get_option('the_grid_size'. ($i+1) .'_crop', $def['c'][$i]);
-				add_image_size('the_grid_size'. ($i+1), $w, $h, $c);
+				
+				if ($w > 0 || $h > 0) {
+					add_image_size('the_grid_size'. ($i+1), $w, $h, $c);
+				}
+				
 			}
+			
+		}
+		
+		/**
+		* Allow new css rules for wp_kses (for custom css/html attr in skin builder)
+		* @since 1.9.0
+		*/
+		public function allowed_css_rules($allowed_attr) {
+
+			if (!is_array($allowed_attr)) {
+				$allowed_attr = array();
+			}
+
+			$allowed_attr[] = 'box-shadow';
+		
+			return $allowed_attr;
 			
 		}
 
@@ -293,10 +326,15 @@ if (!class_exists('The_Grid_Plugin')) {
 		*/
 		public function action_links($links) {
 			
+			// Unset default edit button
 			unset($links['edit']);
+			
+			// Add custom edit button
 			$mylinks = array(
  				'<a href="' . admin_url( 'admin.php?page=the_grid' ) . '">'. __('Edit', 'tg-text-domain') .'</a>',
  			);
+			
+			// Return new adit action
 			return array_merge($links, $mylinks);
 			
 		}
@@ -304,24 +342,27 @@ if (!class_exists('The_Grid_Plugin')) {
 		/**
 		* Make changes after important update on plugin activation
 		* @since 1.2.0
+		* @modified 1.7.0
 		*/
 		public function plugin_activated() {
 			
-			// delete The Grid cache to prevent any issues due to changes
-			$base = new The_Grid_Base();
-			$base->delete_transient('tg_grid');
+			// Delete The Grid cache to prevent any issues due to changes
+			The_Grid_Base::delete_transient('tg_grid');
 			
+			// Create custom table for skin builder
+			The_Grid_Custom_Table::create_tables(false, true);
+
 		}
 		
 		/**
 		* Make changes after important update on plugin activation
 		* @since 1.2.0
+		* @modified 1.7.0
 		*/
 		public function plugin_deactivated() {
 			
-			// delete The Grid cache to prevent any issues due to changes
-			$base = new The_Grid_Base();
-			$base->delete_transient('tg_grid');
+			// Delete The Grid cache to prevent any issues due to changes
+			The_Grid_Base::delete_transient('tg_grid');
 			
 		}
 

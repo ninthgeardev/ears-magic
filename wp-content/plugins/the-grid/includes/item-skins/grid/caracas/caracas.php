@@ -22,7 +22,7 @@ $target    = $tg_el->get_the_permalink_target();
 
 $media_args = array(
 	'icons' => array(
-		'image' => '<i class="tg-icon-arrows-out-2"></i>'
+		'image' => '<i class="tg-icon-arrows-out"></i>'
 	)
 );
 

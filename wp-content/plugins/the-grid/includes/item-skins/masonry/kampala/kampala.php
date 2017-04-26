@@ -17,6 +17,7 @@ $tg_el = The_Grid_Elements();
 
 $format = $tg_el->get_item_format();
 $colors = $tg_el->get_colors();
+$image  = $tg_el->get_attachment_url();
 
 $terms_args = array(
 	'color' => 'color',
@@ -31,9 +32,7 @@ $media_args = array(
 
 if ($format == 'quote' || $format == 'link') {
 	
-	$bg_img = $tg_el->get_attachement_url();
-	
-	$output  = ($bg_img) ? '<div class="tg-item-image" style="background-image: url('.esc_url($bg_img).')"></div>' : null;
+	$output  = ($image) ? '<div class="tg-item-image" style="background-image: url('.esc_url($image).')"></div>' : null;
 	$output .= $tg_el->get_content_wrapper_start();
 		$output .= $tg_el->get_the_date();
 		$output .= ($format == 'quote') ? $tg_el->get_the_quote_format() : $tg_el->get_the_link_format();
@@ -48,8 +47,9 @@ if ($format == 'quote' || $format == 'link') {
 } else {
 	
 	$output = null;
-
+	$media_content = $tg_el->get_media();
 	$social = $tg_el->get_social_share_links();
+	
 	$social_button  = null;
 	if (!empty($social)) {
 		$social_button = '<div class="tg-item-share-holder">';
@@ -67,19 +67,18 @@ if ($format == 'quote' || $format == 'link') {
 		$decoration .= '<div class="triangle-down-right" style="border-color:'.$colors['content']['background'].'"></div>';
 	$decoration .= '</div>';
 	
-	$media_content = $tg_el->get_media();
-	$media_button  = $tg_el->get_media_button($media_args);
-	$link_button   = $tg_el->get_link_button();
-
 	if ($media_content) {
+		$link_button = $tg_el->get_link_button();
 		$output .= $tg_el->get_media_wrapper_start();
 			$output .= $media_content;
-			$output .= ($media_button) ? $tg_el->get_center_wrapper_start() : null;
-				$output .= ($media_button && in_array($format, array('video', 'audio'))) ? $tg_el->get_overlay().$media_button : null;
-				$output .= ($link_button && !in_array($format, array('video', 'audio'))) ? $tg_el->get_overlay().$link_button : null;
-			$output .= ($media_button) ? $tg_el->get_center_wrapper_end() : null;
-			$output .= ($media_button) ? $decoration : null;
-			$output .= ($media_button) ? $social_button : null;
+			if ($image || in_array($format, array('gallery', 'video'))) {
+				$output .= $tg_el->get_center_wrapper_start();
+				$output .= (in_array($format, array('video', 'audio'))) ? $tg_el->get_overlay().$tg_el->get_media_button($media_args) : null;
+				$output .= (!in_array($format, array('video', 'audio')) && $link_button) ? $tg_el->get_overlay().$link_button : null;
+				$output .= $tg_el->get_center_wrapper_end();
+				$output .= $decoration;
+				$output .= $social_button;
+			}
 		$output .= $tg_el->get_media_wrapper_end();
 	}
 	

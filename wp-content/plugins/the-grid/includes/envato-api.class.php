@@ -225,7 +225,7 @@ if (!class_exists( 'TG_Envato_API' )) {
 			$response = $this->request( $url, $args );
 
 			if ( is_wp_error( $response ) || empty( $response ) || empty( $response['results'] ) ) {
-				return $plugins;
+				return $response->get_error_message();
 			}
 
 			foreach ( $response['results'] as $plugin ) {
@@ -245,41 +245,47 @@ if (!class_exists( 'TG_Envato_API' )) {
 			$requires = null;
 			$tested = null;
 			$versions = array();
+			
+			if (isset($plugin['item'])) {
 
-			// Set the required and tested WordPress version numbers.
-			foreach ( $plugin['item']['attributes'] as $k => $v ) {
-				if ( 'compatible-software' === $v['name'] ) {
-					foreach ( $v['value'] as $version ) {
-						$versions[] = str_replace( 'WordPress ', '', trim( $version ) );
+				// Set the required and tested WordPress version numbers.
+				foreach ( $plugin['item']['attributes'] as $k => $v ) {
+					if ( 'compatible-software' === $v['name'] ) {
+						if (isset($v['value'])) {
+							foreach ( $v['value'] as $version ) {
+								$versions[] = str_replace( 'WordPress ', '', trim( $version ) );
+							}
+							if ( ! empty( $versions ) ) {
+								$requires = $versions[ count( $versions ) - 1 ];
+								$tested = $versions[0];
+							}
+							break;
+						}
 					}
-					if ( ! empty( $versions ) ) {
-						$requires = $versions[ count( $versions ) - 1 ];
-						$tested = $versions[0];
-					}
-					break;
 				}
+	
+				return array(
+					'id' => $plugin['item']['id'],
+					'name' => $plugin['item']['wordpress_plugin_metadata']['plugin_name'],
+					'author' => $plugin['item']['wordpress_plugin_metadata']['author'],
+					'version' => $plugin['item']['wordpress_plugin_metadata']['version'],
+					'description' => self::remove_non_unicode( $plugin['item']['wordpress_plugin_metadata']['description'] ),
+					'content' => preg_replace('/<img[^>]+\>/i', '', $plugin['item']['description']),
+					'url' => $plugin['item']['url'],
+					'author_url' => (isset($plugin['item']['author_url'])) ? $plugin['item']['author_url'] : null,
+					'thumbnail_url' => (isset($plugin['item']['thumbnail_url'])) ? $plugin['item']['thumbnail_url'] : null,
+					'landscape_url' => (isset($plugin['item']['previews']['landscape_preview']['landscape_url'])) ? $plugin['item']['previews']['landscape_preview']['landscape_url'] : null,
+					'requires' => $requires,
+					'tested' => $tested,
+					'purchase_code' => $plugin['code'],
+					'license' => $plugin['license'],
+					'supported_until' => $plugin['supported_until'],
+					'number_of_sales' => $plugin['item']['number_of_sales'],
+					'updated_at' => $plugin['item']['updated_at'],
+					'rating' => $plugin['item']['rating'],
+				);
+			
 			}
-
-			return array(
-				'id' => $plugin['item']['id'],
-				'name' => $plugin['item']['wordpress_plugin_metadata']['plugin_name'],
-				'author' => $plugin['item']['wordpress_plugin_metadata']['author'],
-				'version' => $plugin['item']['wordpress_plugin_metadata']['version'],
-				'description' => self::remove_non_unicode( $plugin['item']['wordpress_plugin_metadata']['description'] ),
-				'content' => preg_replace('/<img[^>]+\>/i', '', $plugin['item']['description']),
-				'url' => $plugin['item']['url'],
-				'author_url' => (isset($plugin['item']['author_url'])) ? $plugin['item']['author_url'] : null,
-				'thumbnail_url' => (isset($plugin['item']['thumbnail_url'])) ? $plugin['item']['thumbnail_url'] : null,
-				'landscape_url' => (isset($plugin['item']['previews']['landscape_preview']['landscape_url'])) ? $plugin['item']['previews']['landscape_preview']['landscape_url'] : null,
-				'requires' => $requires,
-				'tested' => $tested,
-				'purchase_code' => $plugin['code'],
-				'license' => $plugin['license'],
-				'supported_until' => $plugin['supported_until'],
-				'number_of_sales' => $plugin['item']['number_of_sales'],
-				'updated_at' => $plugin['item']['updated_at'],
-				'rating' => $plugin['item']['rating'],
-			);
 			
 		}
 

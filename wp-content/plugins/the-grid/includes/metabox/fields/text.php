@@ -30,7 +30,7 @@ if ( ! class_exists( 'TOMB_Text_Field' ) ) {
 			if ($field['size']) {
 				$size = 'style="width:'.$field['size'].'px"';
 			}
-			return '<input type="text" class="tomb-text" '.$size.' name="'.$field['id'].'" id="'.$field['id'].'" value=\''.$meta.'\' '.$placeholder.' '.$disabled.'/>';
+			return '<input type="text" class="tomb-text" '.$size.' name="'.$field['id'].'" id="'.$field['id'].'" value=\''. esc_attr( $meta ) .'\' '.$placeholder.' '.$disabled.'/>';
 
 		}
 
@@ -62,7 +62,9 @@ if ( ! class_exists( 'TOMB_Text_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
+			
 			return esc_textarea( $new );
+			
 		}
 
 	}

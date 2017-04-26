@@ -29,8 +29,7 @@ class The_Grid_Admin_Ajax {
 	*/
 	public function __construct() {
 		
-		// retrieve all ajax string to localize
-		$this->localize_strings();
+		// Init all admin Hooks
 		$this->init_hooks();
 					
 	}
@@ -82,10 +81,12 @@ class The_Grid_Admin_Ajax {
 		
 		// check ajax nounce
 		if (!wp_verify_nonce($nonce, $action)) {
+			
 			// build response
 			$response = $this->ajax_response(false, __('Sorry, an error occurred. Please refresh the page.', 'tg-text-domain'));
 			// die and send json error response
 			wp_send_json($response);
+			
 		}
 		
 	}
@@ -169,11 +170,17 @@ class The_Grid_Admin_Ajax {
 			case 'tg_import_demo_skins':
 				$response = $this->import_demo_skins();
 				break;
+			case 'tg_get_elements':
+				$response = $this->get_elements();
+				break;
 			case 'tg_save_element':
 				$response = $this->save_element();
 				break;
 			case 'tg_delete_element':
 				$response = $this->delete_element();
+				break;
+			case 'tg_get_flickr_photosets':
+				$response = $this->get_flickr_photosets();
 				break;
 			default:
 				$response = ajax_response(false, __( 'Sorry, an unknown error occurred...', 'tg-text-domain'), null);
@@ -582,14 +589,19 @@ class The_Grid_Admin_Ajax {
 		}
 		
 		// loop through each metadata an push them in array
-		foreach ($post_meta_keys as $meta_key) {	
+		foreach ($post_meta_keys as $meta_key) {
+			
 			if (strpos($meta_key,$this->plugin_slug) !== false) {
+				
 				$meta_values = get_post_custom_values($meta_key, $post_ID);
+				
 				foreach ($meta_values as $meta_value) {
 					$meta_value = maybe_unserialize($meta_value);
 					$post_info[$meta_key] = $meta_value;
 				}
+				
 			}
+			
 		}
 		
 		return $post_info;
@@ -618,7 +630,7 @@ class The_Grid_Admin_Ajax {
 		// if no item selected
 		if ((!is_array($item_names) || count($item_names) == 0) && !$grid_demo) {
 			
-			$response = $this->ajax_response(false, __( 'Please, select grid(s) to import', 'tg-text-domain' ));
+			$response = $this->ajax_response(false, __( 'Please, select item(s) to import', 'tg-text-domain' ));
 			return $response;
 			
 		}
@@ -744,6 +756,7 @@ class The_Grid_Admin_Ajax {
 			
 			$new_grid_id = wp_insert_post($new_grid);
 			$post_exists = $this->check_grid_name($post_title, $new_grid_id);
+			
 			if ($post_exists) {
 				$post_title = $post_title.' '.$new_grid_id;
 				$new_post['ID'] = $new_grid_id;
@@ -752,6 +765,7 @@ class The_Grid_Admin_Ajax {
 				// Update the post into the database
 				wp_update_post($new_post);
 			}
+			
 			// update grid name
 			add_post_meta($new_grid_id, 'the_grid_name', $post_title);
 			return $new_grid_id;	
@@ -784,7 +798,7 @@ class The_Grid_Admin_Ajax {
 			return $response;
 		}
 		
-		// check if the uploaded can be json_decode
+		// check if the uploaded file can be json_decode
 		if (!json_decode($json)) {
 			$response = $this->ajax_response(false, __('Sorry, an error occurs, the file can\'t be read.', 'tg-text-domain'), null);
 			return $response;
@@ -808,20 +822,22 @@ class The_Grid_Admin_Ajax {
 		// check if the .json file contains the right structure
 		if (isset($obj->grids) || isset($obj->skins) || isset($obj->elements)) {
 			
+			$purchase_code = The_Grid_Base::get_purchase_code();
+			
 			$grids = $this->get_import_grid_list($obj);
-			$skins = $this->get_import_skin_list($obj);
-			$elems = $this->get_import_element_list($obj);
+			$skins = ($purchase_code) ? $this->get_import_skin_list($obj) : null;
+			$elems = ($purchase_code) ? $this->get_import_element_list($obj) : null;
 			
 			// check if there is grids inside the file
 			if (!$grids && !$skins && !$elems) {
 				
-				$response = $this->ajax_response(false, __( 'The file doesn\'t contains any data.', 'tg-text-domain'), null);
+				$response = $this->ajax_response(false, __( 'The file doesn\'t contain any data.', 'tg-text-domain'), null);
 				return $response;
 				
 			}
 			
-			$list  = '<br><h3>'.__( 'The uploaded file have the following grid(s) :', 'tg-text-domain').'</h3>';
-			$list .= '<p>'.__( 'Please select one or several grids to import.', 'tg-text-domain').'</p>';
+			$list  = '<br><h3>'.__( 'The uploaded file have the following content :', 'tg-text-domain').'</h3>';
+			$list .= '<p>'.__( 'Please select one or several item(s) to import.', 'tg-text-domain').'</p>';
 			$list .= '<div class="tg-list-item-wrapper" data-multi-select="1">';
 				$list .= '<ul class="tg-list-item-holder">';
 				$list .= $grids;
@@ -831,7 +847,8 @@ class The_Grid_Admin_Ajax {
 			$list .= '</div>';
 			$list .= '<span class="tg-list-item-add-all">'.__( 'Select all', 'tg-text-domain').'&nbsp;&nbsp;/&nbsp;&nbsp;</span>';
 			$list .= '<span class="tg-list-item-clear">'.__( 'Clear selection', 'tg-text-domain').'</span>';
-			$list .= '<br><br><div class="tg-button" data-action="tg_import_items" id="tg_import_items"><i class="tg-info-box-icon dashicons dashicons-download"></i>'. __( 'Import selected grid(s)', 'tg-text-domain' ) .'</div>';
+			$list .= '<br><br><div class="tg-button" data-action="tg_import_items" id="tg_import_items"><i class="tg-info-box-icon dashicons dashicons-download"></i>'. __( 'Import selected item(s)', 'tg-text-domain' ) .'</div>';
+			$list .= '<strong class="tg-import-item-msg-error"></strong>';
 
 			$response = $this->ajax_response(true, json_encode($obj), $list);
 			return $response;
@@ -866,8 +883,10 @@ class The_Grid_Admin_Ajax {
 				$WPML_flag_data = null;
 				
 				if($WPML_exist) {
+					
 					$grid_lang = (!$grid_lang) ? $WPML->WPML_default_lang() : $grid_lang;
 					$WPML_languages = icl_get_languages('skip_missing=0');
+					
 					if (1 < count($WPML_languages)) {
 						foreach ($WPML_languages as $l) {
 							if ($l['language_code'] == $grid_lang) {
@@ -876,6 +895,7 @@ class The_Grid_Admin_Ajax {
 							}
 						}
 					}
+					
 				}
 						
 				$list .= '<li class="tg-list-item" data-type="grid" data-name="'.esc_attr($grid_name).'">';
@@ -992,6 +1012,7 @@ class The_Grid_Admin_Ajax {
 		
 		$post_ID   = $this->ajax_data['post_ID'];
 		$meta_data = json_decode(stripslashes($this->ajax_data['meta_data']), true);
+		
 		// add metadata
 		foreach ($meta_data as $meta => $value) {
 			update_post_meta($post_ID, $meta, $value );
@@ -1012,13 +1033,25 @@ class The_Grid_Admin_Ajax {
 		$envato_token = $this->ajax_data['token'];
 		
 		if ($envato_token) {
-
+				
 			$API = new TG_Envato_API();
 			$API->init_globals($envato_token);
-			$plugins = (array) $API->plugins();
+			$plugins = $API->plugins();
+
+			if (!is_array($plugins)) {
+				
+				// show error message if error from Envato API
+				$defaut_msg = __( 'An unknown API error occurred from Envato', 'tg-text-domain');
+				$error_msg  = !empty($plugins) && is_string($plugins) ? __( 'Envato API error:', 'tg-text-domain').'&nbsp;'.$plugins : $defaut_msg;
+				$response   = $this->ajax_response(false, $error_msg, null);
+				return $response;
+						
+			}
 			
 			foreach ($plugins as $key) {
-				$id     = $key['id'];
+				
+				$id = $key['id'];
+				
 				if ($id == 13306812) {
 					// save Plugin info
 					$plugin_info = $this->get_plugin_info($key);
@@ -1027,6 +1060,7 @@ class The_Grid_Admin_Ajax {
 					update_option('the_grid_envato_api_token', $envato_token);
 					break;
 				}
+				
 			}
 		
 		}
@@ -1078,7 +1112,7 @@ class The_Grid_Admin_Ajax {
 			$plugins = (array) $API->plugins();
 			
 			foreach ($plugins as $key) {
-				$id     = $key['id'];
+				$id = isset($key['id']) ? $key['id'] : null;
 				if ($id == 13306812) {
 					// save Plugin info
 					$plugin_info = $this->get_plugin_info($key);
@@ -1142,8 +1176,7 @@ class The_Grid_Admin_Ajax {
 	*/
 	public function save_skin() {
 		
-		$plugin_info   = get_option('the_grid_plugin_info', '');
-		$purchase_code = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
+		$purchase_code = The_Grid_Base::get_purchase_code();
 		
 		if (!$purchase_code) {
 			
@@ -1156,7 +1189,8 @@ class The_Grid_Admin_Ajax {
 			
 			$generator_class = new The_Grid_Skin_Generator();
 			$skin_data = $generator_class->generate_skin(stripslashes($this->ajax_data['settings']));
-			$response  = The_Grid_Custom_Table::save_item_skin($skin_data, $this->ajax_data['id']);
+			$skin_id   = isset($this->ajax_data['id']) ? $this->ajax_data['id'] : 0;
+			$response  = The_Grid_Custom_Table::save_item_skin($skin_data, $skin_id);
 				
 		} catch (Exception $e) {
 					
@@ -1283,10 +1317,27 @@ class The_Grid_Admin_Ajax {
 	*/
 	public function skin_download_callback() {
 
-		if (isset($_POST['tg_export_skin'])) {
-		
-			$generator_class = new The_Grid_Skin_Generator();
-			$skin_data = $generator_class->generate_skin(stripslashes($_POST['tg_export_skin']));
+		if (isset($_POST['tg_export_skin']) && !empty($_POST['tg_export_skin'])) {
+			
+			$skin_data = null;
+
+			try {
+			
+				$generator_class = new The_Grid_Skin_Generator();
+				$skin_data = $generator_class->generate_skin(stripslashes($_POST['tg_export_skin']));
+					
+			} catch (Exception $e) {
+				
+				global $tg_download_skin_error;
+						
+				// show error message if throw
+				$tg_download_skin_error = '<div class="error notice is-dismissible" style="margin: 0;">';
+            		$tg_download_skin_error .= '<p><strong>'. $e->getMessage() .'</strong></p>';
+        		$tg_download_skin_error .= '</div>';
+				
+				return false;
+						
+			}
 			
 			if ($skin_data && is_array($skin_data)) {
 				
@@ -1297,30 +1348,62 @@ class The_Grid_Admin_Ajax {
 				$archiveName = $skin_slug.'.zip';
 				
 				$upload_dir = wp_upload_dir();
-				$upload_dir = $this->upload_dir['basedir'];
+				$upload_dir = $upload_dir['basedir'];
 				
 				$file = $upload_dir . $archiveName;
+				
+				/*** get google font-face otherwise css @import will not work (not top of file) ***/
+				$font_face = null;
+				if (isset($skin_data['styles']) && !empty($skin_data['styles'])) {
+					
+					$base = new The_Grid_Base();
+					$styles = json_decode($skin_data['styles'], true);
+					
+					if (isset($styles['font']) && $styles['font']) {
+						
+						$font_url = $base->get_google_fonts(json_decode($styles['font'], true));
+						if ($font_url) {
+							
+							$proxy = (is_ssl()) ? 'https:' : 'http:';
+							$response = wp_remote_get($proxy.$font_url);
+							
+							if (!is_wp_error($response)) {
+								
+								$data = wp_remote_retrieve_body($response);
+								if (!is_wp_error($data)) {
+									$font_face .= '/*** Google Fonts ('.$proxy.$font_url.') ***/'. "\r\n";
+									$font_face .= $data. "\r\n";
+									$font_face .= '/*** Skin css ***/'. "\r\n";
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+				ob_start();
 				
 				$zip = new ZipArchive();
 				
 				if($zip->open($file, ZipArchive::CREATE && ZipArchive::OVERWRITE) === true) {
-					$zip->addFromString($skin_slug.'/'.$skin_slug.'.css', rtrim($skin_css));
+					$zip->addFromString($skin_slug.'/'.$skin_slug.'.css', $font_face.rtrim($skin_css));
 					$zip->addFromString($skin_slug.'/'.$skin_slug.'.php', $skin_php);
 					$zip->close();
 				}
 				
-				header("Content-type: application/zip");
-				header("Content-Description: File Transfer");
+				header('Content-Type: application/download');
 				header("Content-Disposition: attachment; filename=$archiveName");	
-				header("Content-Length: ".filesize($file));
 				header("Pragma: no-cache");
 				header("Expires: 0");
 				
-				ob_end_flush();
-				
 				@readfile($file);
 				
-				unlink($file);
+				@unlink($file);
+				
+				ob_end_flush();
 					
 				exit();
 			
@@ -1329,6 +1412,58 @@ class The_Grid_Admin_Ajax {
 		}
 
 	}
+	
+	/**
+	* Get item elements
+	* @since 1.6.0
+	*/
+	public function get_elements() {
+		
+		
+		$base = new The_Grid_Base();
+		$generator = new The_Grid_Skin_Generator();
+
+		// get native elements
+		require TG_PLUGIN_PATH .'includes/item-elements/elements.php';
+		$elements = $base->get_item_element($elements);
+		
+		// store native elements data
+		$native_elements   = (isset($elements['markup'])) ? $elements['markup'] : null;
+		$elements_styles   = (isset($elements['styles'])) ? $elements['styles'] : null;
+		$elements_settings = (isset($elements['settings'])) ? $elements['settings'] : array();
+
+		if (empty($native_elements)) {
+			$native_elements .= '<div class="tg-no-default-element">';
+				$native_elements .=  __( 'Sorry, no default elements was found!', 'tg-text-domain' );
+			$native_elements .=  '</div>';
+		}
+
+		// get custom elements
+		$elements = The_Grid_Custom_Table::get_elements();
+		$elements = $base->get_item_element($elements, true);	
+		
+		// store custom elements data
+		$custom_elements   = (isset($elements['markup'])) ? $elements['markup'] : null;
+		$elements_styles  .= (isset($elements['styles'])) ? $elements['styles'] : $elements_styles;
+		$elements_settings = (isset($elements['settings'])) ? array_merge($elements_settings, $elements['settings']) : $elements_settings;
+			
+		$display = ($custom_elements) ? ' style="display:none"' : null;
+		$custom_elements .= '<div class="tg-no-custom-element"'.$display.'>';
+			$custom_elements .=  __( 'Your don\'t have any custom elements yet!', 'tg-text-domain' );
+			$custom_elements .= '<p>'.__( 'To add a custom element you can save any element as template when editing.', 'tg-text-domain' ).'</p>';
+		$custom_elements .=  '</div>';
+		
+		$data = array(
+			'styles'          => $elements_styles,
+			'settings'        => $elements_settings,
+			'native_elements' => $native_elements,
+			'custom_elements' => $custom_elements	
+		);
+
+		$response = $this->ajax_response(true, '', $data);
+		return $response;
+	
+	}
 
 	/**
 	* Save item element
@@ -1336,10 +1471,10 @@ class The_Grid_Admin_Ajax {
 	*/
 	public function save_element() {
 		
-		$overwrite        = (bool) $this->ajax_data['overwrite'];
-		$element_name     = $this->ajax_data['element_name'];
-		$element_slug     = preg_replace('/ /', '-', strtolower($element_name));
-		$element_slug     = preg_replace('/[^-0-9a-z_-]/', '', $element_slug);
+		$overwrite    = (bool) $this->ajax_data['overwrite'];
+		$element_name = $this->ajax_data['element_name'];
+		$element_slug = sanitize_title($element_name);
+		$element_slug = sanitize_html_class($element_slug);
 		$element_settings = $this->ajax_data['element_settings'];
 
 		if (empty($element_name)) {
@@ -1396,12 +1531,12 @@ class The_Grid_Admin_Ajax {
 			$element_data['id'] = $element_id;
 			$element = $base->get_item_element(array($element_slug => $element_data), true, true);
 			
-			if (is_array($element) && isset($element[$element_slug]['markup']) && isset($element[$element_slug]['styles'])) {
+			if (is_array($element) && isset($element['markup']) && isset($element['styles'])) {
 				
 				$data = array(
 					'slug'     => $element_slug,
-					'markup'   => $element[$element_slug]['markup'],
-					'styles'   => '<style class="tg-element-styles" data-slug="'.$element_slug.'" type="text/css">'.$element[$element_slug]['styles'].'</style>'
+					'markup'   => $element['markup'],
+					'styles'   => $element['styles']
 				);
 				
 			} else {
@@ -1455,10 +1590,64 @@ class The_Grid_Admin_Ajax {
 			
 		}
 
-
 		$response = $this->ajax_response(true, '', null);
 		return $response;
 	
+	}
+	
+	/**
+	* Get flickr Photoset
+	* @since 2.0.5
+	*/
+	public function get_flickr_photosets() {
+		
+		$user_url = $this->ajax_data['user_url'];
+		
+		try {
+			
+			$flickr_class = new The_Grid_Flickr(array(
+				'flickr_user_url' => $user_url,	
+			));
+			
+			$photosets = $flickr_class->get_photoset_id();
+					
+		} catch (Exception $e) {
+			
+			// show error message if throw
+			$response = $this->ajax_response(false, $e->getMessage(), null);
+			return $response;
+			
+		}
+		
+		if (isset($photosets->photosets->photoset) && !empty($photosets->photosets->photoset)) {
+			
+			$photoset_select = '<div class="tomb-select-holder tg_flickr_get_photosets_list" data-noresult="'.__('No results found', 'tomb-text-domain').'" data-clear="" style="width:220px">';
+			
+				$photoset_select .= '<div class="tomb-select-fake">';
+					$photoset_select .= '<span class="tomb-select-value"></span>';
+					$photoset_select .= '<span class="tomb-select-placeholder">'.__( 'Select a Photoset', 'tg-text-domain').'</span>';
+					$photoset_select .= '<span class="tomb-select-arrow"><i></i></span>';
+				$photoset_select .= '</div>';	
+				
+				$photoset_select .= '<select class="tomb-select" name="" data-clear="">';
+				foreach($photosets->photosets->photoset as $photoset){
+					$photoset->photos = !empty($photoset->photos) ? $photoset->photos : 0;
+					$photoset_select .= '<option value="'.$photoset->id.'">'.$photoset->title->_content.' ('.$photoset->photos.' '.__( 'photos', 'tg-text-domain').')</option>';
+				}
+				$photoset_select .= '</select>';
+			
+			$photoset_select .= '</div>';
+			
+			$response = $this->ajax_response(true, '', $photoset_select);
+			return $response;
+		
+		} else {
+		
+			$response = $this->ajax_response(false, __( 'Sorry, no photoset was found', 'tg-text-domain'), null);
+			return $response;
+		
+		}
+		
 	}
 		
 	/**
@@ -1536,22 +1725,22 @@ class The_Grid_Admin_Ajax {
 					'error'   => __( 'Sorry, an error occurs while clearing cache...', 'tg-text-domain')
 				),
 				'tg_export_items'  => array(
-					'before'  => __( 'Exporting grid(s) data', 'tg-text-domain'),
-					'success' => __( 'Grid(s) exported', 'tg-text-domain'),
+					'before'  => __( 'Exporting item(s) data', 'tg-text-domain'),
+					'success' => __( 'Item(s) exported', 'tg-text-domain'),
 					'error'   => __( 'Sorry, an error occurs while exporting...', 'tg-text-domain'),
-					'empty'   => __( 'Please select grid(s)', 'tg-text-domain')
+					'empty'   => __( 'Please select item(s)', 'tg-text-domain')
 				),
 				'tg_read_import_file'  => array(
-					'before'  => __( 'Fetching grid(s) data', 'tg-text-domain'),
-					'success' => __( 'Grid(s) was correctly fetched', 'tg-text-domain'),
+					'before'  => __( 'Fetching item(s) data', 'tg-text-domain'),
+					'success' => __( 'Item(s) was correctly fetched', 'tg-text-domain'),
 					'error'   => __( 'Sorry, an error occurs while reading file...', 'tg-text-domain'),
 					'empty'   => __( 'Please select a file to import.', 'tg-text-domain')
 				),
 				'tg_import_items'  => array(
-					'before'  => __( 'Importing grid(s)', 'tg-text-domain'),
-					'success' => __( 'Grid(s) imported', 'tg-text-domain'),
+					'before'  => __( 'Importing item(s)', 'tg-text-domain'),
+					'success' => __( 'Item(s) imported', 'tg-text-domain'),
 					'error'   => __( 'Sorry, an error occurs while importing...', 'tg-text-domain'),
-					'empty'   => __( 'Please select grid(s) to import.', 'tg-text-domain')
+					'empty'   => __( 'Please select item(s) to import.', 'tg-text-domain')
 				),
 				'tg_grid_preview' => array(
 					'before'  => __( 'Please wait, fetching grid settings...', 'tg-text-domain'),
@@ -1582,47 +1771,58 @@ class The_Grid_Admin_Ajax {
 				'tg_update_plugin' => array(
 					'before'  => __( 'Please wait, updating...', 'tg-text-domain'),
 					'success' => __( 'Plugin updated', 'tg-text-domain'),
-					'error'   => __( 'Sorry, an erorr occurs while updating', 'tg-text-domain')
+					'error'   => __( 'Sorry, an error occurs while updating', 'tg-text-domain')
 				),
 				'tg_import_demo_skins' => array(
 					'before'  => __( 'Please wait, importing skins...', 'tg-text-domain'),
 					'success' => __( 'Demo Skins imported', 'tg-text-domain'),
-					'error'   => __( 'Sorry, an erorr occurs while importing', 'tg-text-domain')
+					'error'   => __( 'Sorry, an error occurs while importing', 'tg-text-domain')
 				),
 				'tg_save_skin' => array(
 					'before'  => __( 'Please wait, saving skin...', 'tg-text-domain'),
 					'success' => __( 'Skin saved', 'tg-text-domain'),
-					'error'   => __( 'Sorry, an erorr occurs while saving', 'tg-text-domain')
+					'error'   => __( 'Sorry, an error occurs while saving', 'tg-text-domain')
 				),
 				'tg_download_skin' => array(
 					'before'  => __( 'Please wait, building skin...', 'tg-text-domain'),
-					'success' => __( 'Skin build', 'tg-text-domain'),
+					'success' => __( 'Skin built', 'tg-text-domain'),
 					'error'   => __( 'Sorry, an error occurs while building the skin', 'tg-text-domain')
 				),
 				'tg_delete_skin' => array(
 					'before'  => __( 'Please wait, deleting skin...', 'tg-text-domain'),
 					'success' => __( 'Skin deleted', 'tg-text-domain'),
 					'message' => __( 'Are you sure you want to delete this skin?', 'tg-text-domain'),
-					'error'   => __( 'Sorry, an erorr occurs while deleting', 'tg-text-domain')
+					'error'   => __( 'Sorry, an error occurs while deleting', 'tg-text-domain')
 				),
 				'tg_clone_skin' => array(
 					'before'  => __( 'Please wait, cloning skin...', 'tg-text-domain'),
 					'success' => __( 'Skin cloned', 'tg-text-domain'),
 					'message' => __( 'Are you sure you want to clone this skin?', 'tg-text-domain'),
-					'error'   => __( 'Sorry, an erorr occurs while cloning', 'tg-text-domain')
+					'error'   => __( 'Sorry, an error occurs while cloning', 'tg-text-domain')
+				),
+				'tg_get_elements' => array(
+					'before'   => sprintf(__( 'Please wait,%s retrieving elements...', 'tg-text-domain'), '<br>'),
+					'success'  => '',
+					'error'    => __( 'Sorry, an error occurs while retrieving elements', 'tg-text-domain')
 				),
 				'tg_save_element' => array(
 					'before'   => __( 'Please wait, saving element...', 'tg-text-domain'),
 					'success'  => __( 'Element saved', 'tg-text-domain'),
-					'message'  => __( 'Please enter your element name', 'tg-text-domain'),
+					'message'  => __( 'Please enter your element name. By entering an existing element name, you will be able to overwrite its styles.', 'tg-text-domain'),
 					'message2' => __( 'This element name already exists. Do you want to overwrite it?', 'tg-text-domain'),
-					'error'    => __( 'Sorry, an erorr occurs while saving', 'tg-text-domain')
+					'error'    => __( 'Sorry, an error occurs while saving', 'tg-text-domain')
 				),
 				'tg_delete_element' => array(
 					'before'   => __( 'Please wait, deleting element...', 'tg-text-domain'),
 					'success'  => __( 'Element deleted', 'tg-text-domain'),
 					'message'  => __( 'Are you sure you want to delete this element?', 'tg-text-domain'),
-					'error'    => __( 'Sorry, an erorr occurs while deleting', 'tg-text-domain')
+					'error'    => __( 'Sorry, an error occurs while deleting', 'tg-text-domain')
+				),
+				'tg_get_flickr_photosets' => array(
+					'before'   => __( 'Please wait, fetching photosets list...', 'tg-text-domain'),
+					'success'  => '',
+					'message'  => '',
+					'error'    => __( 'Sorry, an error occurs while fetching photosets', 'tg-text-domain')
 				)
 			)
 		);
@@ -1651,7 +1851,10 @@ class The_Grid_Admin_Ajax {
 		$screen = get_current_screen();
 		
 		// enqueue only in grid panel
-		if (strpos($screen->id, $this->plugin_slug) !== false) { 
+		if (strpos($screen->id, $this->plugin_slug) !== false) {
+			
+			// retrieve all ajax string to localize
+			$this->localize_strings();
 			// merge nonce to translatable strings
 			$strings = array_merge($this->admin_nonce(), $this->ajax_msg);
 			// register and localize script for ajax methods

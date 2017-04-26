@@ -161,7 +161,7 @@ add_filter('tg_add_item_skin', function($skins){
 				// construct php & css files paths
 				$php  = $path.$slug.'/'.$slug.'.php';
 				$css  = $path.$slug.'/'.$slug.'.css';
-					$skins[$slug] = array(
+				$skins[$slug] = array(
 					'type'   => basename($path),
 					'slug'   => $slug,
 					'filter' => (isset($register_skins[$slug]['filter'])) ? $register_skins[$slug]['filter'] : 'Standard',
@@ -178,15 +178,22 @@ add_filter('tg_add_item_skin', function($skins){
 		
 	}
 	
-	// fetch custom skins
-	$custom_skins = The_Grid_Custom_Table::get_skin_params();
+	if (The_Grid_Base::get_purchase_code()) {
 	
-	// reassigned custom skin name and params
-	foreach ($custom_skins as $custom_skin) {
-		$params = json_decode($custom_skin['params'], true);
-		$skins[$params['slug']] = $params;
+		// fetch custom skins
+		$custom_skins = The_Grid_Custom_Table::get_skin_params();
+	
+		// reassigned custom skin name and params
+		foreach ($custom_skins as $custom_skin) {
+			$params = (isset($custom_skin['params'])) ? json_decode($custom_skin['params'], true) : null;
+			$params['id'] = (isset($custom_skin['id']) && is_array($params)) ? $custom_skin['id'] : null;
+			if ($params && isset($params['slug'])) {
+				$skins[$params['slug']] = $params;
+			}
+		}
+	
 	}
-	
+
 	return $skins;
 
 });

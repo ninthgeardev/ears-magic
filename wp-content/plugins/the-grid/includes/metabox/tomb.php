@@ -24,7 +24,7 @@ if (!class_exists('TOMB_Class')) {
 		* Serialization disabled
 		* @since 1.0.0
 		*/
-		private function __sleep() {
+		public function __sleep() {
 		}
 	
 		/**
@@ -113,7 +113,7 @@ if (!class_exists('TOMB_Class')) {
 		public function enqueue_scripts() {
 			
 			// Main Script
-			wp_register_script('tomb-js', TOMB_URL . 'assets/js/tomb.js', array('jquery','media-upload','thickbox'));
+			wp_register_script('tomb-js', TOMB_URL . 'assets/js/tomb.js', array('jquery', 'media-upload', 'thickbox'), TOMB_VERSION);
 			wp_enqueue_script('tomb-js');
 			
 			// jQuery UI (Wordpress core)
@@ -121,11 +121,13 @@ if (!class_exists('TOMB_Class')) {
 			wp_enqueue_script('jquery-ui-sortable');
 			wp_enqueue_script('jquery-ui-draggable');
 			wp_enqueue_script('jquery-ui-droppable');
+			
 			// Color Picker (Wordpress core)
 			wp_enqueue_script('wp-color-picker');
 			
 			// Styles
 			wp_enqueue_style('tomb-css', TOMB_URL . 'assets/css/tomb.css');
+			
 			// Enqueue styles
 			wp_enqueue_style('tomb-css');
 			wp_enqueue_style('wp-color-picker');

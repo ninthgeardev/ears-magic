@@ -19,7 +19,7 @@ $format = $tg_el->get_item_format();
 $colors = $tg_el->get_colors();
 
 $com_args = array(
-	'icon' => '<i class="tg-icon-chat-4"></i>'
+	'icon' => '<i class="tg-icon-comment-4"></i>'
 );
 
 $media_args = array(

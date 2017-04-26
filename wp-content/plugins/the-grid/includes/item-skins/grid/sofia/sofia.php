@@ -50,9 +50,7 @@ if (!empty($color)) {
 	$gradient = 'style="background:transparent;background: linear-gradient(top, rgba('.$color1.',0) 0%, rgba('.$color2.') 100%);background: -moz-linear-gradient(top, rgba('.$color1.',0) 0%, rgba('.$color2.') 100%);background: -ms-linear-gradient(top, rgba('.$color1.',0) 0%, rgba('.$color2.') 100%);background: -o-linear-gradient( top, rgba('.$color1.',0) 0%, rgba('.$color2.') 100%);background: -webkit-linear-gradient( top, rgba('.$color1.',0) 0%, rgba('.$color2.') 100%);-ms-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00'.$color3.', endColorstr=#ff'.$color3.');filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#00'.$color3.', endColorstr=#ff'.$color3.');"';
 }
 
-$content_wrapper = $tg_el->get_content_wrapper_start($colors['overlay']['class']);
-$content_wrapper = str_replace('tg-item-content-holder light', 'tg-item-content-holder', $content_wrapper);
-$content_wrapper = str_replace('tg-item-content-holder dark', 'tg-item-content-holder', $content_wrapper);
+$content_wrapper = str_replace(array('tg-light', 'tg-dark'), $colors['overlay']['class'], $tg_el->get_content_wrapper_start());
 
 $output = '<div class="tg-panZ">';
 	

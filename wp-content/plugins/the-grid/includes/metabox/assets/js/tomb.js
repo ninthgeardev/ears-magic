@@ -40,8 +40,6 @@ var TOMB_JS = {
 		TOMB_GalleryControl.init();
 		// Run ui Slider Plugin
 		TOMB_RangeSlider.init();
-		// Run required fields
-		TOMB_RequiredField.check();
 		// Run tab open/close
 		TOMB_MetaboxTab.init();
 		// Load colorpicker if field exists
@@ -399,77 +397,148 @@ var TOMB_MetaboxTab = {
 // Requiered field to hide show dependencies
 // ======================================================
 
-var TOMB_RequiredField = {
+var TOMB_requiredFields,
+	TOMB_RequiredField = {
+	
 	event: function() {
-		jQuery(document).on('change', '.tomb-row input, .tomb-row .tomb-select, .tomb-row .tomb-multiselect, .tomb-row .tomb-image-select', function() {
-			TOMB_RequiredField.check(0);
+		
+		TOMB_RequiredField.fetch();
+		TOMB_RequiredField.check();
+
+		jQuery(document).on('change', '.tomb-check-field', function() {
+			TOMB_RequiredField.check();
 		});
+		
 	},
-	check: function(delay) {
-		jQuery('.tomb-row.required,.tomb-section.required').each(function() {
-			var show  = 0,
-				hide  = 0,
-				count = 0,
-				input = null,
-				$this = jQuery(this),
-				data  = $this.data('required').split(';');
-			for (var i = 0; i < data.length; i++) {	
-				var field = data[i].split(',');
-				input = jQuery('[name="'+field[0]+'"]');
-				if (jQuery('[name="'+field[0]+'[]"]select').length) {
-					input = jQuery('[name="'+field[0]+'[]"]').val();
-				} else if (input.is(':radio')) {
-					input = jQuery('.'+field[0]).find('input:checked').val();
-				} else if (jQuery('.'+field[0]).find('input.tomb-checkbox-list').length) {
-					input = jQuery('.'+field[0]).find('input:checked').val();
-				} else if (jQuery('.'+field[0]).find('input.tomb-checkbox').length) {
-					input = String(input.prop('checked'));
-				} else if (jQuery('.'+field[0]).find('input.tomb-slider-input').length) {
-					input = jQuery('.'+field[0]).find('input.tomb-slider-input').val();
-				} else {
-					input = input.val();
-				} 
+	fetch: function() {
+		
+		TOMB_requiredFields = {};
+
+		jQuery.each(jQuery('[data-tomb-required]'), function(index) {
+			
+			var $this     = jQuery(this),
+				condition = $this.data('tomb-required').split(';');
+
+			for (var i = 0; i < condition.length; i++) {
+
+				var field  = condition[i].split(','),
+					$input = jQuery('[name="'+field[0]+'"]');
+					
+				$input = !$input.length ? jQuery('[name="'+field[0]+'[]"]') : $input;
 				
-				var value = field[2];
-				var op    = field[1];
-				count = 1+count;
-				if (op === 'contains') {
-					if (input) {
-						if (input.toString().indexOf(value.toString()) >= 0 ) {
-							show = 1+show;
-						} else {
-							hide = 1+hide;
-						}
-					}
-				} else {
-					if (TOMB_RequiredField.operator(op, input, value)) {
-						show = 1+show;
-					} else {
-						hide = 1+hide;
-					}
-				}
+				TOMB_requiredFields[index] = (!TOMB_requiredFields[index]) ? [] : TOMB_requiredFields[index];
+				
+				TOMB_requiredFields[index].push({
+					'field'    : $this, 
+					'input'    : $input, 
+					'operator' : field[1],
+					'value'    : field[2]
+				})
+
+				$input.addClass('tomb-check-field');
+	
 			}
-			if (show == count) {
-				$this.show(delay);
-			} else {
-				$this.hide(delay);
-			}
-    	});
+			
+		});
+		
 	},
-	operator: function(op, x, y) {
-		var validOps = /^([!=<>]=|<|>)$/,
-			operators = {};
-		if (arguments.length > 1) {
-			return TOMB_RequiredField.operator(op)(x, y);
+	check: function() {
+
+		jQuery.each(TOMB_requiredFields, function(i) {
+			
+			var nb_condition_tot  = TOMB_requiredFields[i].length,
+				nb_condition_true = 0;
+
+			for (var c = 0; c < nb_condition_tot; c++) {
+				
+				var value,
+					condition = TOMB_requiredFields[i][c],
+					$input    = condition['input'];
+				
+				// get the type of field
+				var type = $input.attr('class');
+					type = (type) ? type.split(' ')[0] : type;
+				
+				// depending of the field type fetch right value
+				switch (type) {
+					case 'tomb-radio':
+						value = $input.closest('div').find('input:checked').val();
+						break;
+					case 'tomb-image-select':
+						value = $input.closest('div').find('input:checked').val();
+						break;
+					case 'tomb-checkbox':
+						value = String($input.prop('checked'));
+						break;
+					case 'tomb-checkbox-list':
+						value = $input.closest('div').find('input:checked').val();
+						break;
+					default:
+						value = $input.val();
+						break;
+				}
+				
+				// check if required match with current operator
+				var match_condition = TOMB_RequiredField.operator(
+					condition['operator'],
+					value,
+					condition['value']
+				)
+				
+				// increment condition if match condition
+				nb_condition_true = (match_condition) ? nb_condition_true+1 : nb_condition_true;
+				
+				// if conditions match then show field
+				if (nb_condition_true === nb_condition_tot) {
+					condition['field'].show();
+				} else {
+					condition['field'].hide();
+				}
+
+			}
+		
+		});
+		
+	},
+	operator: function(operator, x, y) {
+			
+		switch (operator) {
+			case 'contains':
+				return (x && y && x.toString().indexOf(y.toString()) >= 0 );
+				break;
+			case '==':
+				return (x == y);
+				break;
+			case '===':
+				return (x === y);
+				break;
+			case '!=':
+				return (x != y);
+				break;
+			case '!==':
+				return (x !== y);
+				break;
+			case '>':
+				return (x > y);
+				break;
+			case '>=':
+				return (x >= y);
+				break;
+			case '<':
+				return (x < y);
+				break;
+			case '<=':
+				return (x <= y);
+				break;
+			default:
+				return (x == y);
+				break;
 		}
-		if (op in operators) {
-			return operators[op];
-		}
-		if (validOps.test(op)) {
-			return operators[op] = new Function("a","b","return a "+op+" b;");
-		}
-		return function(){return false;};
+		
+		return false;
+			
 	}
+	
 };
 
 // ======================================================
@@ -639,6 +708,7 @@ var TOMB_GalleryControl = {
 			var $this = jQuery(this);
 
 			var frame,
+				previous_selection = [],
 				tomb_gallery_list  = $this.closest('.tomb-gallery-container').find('.tomb-gallery-holder'),
 				tomb_gallery_remove= $this.closest('.tomb-gallery-container').find('.tomb-delete-gallery:not(is-init)'),
 				tomb_gallery_ids   = $this.prevAll('input'),
@@ -652,10 +722,6 @@ var TOMB_GalleryControl = {
 					TOMB_GalleryControl.update($this);
 				},
 			});
-			jQuery('.tomb-gallery-item:not(is-init)').draggable({
-				connectToSortable: '.tomb-gallery-holder',
-				revert: 'invalid',
-			});
 			
 			jQuery(document).on('click', '.tomb-gallery-item-remove', function(){
 				var $this = jQuery(this).closest('.tomb-gallery-holder');
@@ -667,54 +733,9 @@ var TOMB_GalleryControl = {
 			jQuery('.tomb-gallery-item').addClass('is-init');
 			$this.add(jQuery(tomb_gallery_remove)).addClass('is-init');
 			
-			if (frame) { return frame; }		
-			
-			frame = wp.media({
-				id: 'tomb-media-popup',
-				title: tomb_window_title,
-				library: {
-					type: 'image'
-				},
-				button: {
-					text: tomb_window_button
-				},
-				multiple: 'toggle',
-			});
-
-			$this.on('click', function(e) {
-				e.preventDefault();
-				frame.open();
-			});
-			
-			frame.on( 'select', function() {
-				var selection = frame.state().get("selection").toJSON();
-				var ids = '';
-				jQuery(tomb_gallery_list).empty();
-				jQuery(selection).each(function() {
-					var id  = this.id;
-					ids += id+',';
-					var img = (this.sizes.thumbnail !== undefined) ? this.sizes.thumbnail.url : this.sizes.full.url;
-					img = 'style="background-image:url(\'' + img + '\')"';
-					jQuery(tomb_gallery_list).append('<li data-id="'+id+'"><div class="tomb-gallery-item-remove">x</div><div class="tomb-gallery-item-image" '+img+'></div></li>'); 
-				});
-				// Remove last comma
-				ids = ids.slice(0,-1);
-				jQuery(tomb_gallery_ids).val(ids);
-			});
-			
-			frame.on( 'open', function() {
-				var ids = (tomb_gallery_ids.val()) ? tomb_gallery_ids.val().split(',') : null;
-				var selection = frame.state().get('selection');
-				selection.reset();
-				// Add to selection
-				if (ids) {
-					jQuery.each(ids, function(index, value) {
-						var attachment = wp.media.attachment(value);
-						attachment.fetch();
-						selection.add(attachment ? [attachment] : []);
-					});
-				}
-			});
+			if (frame) {
+				return frame;
+			}
 			
 			jQuery(tomb_gallery_remove).on('click', function(e) {
 				e.preventDefault();
@@ -726,22 +747,78 @@ var TOMB_GalleryControl = {
 					$this.find('input').val('');
 				}
 			});
+			
+			frame = wp.media({
+				frame    : 'select',
+				id       : 'tomb-media-popup',
+				title    : tomb_window_title,
+				library  : { type: 'image' },
+				button   : { text: tomb_window_button },
+				multiple : 'toggle',
+			});
 
+			frame.on('select', function() {
+
+				var ids = [], imageHTML = '',
+					selection = frame.state().get("selection").toJSON();
+					
+				selection.forEach(function(attachment) {
+					ids.push(attachment.id);
+					if (attachment.sizes) {
+						img = (attachment.sizes.thumbnail !== undefined) ? attachment.sizes.thumbnail.url : attachment.sizes.full.url;
+					} else {
+						img = decodeURIComponent(previous_selection[attachment.id]);
+					}
+					imageHTML += '<li data-id="'+attachment.id+'">';
+					imageHTML += '<div class="tomb-gallery-item-remove">x</div>';
+					imageHTML += '<div class="tomb-gallery-item-image" style="background-image:url('+img+')"></div>';
+					imageHTML += '</li>';
+				});
+				
+				ids = (ids) ? ids.join(',') : '';
+				jQuery(tomb_gallery_list).html(imageHTML); 
+				jQuery(tomb_gallery_ids).val(ids);
+				
+			});
+				
+			frame.on('open', function() {
+				
+				var ids = (tomb_gallery_ids.val()) ? tomb_gallery_ids.val() : null,
+					selection = frame.state().get('selection'),
+					prev_img;
+				
+				if (ids) {
+					idsArray = ids.split(',');
+					idsArray.forEach(function(id) {
+						attachment = wp.media.attachment(id);
+						attachment.fetch();
+						selection.add(attachment ? [attachment]  : []);
+						prev_img = jQuery(tomb_gallery_list).find('[data-id="'+id+'"]').find('.tomb-gallery-item-image').css('background-image');
+						prev_img = prev_img.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+						previous_selection[id] = encodeURIComponent(prev_img);
+					});
+				}
+				
+			});
+	
+			$this.on('click', function(e) {	
+				frame.open();
+			});
+			
 		});
 		
     },
 	
 	update: function(el) {
 		// update gallery ids on drag and remove
-		var ids = '';
-		var $holder = el;
-		var $input  = el.closest('.tomb-row').find('input');
-		$holder.find('li').each(function() {
-			ids += jQuery(this).data('id')+',';
+		var ids = [];
+		el.find('li').each(function() {
+			ids.push(jQuery(this).data('id'));
 		});
-		ids = ids.slice(0,-1);
-		$input.val(ids);
-	}	
+		ids = (ids) ? ids.join(',') : '';
+		el.closest('.tomb-row').find('input').val(ids);
+	}
+		
 };
 
 // ======================================================
@@ -939,7 +1016,7 @@ jQuery(document).ready(function() {
 // http://codereview.stackexchange.com/q/13338
 // Was designed to be used with the Sizzle selector engine.
 function TOMB_hasScroll(el, index, match) {
-	
+
     var $el = jQuery(el),
         sX = $el.css('overflow-x'),
         sY = $el.css('overflow-y'),
@@ -947,6 +1024,10 @@ function TOMB_hasScroll(el, index, match) {
         visible = 'visible',
         scroll = 'scroll',
         axis = match[3];
+		
+	if ($el.is('body')) {
+		return false;
+	}
 
     if (!axis) {
         if (sX === sY && (sY === hidden || sY === visible)) {

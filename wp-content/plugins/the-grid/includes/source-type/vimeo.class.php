@@ -11,25 +11,119 @@ if (!defined('ABSPATH')) {
 }
 
 class The_Grid_Vimeo {
-
+	
+	/**
+	* Vimeo API Key
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
 	private $api_key;
+	
+	/**
+	* Vimeo transient
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
 	private $transient_sec;
+	
+	/**
+	* Vimeo error
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
 	private $error;
 	
+	/**
+	* Grid data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $grid_data;
 
+	/**
+	* Vimeo count
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
+	private $count;
+	
+	/**
+	* Vimeo media data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
+	private $media = array();
+	
+	/**
+	* Vimeo last media data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
+	private $last_media = array();
+	
+	/**
+	* Vimeo offset
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
+	private $offset = null;
+	
+	/**
+	* Vimeo item nb loaded
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
+	private $loaded;
+	
+	/**
+	* Vimeo item nb to load
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
+	private $to_load;
+	
+	/**
+	* Vimeo paramters
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string/array
+	*/
 	private $sort;
 	private $order;
 	private $source_type;
 	private $source_id;
-	
-	private $count;
-	private $media = array();
-	private $last_media = array();
-	private $offset = null;
-	
-	private $loaded;
-	private $to_load;
 
 	/**
 	* Initialize the class and set its properties.
@@ -49,7 +143,7 @@ class The_Grid_Vimeo {
 	*/
 	public function get_API_key(){
 		
-		$this->api_key = get_option('the_grid_vimeo_api_key', '');
+		$this->api_key = trim(get_option('the_grid_vimeo_api_key', ''));
 		
 		if (empty($this->api_key)) {
 			$error_msg  = __( 'You didn\'t authorize The Grid to', 'tg-text-domain' );
@@ -140,6 +234,21 @@ class The_Grid_Vimeo {
 		$this->last_media['count']  = (isset($_POST['grid_ajax']) && !empty($_POST['grid_ajax'])) ? (int) $_POST['grid_ajax']['count']  : 0;
 		$this->last_media['onload'] = (isset($_POST['grid_ajax']) && !empty($_POST['grid_ajax'])) ? (int) $_POST['grid_ajax']['onload'] : $this->count;
 		$this->last_media['total']  = (isset($_POST['grid_ajax']) && !empty($_POST['grid_ajax'])) ? (int) $_POST['grid_ajax']['total']  : 9999;
+		
+		// if no more item to load
+		if ($this->last_media['count'] > 0 && $this->last_media['count'] >= $this->last_media['total']) {
+			return '';
+		}
+		
+		// adjust the number of media to load
+		if ($this->last_media['count'] > 0) {
+			
+			$max_media = $this->last_media['total'] - $this->last_media['count'];
+			if ($max_media < $this->count) {
+				$this->count = $max_media;
+			}
+			
+		}
 
 		// retrieve Instagram data
 		$media = $this->get_media();
@@ -210,11 +319,11 @@ class The_Grid_Vimeo {
 		$this->to_load = $this->last_media['count'] + $this->count;
 		$this->last_media['page']  = ($this->to_load >= $this->loaded && isset($call->page)) ? $call->page+1 : $this->last_media['page'];
 		$this->last_media['total'] = (isset($call->total)) ? $call->total : -1;
-
+		
 	}
 	
 	/**
-	* Youtube API call
+	* Vimeo API call
 	* @since 1.0.0
 	*/
 	public function _makeCall($type, $id, $page = null) {
@@ -265,7 +374,7 @@ class The_Grid_Vimeo {
 	}
 	
 	/**
-	* Convert Youtube duration format
+	* Convert Vimeo duration format
 	* @since 1.0.0
 	*/
 	public function covtime($duration){
@@ -276,7 +385,22 @@ class The_Grid_Vimeo {
 			return gmdate('i:s', $duration);
 		}
 		
-	}  
+	} 
+	
+	/**
+	* Get excerpt
+	* @since 2.0.0
+	*/
+	public function get_excerpt($data) {
+		
+		if (isset($data->description) && !empty($data->description)) {
+			
+			$attributes = ' target="_blank" class="tg-item-social-link"'; 
+			return preg_replace('/(https?:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/i', '<a href="$1"'.$attributes.'>$1</a>', $data->description);
+
+		}
+	
+	}
 	
 	/**
 	* Build data array for the grid
@@ -307,7 +431,7 @@ class The_Grid_Vimeo {
 					'url'             => (isset($data->link)) ? $data->link : null,
 					'url_target'      => '_blank',
 					'title'           => (isset($data->name)) ? $data->name : null,
-					'excerpt'         => (isset($data->description)) ? $data->description : null,
+					'excerpt'         => (isset($data->description)) ? $this->get_excerpt($data) : null,
 					'terms'           => null,
 					'author'          => array(
 						'ID'     => '',

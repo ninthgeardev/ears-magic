@@ -99,7 +99,9 @@ if ( ! class_exists( 'TOMB_Gallery_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
+			
 			return $new;
+			
 		}
 
 	}

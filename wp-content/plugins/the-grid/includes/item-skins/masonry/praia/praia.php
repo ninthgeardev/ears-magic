@@ -17,6 +17,7 @@ $tg_el = The_Grid_Elements();
 
 $format = $tg_el->get_item_format();
 $colors = $tg_el->get_colors();
+$image  = $tg_el->get_attachment_url();
 
 $excerpt_args = array(
 	'length' => 200
@@ -61,9 +62,7 @@ if (!empty($color)) {
 
 if ($format == 'quote' || $format == 'link') {
 	
-	$bg_img = $tg_el->get_attachement_url();
-
-	$output  = ($bg_img) ? '<div class="tg-item-image-holder"><div class="tg-item-image" style="background-image: url('.esc_url($bg_img).')"></div></div>' : null;
+	$output  = ($image) ? '<div class="tg-item-image-holder"><div class="tg-item-image" style="background-image: url('.esc_url($image).')"></div></div>' : null;
 	$output .= $tg_el->get_content_wrapper_start('tg-panZ');
 		$output .= '<i class="tg-'.$format.'-icon tg-icon-'.$format.'" style="color:'.$colors['content']['title'].'"></i>';
 		$output .= ($format == 'quote') ? $tg_el->get_the_quote_format() : $tg_el->get_the_link_format();
@@ -75,16 +74,10 @@ if ($format == 'quote' || $format == 'link') {
 } else {
 	
 	$media_content = $tg_el->get_media();
-	$media_button  = $tg_el->get_media_button($media_args);
-	$link_button   = $tg_el->get_link_button($link_arg);
-	$author        = $tg_el->get_the_author($author_args);
-	
-	$content_class = ($media_button) ? $colors['overlay']['class'] : $colors['content']['class'].' no-image';
-	$author_color  = ($media_button) ? $colors['overlay']['title'] : $colors['content']['title'];
 
-	$content_wrapper = $tg_el->get_content_wrapper_start($content_class);
-	$content_wrapper = str_replace('tg-item-content-holder light', 'tg-item-content-holder', $content_wrapper);
-	$content_wrapper = str_replace('tg-item-content-holder dark', 'tg-item-content-holder', $content_wrapper);
+	$content_class   = ($image || in_array($format, array('gallery', 'video'))) ? $colors['overlay']['class'] : $colors['content']['class'].' no-image';
+	$author_color    = ($image || in_array($format, array('gallery', 'video'))) ? $colors['overlay']['title'] : $colors['content']['title'];
+	$content_wrapper = str_replace(array('tg-light', 'tg-dark'), $content_class, $tg_el->get_content_wrapper_start());
 
 	$output = '<div class="tg-panZ">';
 	
@@ -92,21 +85,24 @@ if ($format == 'quote' || $format == 'link') {
 			$output .= $tg_el->get_media_wrapper_start();
 				$output .= $media_content;
 			$output .= $tg_el->get_media_wrapper_end();
-			$output .= ($media_button) ? '<div class="tg-item-overlay" '.$gradient.'></div>' : null;
 		}
 		
+		$output .= ($image || in_array($format, array('gallery', 'video'))) ? '<div class="tg-item-overlay" '.$gradient.'></div>' : null;
 		$output .= $content_wrapper;
 			$output .= '<div class="tg-item-content-inner">';
 				$output .= $tg_el->get_the_title();
-				$output .= (!$media_content) ? $tg_el->get_the_excerpt($excerpt_args) : null;
+				$output .= (!$image && !in_array($format, array('gallery', 'video'))) ? $tg_el->get_the_excerpt($excerpt_args) : null;
 				$output .= $tg_el->get_the_date();
-				$output .= preg_replace('/(<a\b[^><]*)>/i', '$1 style="color:'.$author_color.'">', $author);
-				$output .= ($media_content && in_array($format, array('video', 'audio'))) ? $media_button : null;
-				$output .= ($media_content && $link_button && !in_array($format, array('video', 'audio'))) ? $link_button : null;
+				$output .= preg_replace('/(<a\b[^><]*)>/i', '$1 style="color:'.$author_color.'">', $tg_el->get_the_author($author_args));
+				if ($media_content) {
+					$output .= (in_array($format, array('video', 'audio')) && $image) ? $tg_el->get_media_button($media_args) : null;
+					$output .= (!in_array($format, array('video', 'audio'))) ? $tg_el->get_link_button($link_arg) : null;
+				}
 			$output .= '</div>';
 		$output .= $tg_el->get_content_wrapper_end();
-		
+			
 	$output .= '</div>';
 	
 	return $output;
+	
 }

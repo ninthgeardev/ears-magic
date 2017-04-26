@@ -30,7 +30,7 @@ if ($tg_grid_data['source_type'] == 'post_type') {
 		$ajax_button  = '<!-- The Grid Ajax Button -->';
 		$ajax_button .= '<div class="tg-ajax-button-holder">';
 			$ajax_button .= '<div class="tg-ajax-button tg-nav-color tg-nav-border tg-nav-font" data-item-tt="'.esc_attr($item_total).'"'.$attribute.'>';
-				$ajax_button .= '<span class="tg-nav-color">'.esc_attr($button_text).esc_attr($button_count).'</span>';
+				$ajax_button .= '<span class="tg-nav-color">'.esc_html($button_text.$button_count).'</span>';
 			$ajax_button .= '</div>';
 		$ajax_button .= '</div>';
 		

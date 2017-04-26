@@ -37,6 +37,7 @@ jQuery.noConflict();
 			});
 			
 			return false;
+			
 		});
 		
 	});

@@ -32,7 +32,7 @@ class The_Grid_Base {
 		$post_args = array(
 			'post_type'      => 'the_grid',
 			'post_status'    => 'any',
-			'posts_per_page' => -1,
+			'posts_per_page' => -1
 		);
 		
 		$grids = get_posts($post_args); 
@@ -74,8 +74,8 @@ class The_Grid_Base {
 		
 		$users = get_users(array(
 			'orderby' => 'display_name',
-			'order' => 'DESC',
-			'fields' => array('ID', 'user_nicename'),
+			'order'   => 'DESC',
+			'fields'  => array('ID', 'user_nicename'),
 		));
 		
 		if ($users) {
@@ -85,103 +85,6 @@ class The_Grid_Base {
 			}
 			return $array;
 		}
-		
-	}
-
-	/**
-	* Get post types & categories.
-	* @since 1.0.0
-	*/
-	public static function get_post_types_and_categories(){	
-	
-		$post_types = self::get_all_categories(true);
-		$counter = 0; // prevent to override already set disable option / name category
-		$post_types_taxonomies = array();
-		
-		foreach($post_types as $post_type => $categories) {
-			
-			$taxonomies = array();
-			foreach($categories as $taxonomy) {	
-				$counter++;
-				$category_count = count($taxonomy['cats']);
-				$taxonomy_name  = $taxonomy['name'];
-				$taxonomy_title = $taxonomy['title'];
-				$taxonomies['post_type:'.$post_type.', taxonomy:'.$taxonomy_name.', option: option_disabled'.$counter] = $taxonomy_title.' ('.$category_count.')';
-				foreach($taxonomy['cats'] as $category_ID => $category) {
-					$parent = (isset($category['parent']) && !empty($category['parent'])) ? ',parent:'.$category['parent'] : null;
-					$taxonomies['post_type:'.$post_type.', taxonomy:'.$taxonomy_name.', id:'.$category['id'].$parent] = $category['name'];
-				}	
-			}
-			
-			$post_types_taxonomies[$post_type] = $taxonomies;
-			
-		}
-		
-		return($post_types_taxonomies);
-		
-	}
-	
-	/**
-	* Get post types with associated categories
-	* @since 1.0.0
-	*/
-	public static function get_all_categories() {
-		
-		$post_types = self::get_all_taxonomies();
-		$post_types_categories = array();
-		
-		foreach($post_types as $name => $taxonomy_array){
-			$taxonomies = array();
-			foreach($taxonomy_array as $taxonomy_name => $taxonomy_title){
-				$categories = self::get_associated_categories($taxonomy_name);
-				if(!empty($categories)) {
-					$taxonomies[] = array(
-						"name"  => $taxonomy_name,
-						"title" => $taxonomy_title,
-						"cats"  => $categories
-					);
-				}
-			}
-			$post_types_categories[$name] = $taxonomies;
-		}
-		
-		return($post_types_categories);
-		
-	}
-	
-	/**
-	* Get post types array with taxomonies
-	* @since 1.0.0
-	*/
-	public static function get_all_taxonomies() {
-		
-		$post_types = self::get_all_post_types();
-		foreach($post_types as $post_type => $title){
-			$taxomonies = self::get_taxomonies_post_type($post_type);
-			$post_types[$post_type] = $taxomonies;
-		}
-		
-		return($post_types);
-		
-	}
-	
-	/**
-	* Get post type with taxomonies names
-	* @since 1.0.0
-	*/
-	public static function get_taxomonies_post_type($post_types) {
-		
-		$taxonomies = get_object_taxonomies(
-			array('post_type' => $post_types),
-			'objects'
-		);
-		
-		$names = array();
-		foreach($taxonomies as $key => $values) {
-			$names[$values->name] = $values->labels->name;
-		}
-		
-		return($names);
 		
 	}
 	
@@ -218,122 +121,139 @@ class The_Grid_Base {
 		
 		
 		return($post_types);
-	}
-	
-	/**
-	* Get post categories list with associated id & title
-	* @since 1.0.0
-	*/
-	public static function get_associated_categories($taxonomy = 'category') {
-		
-		if(strpos($taxonomy,',') !== false){
-			$taxonomies = explode(',', $taxonomy);
-			$categories = array();
-			foreach($taxonomies as $taxonomy) {
-				$associated_categories = self::get_associated_categories($taxonomy);
-				$categories = array_merge($categories,$associated_categories);
-			}
-			return($categories);
-		}
-		
-		$args = array(
-			'taxonomy'     => $taxonomy,
-			'show_count'   => 0,
-			'hide_empty'   => 0,
-			'order'        => 'ASC',
-			'orderby'      =>'name',
-			'hierarchical' => 1
-		);
-		
-		$cats = get_categories($args);
-		$parent_cats = array();	
-		$child_cats  = array();
-		
-		foreach($cats as $cat){
-			$term = array(
-				'id'     => $cat->cat_ID,
-				'parent' => $cat->category_parent,
-				'name'   => $cat->name.' ('.$cat->count.')'
-			);
-			if ($term['parent']) {
-				$child_cats[] = $term;
-			} else {
-				$parent_cats[] = $term;
-			}
-		}
-		
-		$categories = self::format_child_categories($parent_cats, $child_cats);
-		return $categories;
 		
 	}
 	
 	/**
-	* Organize parent child terms order
-	* @since 1.5.0
+	* Get all taxonomy terms
+	* @since 2.1.0
+	* @modified 2.1.2
 	*/
-	public static function format_child_categories($parent_cats, $child_cats, $depth = 1) {
+	public static function get_all_terms() {
 		
-		$new_cats = array();
+		// store all terms (from all taxonomies and post types)
+		$terms_list = array();
+		// store each taxonomy terms list
+		$post_terms = array();
+		// get all post types
+		$post_types = self::get_all_post_types();	
 		
-		if (isset($parent_cats) && !empty($parent_cats)) {
+		foreach ($post_types as $post_type => $name) {
 			
-			foreach($parent_cats as $parent_key => $data){
+			// get taxonomies from post type
+			$taxonomies = get_object_taxonomies($post_type, 'objects');
+			
+			// if there are some taxonomies
+			if ($taxonomies) {
 				
-				$parent_id = $data['id'];
-				$new_cats[] = $data;	
-				unset($parent_cats[$parent_key]);
+				$taxonomies_slug = array();
 				
-				if (isset($child_cats) && !empty($child_cats)) {
+				// for each taxonomy slug
+				foreach ($taxonomies as $taxonomy => $settings) {
 					
-					foreach($child_cats as $child_key => $child_data){
+					// if this taxonomy was already proceeded
+					if (isset($post_terms[$taxonomy])) {
+						// store terms array from previous get_terms result
+						$terms_list[$post_type]['taxonomies'][$taxonomy] = $post_terms[$taxonomy];
 						
-						if ($child_data['parent'] == $parent_id && !empty($child_data['parent'])) {
-							$child_data['name'] = str_repeat('&#8212; ',$depth).$child_data['name'];
-							$new_cats[] = $child_data;
-							unset($child_cats[$child_key]);
-							$new_cats = array_merge($new_cats,self::format_child_categories(array($child_data), $child_cats, $depth+1));
-						}
-						
+					} else {
+						// start building post type taxonomy data
+						$taxonomies_slug[] = $taxonomy;
+						$terms_list[$post_type]['taxonomies'][$taxonomy] = array(
+							'name'  => $taxonomy,
+							'title' => isset($settings->label) ? $settings->label : $taxonomy
+						);
+					
 					}
 					
 				}
 				
+				if ($taxonomies_slug) {
+					
+					// get all terms from current taxonomy
+					$terms = get_terms($taxonomies_slug, array('hide_empty' => false, 'pad_counts' => false));
+					
+					if ($terms) {
+					
+						$terms_list[$post_type]['name']  = $name;
+						$terms_list[$post_type]['count'] = count($taxonomies);
+						
+						foreach ($terms as $term) {
+							
+							if (!isset($terms_list[$post_type]['taxonomies'][$term->taxonomy]['terms'][$term->slug])) {
+								
+								$terms_list[$post_type]['taxonomies'][$term->taxonomy]['terms'][$term->slug] = array(
+									'id'       => (int) $term->term_id,
+									'slug'     => (string) $term->slug,
+									'name'     => (string) $term->name,
+									'title'    => (string) $term->name . ' ('.sprintf(_n( '%s post', '%s posts', ($term->count ? $term->count : 1), 'tg-text-domain' ), $term->count).')',
+									'taxonomy' => (string) $term->taxonomy,
+									'count'    => (int) $term->count,
+									'parent'   => (int) $term->parent,
+								);
+								
+							}
+							
+						}
+						
+						foreach ($taxonomies as $taxonomy => $settings) {
+							
+							// if some terms was added
+							if (isset($terms_list[$post_type]['taxonomies'][$taxonomy]['terms'])) {
+								// sort them hierarchically
+								$terms_list[$post_type]['taxonomies'][$taxonomy]['terms'] = self::sort_terms_hierarchically($terms_list[$post_type]['taxonomies'][$taxonomy]['terms']);
+							}
+							
+							// set main data for current taxonomy
+							$count = isset($terms_list[$post_type]['taxonomies'][$taxonomy]['terms']) ? count($terms_list[$post_type]['taxonomies'][$taxonomy]['terms']) : 0;
+							$terms = sprintf(_n( '%s term', '%s terms', ($count ? $count : 1), 'tg-text-domain' ), $count);
+							$terms_list[$post_type]['taxonomies'][$taxonomy]['count'] = $count;
+							$terms_list[$post_type]['taxonomies'][$taxonomy]['title'] = $terms_list[$post_type]['taxonomies'][$taxonomy]['title'].' ('.$terms.')';
+							
+							// store current taxonomy post (for later, prevent multiple calls to get_terms())
+							$post_terms[$taxonomy] = $terms_list[$post_type]['taxonomies'][$taxonomy];
+							
+						}
+					
+					}
+				
+				}
+				
 			}
 			
-		}
+		}		
 		
-		return $new_cats;
-		
+		// prepare array to json (with escape)
+		return htmlspecialchars(json_encode($terms_list), ENT_QUOTES, 'UTF-8');
+	
 	}
 	
 	/**
-	* Format cat name and ID array
-	* @since 1.0.0
+	* Get all taxonomy terms
+	* @since 2.1.0
 	*/
-	public static function get_formated_categories() {
-		
-		$cat = array();
-		$post_types_and_categories = self::get_post_types_and_categories();	
-		
-		if(!empty($post_types_and_categories)){
+	public static function sort_terms_hierarchically($array, $id = 0, $level = 0) {
+
+		$orderedArray = array();
+	
+		foreach($array as $k=>$arr) {
 			
-			foreach($post_types_and_categories as $post_type => $ID) {
+			if($arr['parent'] == $id) {
 				
-				$post_type_info   = get_post_type_object($post_type);
-				$post_type_name   = $post_type_info->labels->name;
-				$post_type_single = $post_type_info->name;
-				$post_types[$post_type_single] = $post_type_name;
+				$arr['title'] = str_repeat('&#8212; ', $level) . ' ' . $arr['title'];
+				$orderedArray[] = $arr;
+				$children = self::sort_terms_hierarchically($array, $arr['id'], $level + 1);
 				
-				foreach($ID as $id => $name) {
-					$cat[$id] = $name;
+				foreach($children as $child) {
+					$orderedArray[] = $child;
 				}
 				
 			}
 			
 		}
-		
-		return $cat;
-		
+	
+		return $orderedArray;
+
 	}
 	
 	/**
@@ -474,7 +394,9 @@ class The_Grid_Base {
 			}
 			
 		}
+		
 		return $sorting;
+		
 	}
 	
 	/**
@@ -502,14 +424,14 @@ class The_Grid_Base {
 	* Delete specific transient name
 	* @since 1.0.0
 	*/
-	public function delete_transient($grid_name) {
+	public static function delete_transient($grid_name) {
 		
 		global $wpdb;
 		
 		// transient SQL
 		$sql = "SELECT `option_name` AS `name`, `option_value` AS `value`
 				FROM  $wpdb->options
-				WHERE `option_name` LIKE '%transient_%'
+				WHERE `option_name` LIKE '%_transient_timeout_%'
 				ORDER BY `option_name`";
 				
 		$results = $wpdb->get_results($sql);
@@ -517,9 +439,9 @@ class The_Grid_Base {
 		
 		// loop through each transient option
 		foreach ($results as $result) {
-			// if transient option name matched then delete it
+			// if transient option name matched then delete it (only if can expire)
 			if (strpos($result->name, $grid_name)) {
-				$name = str_replace('_transient_','',$result->name);
+				$name = str_replace('_transient_timeout_','',$result->name);
 				delete_transient($name);
 			}
 		}	
@@ -679,9 +601,9 @@ class The_Grid_Base {
 		}
 
 		$whole = floor($n_format);
-		$float = ($n_format - $whole > 0) ? str_replace('0.','',$n_format - $whole) : '';
-		$float = (isset($float[0]) && $float[0] > 0) ? '.'.$float[0] : '';
-		$n_format = (int)$n_format.$float.$shorten;
+		$float = (int) $n_format - (int) $whole > 0 ? str_replace('0.', '', $n_format - $whole) : '';
+		$float = isset($float[0]) && $float[0] > 0 ? '.'.$float[0] : '';
+		$n_format = (int) $n_format.$float.$shorten;
 		
 		
     	return $n_format;
@@ -699,15 +621,15 @@ class The_Grid_Base {
 			'm' => 0x100000,
 			'g' => 0x40000000
 		);
-	
-		$setting = (string)$setting;
+	   
+		$setting = (string) $setting;
 		
 		if (!($len = strlen($setting))) {
 			return null;
 		}
 		
 		$last     = strtolower($setting[$len - 1]);
-		$numeric  = 0 + $setting;
+		$numeric  = 0 + (int) $setting;
 		$numeric *= isset($short[$last]) ? $short[$last] : 1;
 		
 		return $numeric;
@@ -747,16 +669,336 @@ class The_Grid_Base {
         }
 
         return $value;
+		
     }
+	
+	/**
+	* Encode into base58
+	* @since 2.0.5
+	*/
+	public static function base58_encode($num){
+		
+		$alphabet = '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
+		$base_count = strlen($alphabet);
+		$encoded = '';
+	
+		while ($num >= $base_count) {
+			$div = $num / $base_count;
+			$mod = ($num - ($base_count * intval($div)));
+			$encoded = $alphabet[$mod] . $encoded;
+			$num = intval($div);
+		}
+
+		if ($num) {
+			$encoded = $alphabet[$num] . $encoded;
+		}
+
+		return $encoded;
+
+	}
+	
+	/**
+	* Get css direction values (top, right, bottom, left)
+	* @since 1.7.0
+	*/
+	function get_css_directions($val1, $val2, $val3, $val4, $unit, $imp, $arr, $nb = 4, $shorthand = true){
+		
+		if (isset($arr) && $arr) {
+		
+			$imp  = isset($arr[$imp]) && $arr[$imp] ? ' !important' : null;
+			$unit = isset($arr[$unit]) && !empty($arr[$unit]) ? $arr[$unit] : 'px';
+			$val1 = isset($arr[$val1]) ? $arr[$val1] : null;
+			$val2 = isset($arr[$val2]) ? $arr[$val2] : null;
+			$val3 = isset($arr[$val3]) ? $arr[$val3] : null;
+			$val4 = isset($arr[$val4]) ? $arr[$val4] : null;
+			
+			// is there is at least one numeric value
+			if (is_numeric($val1) || is_numeric($val2) ||is_numeric($val3) || is_numeric($val4)) {
+				
+				$val1 = $val1 ? $val1.$unit : 0;
+				$val2 = $val2 ? $val2.$unit : 0;
+				$val3 = $val3 ? $val3.$unit : 0;
+				$val4 = $val4 ? $val4.$unit : 0;
+				
+				if (!$shorthand) {
+					return ($nb == 4) ? (string) $val1.' '.$val2.' '.$val3.' '.$val4.$imp : (string) $val1.' '.$val2.' '.$val3.$imp;
+				} else {
+					return ($nb == 4) ? (string) $this->shorthand($val1.' '.$val2.' '.$val3.' '.$val4).$imp : (string) $this->shorthand($val1.' '.$val2.' '.$val3).$imp;
+				}
+				
+			}
+		
+		}
+   
+    }
+	
+	/**
+	* Var export to prettify array
+	* @since 1.0.0
+	*/
+	public static function var_export_min($var, $return = false) {
+		
+		if (is_array($var)) {
+			
+			$toImplode = array();
+			
+			foreach ($var as $key => $value) {
+				$toImplode[] = var_export($key, true).' => '.self::var_export_min($value, true);
+			}
+			
+			$code = 'array('.implode(', ', $toImplode).')';
+			
+			if ($return) {
+				return $code;
+			} else {
+				echo $code;
+			}
+			
+		} else {
+			
+			return str_ireplace('NULL', "''", var_export($var, $return));
+			
+		}
+		
+	}
+	
+	/**
+	* Parse and check for css error
+	* @since 1.0.0
+	*/
+	public static function parse_css($css_str = '') {
+		
+		if (!empty($css_str)) {
+			
+			$css      = array();
+			$aCSSItem = array();
+			$cssstr   = $css_str;
+					
+			// Strip all line endings and both single and multiline comments
+			$css_str   = preg_replace('/\/\*.+?\*\//s', '', $css_str);
+			$css_class = explode('}', $css_str);
+			
+			while (list($key, $val) = each($css_class)) {
+				
+				$aCSSObj = explode('{', $val);
+				$cSel = strtolower(trim($aCSSObj[0]));
+				
+				if($cSel){
+					
+					$cssprops[] = $cSel;
+					$a = explode(';', $aCSSObj[1]);
+					
+					while (list($key, $val0) = each($a)){
+						
+						if(trim($val0)){
+								  
+							$aCSSSub = explode(':', $val0);
+							$cAtt = strtolower(trim($aCSSSub[0]));
+							
+							if(isset($aCSSSub[1])){
+								$aCSSItem[$cAtt] = trim($aCSSSub[1]);
+							} 
+							
+						}
+						
+					}
+					
+					if (isset($css[$cSel]) && $css[$cSel]){
+						$aCSSItem = array_merge($css[$cSel], $aCSSItem);
+					}
+										
+					$css[$cSel] = $aCSSItem;
+					$aCSSItem = array();
+					
+				}
+				
+				if(strstr($cSel, ',')){
+					
+					$aTags = explode(',', $cSel);
+					foreach($aTags as $key0 => $value0){
+						$css[$value0] = $css[$cSel];
+					}
+					unset($css[$cSel]);
+					
+				}	
+							
+			} 
+			
+			$cssstr = null;	
+				
+			foreach ($css as $key0 => $value0) {
+				
+				$trimmed = trim($key0);
+				
+				if (isset($css[$key0]) && !empty($css[$key0])) {
+					
+					$cssstr .= $trimmed.' {'. "\n";
+					foreach ($css[$key0] as $key1 => $value1) {
+						$cssstr .= "\t". $key1 .': '. $value1 .";\n";
+					}
+					$cssstr .= "}\n";
+					
+				}
+				
+			}
+			
+			return $cssstr;
+		
+		}
+		
+	}
+	
+	/**
+	* Shorten content while preserving HTML tag
+	* @since: 2.0.8
+	*/
+	public function truncate_html($text, $length = 100, $suffix = '', $exact = false) {
+		
+		// if the plain text is shorter than the maximum length, return the whole text
+		if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
+			return $text;
+		}
+			
+		// splits all html-tags to scanable lines
+		preg_match_all('/(<.+?>)?([^<>]*)/s', $text, $lines, PREG_SET_ORDER);
+		$total_length = strlen($suffix);
+		$open_tags = array();
+		$truncate = '';
+			
+		foreach ($lines as $line_matchings) {
+				
+			// if there is any html-tag in this line, handle it and add it (uncounted) to the output
+			if (!empty($line_matchings[1])) {
+				
+				// if it's an "empty element" with or without xhtml-conform closing slash
+				if (preg_match('/^<(\s*.+?\/\s*|\s*(img|br|input|hr|area|base|basefont|col|frame|isindex|link|meta|param)(\s.+?)?)>$/is', $line_matchings[1])) {
+					// do nothing
+					// if tag is a closing tag
+				} else if (preg_match('/^<\s*\/([^\s]+?)\s*>$/s', $line_matchings[1], $tag_matchings)) {
+					// delete tag from $open_tags list
+					$pos = array_search($tag_matchings[1], $open_tags);
+					if ($pos !== false) {
+						unset($open_tags[$pos]);
+					}
+				// if tag is an opening tag
+				} else if (preg_match('/^<\s*([^\s>!]+).*?>$/s', $line_matchings[1], $tag_matchings)) {
+					// add tag to the beginning of $open_tags list
+					array_unshift($open_tags, strtolower($tag_matchings[1]));
+				}
+				
+				// add html-tag to $truncate'd text
+				$truncate .= $line_matchings[1];
+				
+			}
+		
+			// calculate the length of the plain text part of the line; handle entities as one character
+			$content_length = strlen(preg_replace('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|[0-9a-f]{1,6};/i', ' ', $line_matchings[2]));
+			
+			if ($total_length+$content_length > $length) {
+				
+				// the number of characters which are left
+				$left = $length - $total_length;
+				$entities_length = 0;
+				
+				// search for html entities
+				if (preg_match_all('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|[0-9a-f]{1,6};/i', $line_matchings[2], $entities, PREG_OFFSET_CAPTURE)) {
+					// calculate the real length of all entities in the legal range
+					foreach ($entities[0] as $entity) {
+						if ($entity[1]+1-$entities_length <= $left) {
+							$left--;
+							$entities_length += strlen($entity[0]);
+						} else {
+							// no more characters left
+							break;
+						}
+					}
+				}
+				
+				$truncate .= substr($line_matchings[2], 0, $left+$entities_length);
+				// maximum lenght is reached, so get off the loop
+				break;
+				
+			} else {
+				$truncate .= $line_matchings[2];
+				$total_length += $content_length;
+			}
+			
+			// if the maximum length is reached, get off the loop
+			if($total_length>= $length) {
+				break;
+			}
+		}
+		
+		// if the words shouldn't be cut in the middle...
+		if (!$exact) {
+			
+			// ...search the last occurance of a space...
+			$spacepos = strrpos($truncate, ' ');
+			if (isset($spacepos)) {
+				// ...and cut the text in this position
+				$truncate = substr($truncate, 0, $spacepos);
+			}
+			
+		}
+		
+		// add the defined ending to the text
+		$truncate .= $suffix;
+		
+		// close all unclosed html-tags
+		foreach ($open_tags as $tag) {
+			$truncate .= '</' . $tag . '>';
+		}
+		
+		return $truncate;
+			
+	}
+	
+	/**
+	* Get Google Fonts url
+	* @since 1.7.0
+	*/
+	public static function get_google_fonts($fonts) {
+		
+		$font_url = null;
+		
+		if (isset($fonts['google_font'])) {
+			
+			$first = true;
+			$fonts['google_font'] = $fonts['google_font'];
+
+			foreach ($fonts['google_font'] as $type => $font) {
+				
+				// make unique array
+				$font['variants'] = isset($font['variants']) && is_array($font['variants']) ? array_map('unserialize', array_unique(array_map('serialize', $font['variants']))) : null;
+				$font['subsets']  = isset($font['subsets']) && is_array($font['subsets']) ? array_map('unserialize', array_unique(array_map('serialize', $font['subsets']))) : null;
+				
+				// create google font url from subsets and variants
+				$variants  = (isset($font['variants']) && !empty($font['variants'])) ? ':'.implode(',', $font['variants']) : null;
+				$subsets   = (isset($font['subsets']) && !empty($font['subsets']) && count($fonts['google_font']) == 1 && implode('', $font['subsets']) != 'latin') ? '&subset='.implode(',', $font['subsets']) : null;
+				$font_url .= ($first) ? $type.$variants.$subsets : '|'.$type.$variants.$subsets;
+				
+				$first = false;
+				
+			}
+			
+			$font_url = '//fonts.googleapis.com/css?family='.urlencode($font_url);
+			
+		}
+		
+		return $font_url;
+	
+	}
 	
 	/**
 	* Get Default Grid Skins
 	* @since 1.0.0
 	*/
 	public static function default_skin($style) {
+		
 		$default_skin = ($style == 'grid') ? 'brasilia' : 'kampala';
 		$item_base = new The_Grid_Item_Skin();
 		$get_skins = $item_base->get_skin_names();
+		
 		if (!array_key_exists($default_skin,$get_skins)){
 			$default_skin = null;
 			foreach($get_skins as $skin => $data) {
@@ -766,7 +1008,9 @@ class The_Grid_Base {
 				}
 			}
 		}
+		
 		return $default_skin;
+		
 	}
 	
 	/**
@@ -825,6 +1069,7 @@ class The_Grid_Base {
 		$list   = $this->get_grid_list();
 		
 		if ($list) {
+			
 			$output .= '<label class="tg-grid-list-label">'.__("Select a grid from the list", 'tg-text-domain').'</label>';
 			$output .= '<div class="tg-list-item-wrapper" data-multi-select="">';
 				$output .= '<div class="tg-list-item-search-holder">';
@@ -836,11 +1081,14 @@ class The_Grid_Base {
 				$output .= '</ul>';
 				$output .= '<input name="name" type="hidden" class="tg-grid-shortcode-value wpb_vc_param_value wpb-input wpb-text" value="'.$value.'"/>';
 			$output .= '</div>';
+			
 		} else {
+			
 			$output .= '<p>'. __( 'Currently, you don&#39;t have any grid.', 'tg-text-domain'  );
 			$output .= '<br>'. __( 'You need to add a grid in order to export it.', 'tg-text-domain'  );
 			$output .= '<br>'. __( 'You can create a new grid', 'tg-text-domain'  );
 			$output .= ' <a href="'.admin_url( 'post-new.php?post_type=the_grid').'">'. __( 'here.', 'tg-text-domain'  ) .'</a></p>';
+			
 		}
 		
 		return $output;
@@ -899,18 +1147,22 @@ class The_Grid_Base {
 	*/
 	public function get_skin_list(){
 		
-		// fetch custom skins
-		$custom_skins = (array) The_Grid_Custom_Table::get_skin_params();
+		if ($this->get_purchase_code()) {
 		
-		$skin_list = null;
-		foreach ($custom_skins as $custom_skin) {
-			$params = json_decode($custom_skin['params'], true);
-			$skin_list .= '<li class="tg-list-item" data-type="skin" data-name="'.esc_attr($params['name']).'" data-id="'.esc_attr($custom_skin['id']).'">';
-				$skin_list .= '<span><b>'.esc_attr($params['name']).'</b></span>';
-			$skin_list .= '</li>';
+			// fetch custom skins
+			$custom_skins = (array) The_Grid_Custom_Table::get_skin_params();
+			
+			$skin_list = null;
+			foreach ($custom_skins as $custom_skin) {
+				$params = json_decode($custom_skin['params'], true);
+				$skin_list .= '<li class="tg-list-item" data-type="skin" data-name="'.esc_attr($params['name']).'" data-id="'.esc_attr($custom_skin['id']).'">';
+					$skin_list .= '<span><b>'.esc_attr($params['name']).'</b></span>';
+				$skin_list .= '</li>';
+			}
+			
+			return $skin_list;
+		
 		}
-		
-		return $skin_list;
 	
 	}
 	
@@ -920,17 +1172,21 @@ class The_Grid_Base {
 	*/
 	public function get_element_list(){
 		
-		// fetch custom skins
-		$custom_elements = (array) The_Grid_Custom_Table::get_elements();
+		if ($this->get_purchase_code()) {
 		
-		$elem_list = null;
-		foreach ($custom_elements as $custom_element) {
-			$elem_list .= '<li class="tg-list-item" data-type="elem" data-name="'.esc_attr($custom_element['name']).'" data-id="'.esc_attr($custom_element['id']).'">';
-				$elem_list .= '<span><b>'.esc_attr($custom_element['name']).'</b></span>';
-			$elem_list .= '</li>';
+			// fetch custom skins
+			$custom_elements = (array) The_Grid_Custom_Table::get_elements();
+			
+			$elem_list = null;
+			foreach ($custom_elements as $custom_element) {
+				$elem_list .= '<li class="tg-list-item" data-type="elem" data-name="'.esc_attr($custom_element['name']).'" data-id="'.esc_attr($custom_element['id']).'">';
+					$elem_list .= '<span><b>'.esc_attr($custom_element['name']).'</b></span>';
+				$elem_list .= '</li>';
+			}
+			
+			return $elem_list;
+		
 		}
-		
-		return $elem_list;
 	
 	}
 	
@@ -944,11 +1200,97 @@ class The_Grid_Base {
 		if ($elements) {
 			
 			$generator = new The_Grid_Skin_Generator();
-			$element_data = array();
+			
+			$tabs = array();
+			$element_data     = array();
+			$element_settings = array();
+			$element_styles   = null;
+			$element_markup   = null;
+			
+			$tabs_attr = array(
+				'get_the_title'           => '1-title-excerpt',
+				'get_the_excerpt'         => '1-title-excerpt',
+				'get_the_date'            => '2-date',
+				'get_the_terms'           => '3-terms-list',
+				'get_the_author'          => '4-author-avatar',
+				'get_the_author_avatar'   => '4-author-avatar',
+				'get_the_comments_number' => '5-nb-like-comment',
+				'get_the_likes_number'    => '5-nb-like-comment',
+				'get_the_meta_data'       => '6-metadata',
+				'woocommerce'             => '7-woocommerce',
+				'video_stream'            => '8-video_stream',				
+				'media_button'            => '9-media_button',
+				'social_link'             => '10-social_link',
+				'icon'                    => '11-icon',
+				'html'                    => '12-html',
+				'line_break'              => '13-line_break',
+				'other'                   => '14-other'
+			);
+			
+			$tabs_data = array(
+				'1-title-excerpt'    => array(
+					'name' => __( 'Title/Excerpt (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-editor-alignleft'
+				),
+				'2-date'             => array(
+					'name' => __( 'Date (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-calendar-alt'
+				),
+				'3-terms-list'       => array(
+					'name' => __( 'Terms list (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-tag'
+				),
+				'4-author-avatar'    => array(
+					'name' => __( 'Author/Avatar (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-admin-users'
+				),
+				'5-nb-like-comment'  => array(
+					'name' => __( 'Nb of Likes/Comments (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-admin-comments'
+				),
+				'6-metadata'         => array(
+					'name' => __( 'Metadata (post data)', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-category'
+				),
+				'7-woocommerce'      => array(
+					'name' => __( 'Woocommerce', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-cart'
+				),
+				'8-video_stream'      => array(
+					'name' => __( 'Youtube/Vimeo', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-video-alt3'
+				),
+				'9-media_button'     => array(
+					'name' => __( 'Lightbox/Play button', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-format-video'
+				),
+				'10-social_link'     => array(
+					'name' => __( 'Social Link', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-share'
+				),
+				'11-icon'             => array(
+					'name' => __( 'Icon', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-art'
+				),
+				'12-html'             => array(
+					'name' => __( 'HTML', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-editor-code'
+				),
+				'13-line_break'       => array(
+					'name' => __( 'Line Break', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-editor-insertmore'
+				),
+				'14-other'       => array(
+					'name' => __( 'Other', 'tg-text-domain' ),
+					'icon' => 'dashicons dashicons-info'
+				)
+			);
 			
 			foreach ($elements as $element => $data) {
 				
 				$json = json_decode($data['settings'], true);
+				
+				// remove some styles to prevent issue in element list
 				$json['styles']['is_hover'] = false;
 				$json['styles']['idle_state']['top']    = '';
 				$json['styles']['idle_state']['bottom'] = '';
@@ -958,55 +1300,115 @@ class The_Grid_Base {
 				$json['styles']['idle_state']['margin-bottom'] = '';
 				$json['styles']['idle_state']['margin-left']   = '';
 				$json['styles']['idle_state']['margin-right']  = '';
-		
-				$overlay    = null;
-				$important  = $json['styles']['idle_state']['color-important'];
-				$background = $json['styles']['idle_state']['background-color'];
-				$color      = $json['styles']['idle_state']['color'];
 				
-				if ((empty($background) || $background == $color) && $important) {
-					$brightness = $this->brightness($color);
-					$overlay = ($brightness == 'bright') ? '<div class="tg-element-overlay" style="background:rgba(0,0,0,0.3)"></div>' : null;
-				}
+				$json['styles']['idle_state']['color'] = ($json['styles']['idle_state']['color-important']) ? $json['styles']['idle_state']['color'] : null;
 				
-				$markup = '<div class="tg-element-holder">';
-					$markup .= $overlay;
-					if ($is_custom) {
-						
-						$markup .= '<div class="tg-element-draggable tg-element-custom" data-slug="'.$data['slug'].'">'.stripslashes($json['content']).'</div>';
-						$markup .= '<div class="tg-custom-element-name">'.$data['name'].'</div>';
-						$markup .= '<div class="tg-button tg-custom-element-delete" data-action="tg_delete_element" data-id="'.$data['id'].'">';
-							$markup .= '<i class="dashicons dashicons-trash"></i>';
-						$markup .= '</div>';
-						if (!$ajax) {
-							$markup .= '<script type="text/javascript">custom_element[\''.$data['slug'].'\'] = '.stripslashes($data['settings']).';</script>';
-						}
-						$element_data[$data['slug']]['styles'] = $generator->process_css('tg-element-draggable:not(.tg-element-init)[data-slug="'.$data['slug'].'"]', $json);
-						
-					} else {
-						
-						$markup .= '<div class="tg-element-draggable tg-element-custom" data-slug="tgdef-'.$data['slug'].'">'.stripslashes($json['content']).'</div>';
-						$markup .= '<div class="tg-custom-element-name">'.$data['name'].'</div>';
-						$markup .= '<script type="text/javascript">custom_element[\'tgdef-'.$data['slug'].'\'] = '.stripslashes($data['settings']).';</script>';
-						$element_data['tgdef-'.$data['slug']]['styles'] = $generator->process_css('tg-element-draggable:not(.tg-element-init)[data-slug="tgdef-'.$data['slug'].'"]', $json);
-						
-					}
-				$markup .= '</div>';
+				// prepare data
+				$overlay      = null;
+				$important    = $json['styles']['idle_state']['color-important'];
+				$background   = $json['styles']['idle_state']['background-color'];
+				$color        = $json['styles']['idle_state']['color'];
+				$class        = ($json['source']['source_type'] == 'line_break') ? ' tg-line-break' : null;
+				$color_scheme = (isset($json['color-scheme'])) ? $json['color-scheme'] : null;
+				$title        = 'title="'.__( 'Click to Edit', 'tg-text-domain' ).'"';
 				
-				if ($is_custom) {
-					$element_data[$data['slug']]['markup'] = $markup;
-				} else {
-					$element_data['tgdef-'.$data['slug']]['markup'] = $markup;
-				}
+				$type = ($json['source']['source_type'] == 'post') ? $json['source']['post_content'] : $json['source']['source_type'];
 
-				$generator->reset_css();
+				// remove animation
+				unset($json['animation']);
 				
+				if ((empty($background) || $background == $color) && $important || $color_scheme == 'tg-light') {
+					$brightness = $this->brightness($color);
+					$overlay = ($brightness == 'bright' || $color_scheme == 'tg-light') ? '<div class="tg-element-overlay" style="background:rgba(0,0,0,0.3)"></div>' : null;
+				}
+				
+				$process_styles   = ($json['source']['source_type'] == 'line_break') ? null : $generator->process_css('tg-element-custom[data-slug="'.$data['slug'].'"]', $json);
+				$element_styles  .= ($process_styles) ? '<style class="tg-element-styles" data-slug="'.$data['slug'].'" type="text/css">'.$process_styles.'</style>' : $element_styles;
+				$element_content  = stripslashes($json['content']);
+				$element_settings[$data['slug']] = $data['settings'];//wp_json_encode(stripslashes_deep(json_decode($data['settings'], true)))
+				
+				$element_holder = '<div class="tg-element-holder '.$color_scheme.'">';
+				
+					$element_holder .= $overlay;
+					$element_holder .= '<div class="tg-element-custom'.esc_attr($class).'" '.$title.' data-slug="'.esc_attr($data['slug']).'">'.$element_content.'</div>';
+					$element_holder .= '<div class="tg-custom-element-overlay">';
+						$element_holder .= '<div class="tg-add-element">'.__( 'Add To Skin', 'tg-text-domain' ).'</div>';
+					$element_holder .= '</div>';
+					$element_holder .= '<div class="tg-custom-element-name">'.esc_html($data['name']).'</div>';
+					
+					if ($is_custom) {
+						$element_holder .= '<div class="tg-button tg-custom-element-delete" data-action="tg_delete_element" data-id="'.esc_attr($data['id']).'">';
+							$element_holder .= '<i class="dashicons dashicons-trash"></i>';
+						$element_holder .= '</div>';
+					}	
+					
+				$element_holder .= '</div>';
+				
+				$type = (isset($tabs_attr[$type])) ? $tabs_attr[$type] : '14-other';
+				$tabs[$type][] = $element_holder;
+				
+				$generator->reset_css();
+
+			}
+
+			$element_tabs = null;
+			$element_content = null;
+			
+			uksort($tabs, 'strnatcmp');
+			
+			foreach ($tabs as $type => $elements) {
+				$element_tabs    .= '<li class="tomb-tab" data-target="tg-tab-elements-'.$type.'">';
+					$element_tabs .= '<i class="tomb-icon '.$tabs_data[$type]['icon'].'"></i>';
+					$element_tabs .= $tabs_data[$type]['name'];
+				$element_tabs    .= '</li>';
+				$element_content .= '<div class="tomb-tab-content tg-tab-elements-'.$type.'">';
+					foreach ($elements as $element) {
+						$element_content .= $element;
+					}
+				$element_content .= '</div>';
 			}
 			
+			$element_markup = '<div class="tg-component-style-properties">';
+				$element_markup .= '<div class="tg-component-back">';
+					$element_markup .= '<i class="tomb-icon dashicons dashicons-arrow-left-alt2"></i>';
+					$element_markup .= '<span></span>';
+				$element_markup .= '</div>';
+				$element_markup .= '<div>';
+					$element_markup .= '<ul class="tomb-tabs-holder tomb-tabs-elements">';
+						$element_markup .= $element_tabs;
+					$element_markup .= '</ul>';
+					$element_markup .= $element_content;
+				$element_markup .= '</div>';
+			$element_markup .= '</div>';
+
+			$element_data = array(
+				'markup'   => $element_markup,
+				'styles'   => $element_styles,
+				'settings' => $element_settings
+			);
+
 			return $element_data;
 		
 		}
 	
+	}
+	
+	/**
+	* Get The Grid purchase code
+	* @since 2.0.0
+	* @modified 2.0.5
+	*/
+	public static function get_purchase_code(){
+		
+		$unfilter    = apply_filters('tg_grid_un13306812', false);
+		$plugin_info = get_option('the_grid_plugin_info', '');
+		
+		if (isset($plugin_info['purchase_code']) || $unfilter) {
+			return true;
+		} else {
+			return;
+		}
+
 	}
 
 }

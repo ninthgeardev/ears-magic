@@ -17,7 +17,7 @@ $tg_el = The_Grid_Elements();
 
 $media_args = array(
 	'icons' => array(
-		'image' => '<i class="tg-icon-arrows-out-2"></i>'
+		'image' => '<i class="tg-icon-arrows-out"></i>'
 	)
 );
 

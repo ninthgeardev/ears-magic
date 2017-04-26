@@ -10,10 +10,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-$plugin_info   = get_option('the_grid_plugin_info', '');
-$purchase_code = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
-
-if (!$purchase_code) {
+if (!The_Grid_Base::get_purchase_code()) {
 	
 	$output = '<div class="tg-custom-skins-overview">';
 	
@@ -21,7 +18,7 @@ if (!$purchase_code) {
 			$output .= '<div class="tg-container">';
 				$output .= '<div class="tg-container-header">';
 					$output .= '<div class="tg-container-title">';
-						$output .= __( 'Please activate The Grid plugin to enable Skin Builder', 'tg-text-domain' );
+						$output .= __( 'Please register The Grid plugin to enable Skin Builder', 'tg-text-domain' );
 					$output .= '</div>';
 				$output .= '</div>';
 			$output .= '</div>';

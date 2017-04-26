@@ -1,7 +1,6 @@
 .caracas a,
 .caracas a:active,
 .caracas a:focus,
-.caracas .tg-media-button,
 .caracas .tg-item-media-holder,
 .caracas .tg-item-content {
 	text-decoration: none;
@@ -15,7 +14,7 @@
 	transition: opacity 0.25s ease, color 0.25s ease, transform 0.25s ease-in-out;
 }
 .caracas.tg-item,
-.caracas .tg-center-outer {
+.caracas .tg-center-holder {
 	overflow: hidden;
 }
 .caracas .tg-item-content,

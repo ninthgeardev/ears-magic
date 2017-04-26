@@ -1,7 +1,6 @@
 .male a,
 .male a:active,
 .male a:focus,
-.male .tg-media-button,
 .male .tg-item-media-holder,
 .is-ie .male .tg-item-content,
 .male .tg-rotate-3d.tg-is-rotate,
@@ -16,12 +15,11 @@
 .male .tg-item-media-holder {
 	background: transparent !important;
 }
-.male .tg-item-inner,
-.male .tg-center-outer {
+.male .tg-item-inner {
 	overflow: hidden;
 }
-.male .tg-center-inner {
-	position: absolute;
+.male .tg-center-holder {
+	text-align: center;
 }
 .male .tg-item-link {
 	position: absolute;

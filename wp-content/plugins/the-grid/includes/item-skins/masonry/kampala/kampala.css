@@ -15,9 +15,6 @@
 .kampala a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.kampala .tg-center-inner {
-	position: absolute;
-}
 .kampala .tg-item-overlay {
 	position: absolute;
     left: 0;
@@ -36,13 +33,13 @@
 .kampala .tg-media-button,
 .kampala .tg-link-button {
 	position: relative;
-	display: inline-block;
-	vertical-align: middle;
-	height: 75px;
-	width: 75px;
-	margin: 0;
-	padding: 0;
-	cursor: pointer;
+    display: block;
+    vertical-align: middle;
+    height: 75px;
+    width: 75px;
+    margin: 0 auto;
+    padding: 0;
+    cursor: pointer;
 }
 .kampala .tg-item-overlay,
 .kampala .tg-media-button,

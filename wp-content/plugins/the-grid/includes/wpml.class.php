@@ -202,8 +202,12 @@ class The_Grid_WPML {
 					
 				}
 				
-				$WPML_flag_data['url'] = $WPML_flag_url;
-				$WPML_flag_data['alt'] = $WPML_current_lang;
+				if (isset($WPML_flag_url)) {
+					
+					$WPML_flag_data['url'] = $WPML_flag_url;
+					$WPML_flag_data['alt'] = $WPML_current_lang;
+					
+				}
 				
 			}	
 			

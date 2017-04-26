@@ -2,8 +2,7 @@
 .lome a:active,
 .lome a:focus,
 .lome .tg-cats-holder,
-.lome .tg-item-title,
-.lome .tg-media-button {
+.lome .tg-item-title {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;
@@ -16,6 +15,9 @@
 }
 .lome.tg-item {
     overflow: hidden;
+}
+.lome .tg-center-holder {
+	text-align: center;
 }
 .lome .tg-item-content,
 .lome .tg-item-media-holder,

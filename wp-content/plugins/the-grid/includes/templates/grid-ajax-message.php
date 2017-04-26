@@ -16,7 +16,7 @@ if ($tg_grid_data['ajax_method'] == 'on_scroll') {
 		
 		$ajax_scroll  = '<!-- The Grid Ajax Scroll -->';
 		$ajax_scroll .= '<div class="tg-ajax-scroll-holder">';
-		$ajax_scroll .= '<div class="tg-ajax-scroll" data-no-more="'.esc_attr($tg_grid_data['ajax_button_no_more']).'">'.esc_attr($tg_grid_data['ajax_button_loading']).'</div>';
+		$ajax_scroll .= '<div class="tg-ajax-scroll" data-no-more="'.esc_attr($tg_grid_data['ajax_button_no_more']).'">'.esc_html($tg_grid_data['ajax_button_loading']).'</div>';
 		$ajax_scroll .= '</div>';
 		
 		echo $ajax_scroll;

@@ -242,7 +242,7 @@ $new_form .= $WPML_flags;
 $new_form .= '<div id="tg-empty-grid-list">';
 $new_form .= '<h2>'.__('You don\'t have any grid yet!', 'tg-text-domain').'</h2>';
 $new_form .= '<a class="tg-button tg-create-empty" href="'.admin_url( 'admin.php?page=the_grid_settings&create=true'.$WPML_query_lang).'"><i class="dashicons dashicons-plus"></i>'.__('Create a Grid', 'tg-text-domain').'</a>';
-$new_form .= '<a class="tg-button" id="tg-import-demo" data-action="tg_import_grids" data-grid-demo="1"><i class="dashicons dashicons-download"></i>'.__('Import Demo', 'tg-text-domain').'</a>';
+$new_form .= '<a class="tg-button" id="tg-import-demo" data-action="tg_import_items" data-grid-demo="1"><i class="dashicons dashicons-download"></i>'.__('Import Demo', 'tg-text-domain').'</a>';
 $new_form .= '</div>';
 $new_form .= '</div>';
 

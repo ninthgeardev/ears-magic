@@ -68,11 +68,17 @@ class The_Grid_Custom_Table {
 		
 		if (version_compare($table_version, '1', '<') || $force) {
 			
-			// custom skins sql
+			// add upgrade class
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			
+			// get database character collate
+			$charset_collate = $wpdb->get_charset_collate();
+
+			// custom skins SQL
 			$skins_sql = 'CREATE TABLE IF NOT EXISTS '.$wpdb->prefix . self::TABLE_SKINS.' (
-				id mediumint(9) NOT NULL AUTO_INCREMENT,
-				name VARCHAR(255) NOT NULL,
-				slug VARCHAR(255) NOT NULL,	
+				id mediumint(6) NOT NULL AUTO_INCREMENT,
+				name VARCHAR(191) NOT NULL,
+				slug VARCHAR(191) NOT NULL,	
 				date datetime DEFAULT "0000-00-00 00:00:00" NOT NULL,
 				modified_date datetime DEFAULT "0000-00-00 00:00:00" NOT NULL,
 				params MEDIUMTEXT NOT NULL,
@@ -81,30 +87,27 @@ class The_Grid_Custom_Table {
 				styles MEDIUMTEXT  NOT NULL,
 				UNIQUE KEY id (id),
 				UNIQUE (name),
-				UNIQUE (slug)
-			);';
+				UNIQUE (slug)		
+			) '. $charset_collate .';';
+			// create skins table
+			dbDelta($skins_sql);
 			
-			// custom element sql
+			// custom element SQL
 			$elements_sql = 'CREATE TABLE IF NOT EXISTS '.$wpdb->prefix . self::TABLE_ELEMENTS.' (
-				id mediumint(9) NOT NULL AUTO_INCREMENT,
-				name VARCHAR(255) NOT NULL,
-				slug VARCHAR(255) NOT NULL,
+				id mediumint(6) NOT NULL AUTO_INCREMENT,
+				name VARCHAR(191) NOT NULL,
+				slug VARCHAR(191) NOT NULL,
 				date datetime DEFAULT "0000-00-00 00:00:00" NOT NULL,
 				modified_date datetime DEFAULT "0000-00-00 00:00:00" NOT NULL,
 				settings MEDIUMTEXT NOT NULL,
 				UNIQUE KEY id (id),
 				UNIQUE (name),
 				UNIQUE (slug)
-			);';
-			
-			// add upgrade class
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			
-			// create tables
-			dbDelta($skins_sql);
+			) '. $charset_collate .';';
+			// create elements table
 			dbDelta($elements_sql);
 			
-			// store The Grid custom db version (if futur changes)
+			// store The Grid custom db version (if future changes are needed)
 			update_option('tg_grid_db_version', '1');
 
 		}
@@ -144,13 +147,16 @@ class The_Grid_Custom_Table {
 		
 			$table_name = $wpdb->prefix . self::TABLE_SKINS;
 			
-			//check if name exists in another skin
+			// check if name exists in another skin
 			$check_name = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE name = %s AND id != %s ", array($skin_data['name'], $ID)), ARRAY_A);
-					
-			//check if exists, if no, create
-			if(!empty($check_name)){
+			
+			// get native skin name
+			$native_skins = apply_filters('tg_register_item_skin', '');
+		
+			// check if exists in DB, if no, create
+			if(!empty($check_name) || isset($native_skins[$skin_data['slug']]) || in_array($skin_data['slug'], (array) $native_skins)){
 
-				$error_msg = __('This skin name already exists. Please use a different name.', 'tg-text-domain' );
+				$error_msg = __('This skin name already exists. Please use a different name:', 'tg-text-domain' );
 				throw new Exception($error_msg);
 						
 			}
@@ -209,11 +215,13 @@ class The_Grid_Custom_Table {
 				$ID = $wpdb->insert_id;
 			
 			}
-			
+
 			// if an error occured while inserting new skin
 			if ($wpdb->last_error) {
 				
-				$error_msg = __('Sorry, an unknown issue occured.', 'tg-text-domain' );
+				$error_msg  = __('Sorry, an unknown issue occured:', 'tg-text-domain' );
+				$error_msg .= '<br>';
+				$error_msg .= $wpdb->last_error;
 				throw new Exception($error_msg);
 			
 			}
@@ -253,6 +261,7 @@ class The_Grid_Custom_Table {
 				$element_exist = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %s ", $ID), ARRAY_A);
 				
 				if ($element_exist) {
+					
 					// update skin data (wpdb prepare & escape the data)
 					$wpdb->update( 
 						$table_name, 
@@ -288,18 +297,22 @@ class The_Grid_Custom_Table {
 					)
 				);
 				
+				// retrieve new skin id
+				$ID = $wpdb->insert_id;
+				
 			}
 			
 			// if an error occured while inserting new skin
 			if ($wpdb->last_error) {
 				
-				$error_msg = __('Sorry, an unknown issue occured.', 'tg-text-domain' );
+				$error_msg  = __('Sorry, an unknown issue occured:', 'tg-text-domain' );
+				$error_msg .= '<br>';
+				$error_msg .= $wpdb->last_error;
 				throw new Exception($error_msg);
 			
 			}
 			
-			// retrieve new skin id
-			$ID = $wpdb->insert_id;
+			// return element ID
 			return $ID;
 		
 		// if no data skin
@@ -388,16 +401,17 @@ class The_Grid_Custom_Table {
 			$table_name = $wpdb->prefix . self::TABLE_SKINS;
 			
 			$skin_settings = self::get_skin_settings($ID);
+			if (empty($skin_settings)) {
+				$error_msg = __('Skin data are missing', 'tg-text-domain' );
+				throw new Exception($error_msg);
+			}
 			
-			// decode settings and change name
-			$skin_settings = json_decode($skin_settings, true);
-			$skin_settings['item']['layout']['skin_name'] = self::unique_name($skin_settings['item']['layout']['skin_name'], self::TABLE_SKINS);	
-			$skin_settings = json_encode($skin_settings);
+			$skin_settings = self::generate_unique_skin($skin_settings);
 			
 			try {
 				
 				$generator_class = new The_Grid_Skin_Generator();
-				$skin_settings   = $generator_class->generate_skin($skin_settings, true);
+				$skin_settings   = $generator_class->generate_skin($skin_settings);
 				$response = self::save_item_skin($skin_settings);
 					
 			} catch (Exception $e) {
@@ -418,7 +432,7 @@ class The_Grid_Custom_Table {
 		}
 
 	}
-	
+
 	/**
 	* Import item skins to DB
 	* @since 1.6.0
@@ -427,18 +441,16 @@ class The_Grid_Custom_Table {
 		
 		// check if valid skin settings
 		if ($skin_settings) {
-		
-			global $wpdb;
 			
-			// decode settings and change name
-			$skin_settings = json_decode($skin_settings, true);
-			$skin_settings['item']['layout']['skin_name'] = self::unique_name($skin_settings['item']['layout']['skin_name'], self::TABLE_SKINS);	
-			$skin_settings = json_encode($skin_settings);
+			// check if table exist before check unique slug
+			self::custom_tables_exist();
+			
+			$skin_settings = self::generate_unique_skin($skin_settings);
 			
 			try {
 				
 				$generator_class = new The_Grid_Skin_Generator();
-				$skin_settings   = $generator_class->generate_skin($skin_settings, true);
+				$skin_settings   = $generator_class->generate_skin($skin_settings);
 				$response = self::save_item_skin($skin_settings);
 					
 			} catch (Exception $e) {
@@ -453,13 +465,47 @@ class The_Grid_Custom_Table {
 		
 		} else {
 			
-			$error_msg = __('Skin data are missing.', 'tg-text-domain' );
+			$error_msg = __('Skin data are missing', 'tg-text-domain' );
 			throw new Exception($error_msg);
 			
 		}
 
 	}
 	
+	/**
+	* Update skin name/class name/global css
+	* @since 1.7.0
+	*/
+	public static function generate_unique_skin($skin_settings){
+		
+		// decode settings and change name
+		$skin_settings = json_decode($skin_settings, true);
+			
+		// fetch old name
+		$old_name   = $skin_settings['item']['layout']['skin_name'];
+		
+		// fetch global css
+		$global_css = $skin_settings['item']['global_css'];
+		
+		// generate old slug
+		$old_slug   = sanitize_title($old_name);
+		$old_slug   = sanitize_html_class($old_slug);
+		
+		// generate new slug
+		$new_name   = self::unique_name($old_name, self::TABLE_SKINS);
+		$new_slug   = sanitize_title($new_name);
+		$new_slug   = sanitize_html_class($new_slug);
+		
+		// change old slug and change all css class for old slug
+		$skin_settings['item']['layout']['skin_name'] = $new_name;
+		$skin_settings['item']['global_css'] = str_replace($old_slug, $new_slug, $global_css);
+			
+		// encode settings with new slug and modified global css
+		$skin_settings = json_encode($skin_settings);
+		
+		return $skin_settings;
+	
+	}
 	
 	/**
 	* Import item element to DB
@@ -469,10 +515,13 @@ class The_Grid_Custom_Table {
 		
 		// check if valid element settings & name
 		if ($element_settings && $element_name) {
+			
+			// check if table exist before check unique slug
+			self::custom_tables_exist();
 
 			$element_name = self::unique_name($element_name, self::TABLE_ELEMENTS);	
-			$element_slug = preg_replace('/ /', '-', strtolower($element_name));
-			$element_slug = preg_replace('/[^-0-9a-z_-]/', '', $element_slug);
+			$element_slug = sanitize_title($element_name);
+			$element_slug = sanitize_html_class($element_slug);
 			
 			try {
 				
@@ -506,20 +555,15 @@ class The_Grid_Custom_Table {
 	* @since 1.6.0
 	*/
 	public static function get_skin_params(){
-		
+
 		global $wpdb;
 		
 		$table_name = $wpdb->prefix . self::TABLE_SKINS;
 		
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'"))  {
-			
-			$skin = $wpdb->get_results("SELECT params, id FROM $table_name ORDER BY slug ASC", ARRAY_A);
+		$skin = $wpdb->get_results("SELECT params, id FROM $table_name ORDER BY slug ASC", ARRAY_A);
 
-			return $skin;
-		
-		}
-		
-		return array();
+		return $skin;
+
 	}
 	
 	/**
@@ -580,15 +624,10 @@ class The_Grid_Custom_Table {
 		
 		$table_name = $wpdb->prefix . self::TABLE_ELEMENTS;
 		
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'"))  {
-			
-			$elements = $wpdb->get_results("SELECT * FROM $table_name ORDER BY date DESC", ARRAY_A);
+		$elements = $wpdb->get_results("SELECT * FROM $table_name ORDER BY date DESC", ARRAY_A);
 
-			return $elements;
-		
-		}
-		
-		return array();
+		return $elements;
+
 	}
 	
 	/**
@@ -615,19 +654,42 @@ class The_Grid_Custom_Table {
 		
 		global $wpdb;
 		
-		//$table_name = $wpdb->prefix . self::TABLE_SKINS;
 		$table_name = $wpdb->prefix . $table_name;
 	
-		$query = $wpdb->prepare("SELECT name FROM $table_name WHERE name = %s", $name );
- 
+		$query = $wpdb->prepare("SELECT name FROM $table_name WHERE name = %s", htmlspecialchars($name));
+
 		if ($wpdb->get_var($query)) {
 			$num = 2;
 			do {
 				$alt_name = $name . ' ' . $num;
 				$num++;
-				$name_check = $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $table_name WHERE name = %s", $alt_name ) );
+				$name_check = $wpdb->get_var($wpdb->prepare("SELECT name FROM $table_name WHERE name = %s", htmlspecialchars($alt_name)));
 			} while ($name_check);
 			$name = $alt_name;
+		}
+		
+		// check if skin slug exists in registered skins
+		if ($table_name == $wpdb->prefix . 'tg_item_skins') {
+			
+			// get native skin name
+			$native_skins = apply_filters('tg_register_item_skin', '');
+
+			// get slug
+			$slug = sanitize_title($name);
+			$slug = sanitize_html_class($slug);
+			
+			if ((isset($native_skins[$slug]) || in_array($slug, (array) $native_skins))) {
+				$num = (isset($num)) ? $num : 2;
+				do {
+					$alt_name = $name . ' ' . $num;
+					$num++;
+					$slug = sanitize_title($alt_name);
+					$slug = sanitize_html_class($slug);
+					$name_check = isset($native_skins[$slug]);
+				} while ($name_check);
+				$name = $alt_name;
+			}
+		
 		}
 		
 		return $name;

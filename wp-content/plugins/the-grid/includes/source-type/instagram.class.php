@@ -11,26 +11,109 @@ if (!defined('ABSPATH')) {
 }
 
 class The_Grid_Instagram {
-
-	private $api_key;
-	private $transient_sec;
-	private $error;
 	
+	/**
+	* Instagram API Key
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
+	private $api_key;
+	
+	/**
+	* Instagram transient
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
+	private $transient_sec;
+	
+	/**
+	* Grid data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $grid_data;
 
+	/**
+	* Instagram call number
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
 	private $call_nb;
+	
+	/**
+	* Instagram usernames
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $usernames = array();
+	
+	/**
+	* Instagram hashtags
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $hashtags  = array();
 	
+	/**
+	* Instagram count
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
 	private $count;
+	
+	/**
+	* Instagram media items
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $media = array();
+	
+	/**
+	* Instagram last media
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $last_media = array();
 	
+	/**
+	* Instagram temp data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string/array
+	*/
 	private $tmp_count;
 	private $tmp_media = array();
 	private $tmp_last_media = array();
 	
-
 	/**
 	* Initialize the class and set its properties.
 	* @since 1.0.0
@@ -49,7 +132,7 @@ class The_Grid_Instagram {
 	*/
 	public function get_API_key(){
 		
-		$this->api_key = get_option('the_grid_instagram_api_key', '');
+		$this->api_key = trim(get_option('the_grid_instagram_api_key', ''));
 		
 		if (empty($this->api_key)) {
 			$error_msg  = __( 'You didn\'t authorize The Grid to', 'tg-text-domain' );
@@ -314,7 +397,7 @@ class The_Grid_Instagram {
 				$error_msg .= ' '.$json->meta->error_message;
 				throw new Exception($error_msg);
 			}
-			if(isset($json->data) && !empty($json->data)){
+			if (isset($json->data) && !empty($json->data)) {
 				set_transient($transient_name, $response, $this->transient_sec);
 			}  else if (!$tg_is_ajax) {
 				$error_msg  = __( 'No content was found for the current ursername(s) and/or hashtag(s).', 'tg-text-domain' );
@@ -357,6 +440,19 @@ class The_Grid_Instagram {
 	}
 	
 	/**
+	* Get excerpt
+	* @since 2.1.0
+	*/
+	public function get_excerpt($data) {
+	
+		$excerpt = isset($data->caption->text) ? $data->caption->text : null;
+		$excerpt = $excerpt ? preg_replace('~(\#)([^\s!,. /()"\'?]+)~', '<a href="https://www.instagram.com/explore/tags/$2/" target="_blank" class="tg-item-social-link">#$2</a>', $excerpt) : null;
+		$excerpt = $excerpt ? preg_replace('~(\@)([^\s!,. /()"\'?]+)~', '<a href="https://www.instagram.com/$2/" target="_blank" class="tg-item-social-link">@$2</a>', $excerpt) : null;
+		return $excerpt;
+		
+	}
+	
+	/**
 	* Build data array for the grid
 	* @since 1.0.0
 	*/
@@ -378,7 +474,7 @@ class The_Grid_Instagram {
 					'url'             => $data->link,
 					'url_target'      => '_blank',
 					'title'           => null,
-					'excerpt'         => isset($data->caption->text) ? $data->caption->text : null,
+					'excerpt'         => $this->get_excerpt($data),
 					'terms'           => null,
 					'author'          => array(
 						'ID'     => $data->user->id,

@@ -3,8 +3,7 @@
 .lisboa a:focus,
 .lisboa .tg-item-title,
 .lisboa .tg-item-excerpt,
-.lisboa .tg-cats-holder,
-.lisboa .tg-media-button {
+.lisboa .tg-cats-holder {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;
@@ -18,16 +17,19 @@
 .lisboa.tg-item {
 	cursor: pointer;
 }
+.lisboa .tg-center-holder {
+	text-align: center;
+}
 .lisboa .tg-item-inner {
 	overflow: hidden;
 }
-.lisboa .tg-center-outer {
+.lisboa .tg-center-holder {
 	opacity: 0;
 }
-.lisboa:hover .tg-center-outer {
+.lisboa:hover .tg-center-holder {
 	opacity: 1;
 }
-.lisboa .tg-center-inner {
+.lisboa .tg-center-holder {
 	padding: 20px 10px;
 }
 .lisboa .tg-item-title {
@@ -69,6 +71,11 @@
 }
 .lisboa:hover .tg-item-overlay {
 	opacity: 1;
+}
+.lisboa.tg-force-play .tg-media-button,
+.lisboa.tg-is-playing .tg-media-button {
+	opacity: 0;
+	visibility: hidden;
 }
 .lisboa .tg-item-title,
 .lisboa .tg-item-title a,

@@ -73,7 +73,9 @@ if ( ! class_exists( 'TOMB_Select_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
+			
 			return sanitize_text_field( $new );
+			
 		}
 
 	}

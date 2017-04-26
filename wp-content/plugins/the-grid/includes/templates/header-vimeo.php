@@ -38,7 +38,7 @@ if ($tg_grid_data['source_type'] == 'vimeo') {
 				$vimeo = '<div class="tg-vimeo-channel-header">';
 				
 					$vimeo .= '<a class="tg-vimeo-channel-logo" href="'.esc_url($link).'" target="_blank">';
-						$vimeo .= '<img src="'.esc_url($logo).'" alt="Red Bull">';
+						$vimeo .= '<img src="'.esc_url($logo).'" alt="">';
 					$vimeo .= '</a>';
 				
 					$vimeo .= '<div class="tg-vimeo-channel-desc">';
@@ -46,7 +46,6 @@ if ($tg_grid_data['source_type'] == 'vimeo') {
 						
 							$vimeo .= '<span class="tg-vimeo-channel-desc-title">';
 								$vimeo .= '<a href="'.esc_url($link).'" target="_blank">'.esc_html($name).'</a>';
-								//$vimeo .= (!empty($website)) ? ' <a class="tg-vimeo-channel-desc-website" href="'.esc_url($website).'" target="_blank">('.esc_html($website).')</a>' : null;
 							$vimeo .= '</span>';
 							
 							$vimeo .= '<span class="tg-vimeo-channel-data">';

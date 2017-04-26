@@ -39,7 +39,6 @@ new The_Grid_Item_Animation();
 add_filter('tg_add_item_animation', 'tg_built_in_item_animation');
 function tg_built_in_item_animation($animation) {
 	
-
 	$animation['none'] = array(
 		'name'    => __('None', 'tg-text-domain'),
 		'visible' => '',

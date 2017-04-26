@@ -1,6 +1,4 @@
 .sofia a,
-.sofia a:hover,
-.sofia .tg-media-button,
 .sofia a:active,
 .sofia a:focus,
 .sofia .tg-share-icons i {
@@ -18,16 +16,18 @@
 .sofia a:not(.mejs-volume-slider):hover {
 	opacity: 0.85 !important;
 }
-.sofia * {
+.sofia > * {
 	overflow: hidden;
+}
+.sofia *:not(.mejs-controls) {
 	-webkit-transition: -webkit-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -moz-transition: -moz-transforms 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -ms-transition: -ms-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -o-transition: -o-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     transition: transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
 }
-.sofia.tg-force-play *,
-.sofia.tg-is-playing * {
+.sofia.tg-force-play *:not(.mejs-controls),
+.sofia.tg-is-playing *:not(.mejs-controls) {
 	-webkit-transition: -webkit-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;
     -moz-transition: -moz-transforms 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;
     -ms-transition: -ms-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;
@@ -163,7 +163,7 @@
 .sofia .tg-link-button i {
  	font-size: 22px;  
 }
-.sofia .tg-item-content-holder:hover .tg-item-title {
+.sofia:hover .tg-item-content-holder .tg-item-title {
     opacity: 0;
 	-webkit-transform: translate3d(0,-30px,0);
 	-moz-transform: translate3d(0,-30px,0);
@@ -178,8 +178,8 @@
 	opacity: 0;
 	z-index: -1;
 }
-.sofia .tg-item-content-holder:hover .tg-media-button,
-.sofia .tg-item-content-holder:hover .tg-link-button {
+.sofia:hover .tg-item-content-holder .tg-media-button,
+.sofia:hover .tg-item-content-holder .tg-link-button {
     opacity: 1;
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);

@@ -15,12 +15,15 @@ if (!defined('ABSPATH')) {
 
 $tg_el = The_Grid_Elements();
 
+$image  = $tg_el->get_attachment_url();
+$format = $tg_el->get_item_format();
+
 $output  = $tg_el->get_media_wrapper_start();
 	$output .= $tg_el->get_media();
-	$output .= '<div class="tg-item-content">';
+	if ($image || in_array($format, array('gallery', 'video'))) {
 		$output .= $tg_el->get_overlay();
 		$output .= $tg_el->get_media_button();
-	$output .= '</div>';
+	}
 $output .= $tg_el->get_media_wrapper_end();
 		
 return $output;

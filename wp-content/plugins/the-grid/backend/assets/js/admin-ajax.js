@@ -1,6 +1,9 @@
 /*global jQuery:false*/
 /*global ajaxurl:false*/
 /*global TOMB_JS:false*/
+/*global TG_element_color:false */
+/*global TG_skin_elements */
+/*global TG_field_value */
 /*global TG_metaData*/
 /*global TG_excludeItem*/
 /*global tg_global_var*/
@@ -54,7 +57,7 @@ jQuery.noConflict();
 				}
 			},
 			success: function(response){
-				// if a php script error occurs
+				// if errors occured in php script
 				if (!response.success) {
 					if (ajax_callbacks.error) {
 						ajax_callbacks.error(ajax_data, response);
@@ -102,7 +105,6 @@ jQuery.noConflict();
 				$this.find('.tomb-checkbox-list:checked').each(function() {
     				meta_val.push($(this).val());
 				});
-				meta_val = (meta_val.length === 0) ? null : meta_val;
 			} else {
 				meta_val = $this.find('[name]').val();
 			}	
@@ -146,7 +148,7 @@ jQuery.noConflict();
 		
 		return data;
 	
-	}
+	};
 	
 // ==================================================================
 // Helper to set element color (skin builder)
@@ -155,78 +157,102 @@ jQuery.noConflict();
 	window.TG_element_color = function(element, settings) {
 		
 		var tag,
-			title_tag    = settings['title_tag'],
-			source_type  = settings['source_type'],
-			post_content = settings['post_content'],
-			woo_content  = settings['woocommerce_content'];
+			source        = (settings && settings.source) ? settings.source : [],
+			html_tag      = (source && source.hasOwnProperty('html_tag')) ? source.html_tag : '',
+			source_type   = (source && source.hasOwnProperty('source_type')) ? source.source_type : '',
+			post_content  = (source && source.hasOwnProperty('post_content')) ? source.post_content : '',
+			video_content = (source && source.hasOwnProperty('video_stream_content')) ? source.video_stream_content : '',
+			woo_content   = (source && source.hasOwnProperty('woocommerce_content')) ? source.woocommerce_content : '';
+			
+		if (html_tag && source_type !== 'line_break') {
+			
+			tag = 'tg-'+html_tag.replace(/\d+/g, '')+'-tag';
 		
-		if (source_type === 'post') {
-			switch(post_content) {
-				case 'get_the_title':
-					if (title_tag === 'p' || title_tag === 'div') {
-						tag = 'tg-p-tag';
-					} else {
+		} else {
+		
+			if (source_type === 'post') {
+				
+				switch(post_content) {
+					case 'get_the_title':
 						tag = 'tg-h-tag';
-					}
-					break;
-				case 'get_the_excerpt':
-					tag = 'tg-p-tag';
-					break;
-				case 'get_the_date':
-					tag = 'tg-span-tag';
-					break;
-				case 'get_media_button':
-					tag = 'tg-h-tag';
-					break;
-				case 'get_the_author':
-					tag = 'tg-span-tag';
-					break;
-				case 'get_the_comments_number':
-					tag = 'tg-span-tag';
-					break;
-				case 'get_the_likes_number':
-					tag = 'tg-span-tag';
-					break;
-				case 'get_the_terms':
-					tag = 'tg-span-tag';
-					break;
-				case 'get_item_meta':
-					tag = 'tg-span-tag';
-					break;
-				default:
-					tag = 'tg-p-tag';
+						break;
+					case 'get_the_excerpt':
+						tag = 'tg-p-tag';
+						break;
+					case 'get_the_date':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_the_author':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_the_comments_number':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_the_likes_number':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_the_terms':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_item_meta':
+						tag = 'tg-span-tag';
+						break;
+					default:
+						tag = 'tg-p-tag';
+				}
+				
+			} else if (source_type === 'video_stream') {
+				
+				switch(video_content) {
+					case 'get_the_views_number':
+						tag = 'tg-span-tag';
+						break;
+					case 'get_the_duration':
+						tag = 'tg-div-tag';
+						break;
+					default:
+						tag = 'tg-span-tag';
+				}
+				
+			} else if (source_type === 'woocommerce') {
+				
+				switch(woo_content) {
+					case 'get_product_price':
+						tag = 'tg-div-tag';
+						break;
+					case 'get_product_full_price':
+						tag = 'tg-div-tag';
+						break;
+					case 'get_product_regular_price':
+						tag = 'tg-div-tag';
+						break;
+					case 'get_product_sale_price':
+						tag = 'tg-div-tag';
+						break;
+					case 'get_product_add_to_cart_url':
+						tag = 'tg-div-tag';
+						break;
+					default:
+						tag = 'tg-span-tag';
+				}
+				
+			} else if (source_type === 'media_button') {
+				tag = 'tg-div-tag';
+			} else if (source_type === 'social_link') {
+				tag = 'tg-div-tag';
+			} else if (source_type === 'icon') {
+				tag = 'tg-div-tag';
+			} else if (source_type === 'html') {
+				tag = 'tg-div-tag';
+			} else if (source_type === 'line_break') {
+				tag = 'tg-line-break';
 			}
-		} else if (source_type === 'woocommerce') {
-			switch(woo_content) {
-				case 'get_product_price':
-					tag = 'tg-h-tag';
-					break;
-				case 'get_product_full_price':
-					tag = 'tg-h-tag';
-					break;
-				case 'get_product_regular_price':
-					tag = 'tg-h-tag';
-					break;
-				case 'get_product_sale_price':
-					tag = 'tg-h-tag';
-					break;
-				case 'get_product_add_to_cart_url':
-					tag = 'tg-h-tag';
-					break;
-				default:
-					tag = 'tg-span-tag';
-			}
-		} else if (source_type === 'icon') {
-			tag = 'tg-h-tag';
-		} else if (source_type === 'html') {
-			tag = 'tg-p-tag';
-		} else if (source_type === 'line_break') {
-			tag = 'tg-line-break';
+		
 		}
 		
-		$('.tg-element-draggable'+element).removeClass('tg-h-tag tg-p-tag tg-span-tag tg-line-break').addClass(tag);
+		$('.tg-element-draggable'+element+', .tg-element-custom'+element).removeClass('tg-h-tag tg-div-tag tg-p-tag tg-span-tag tg-line-break').addClass(tag);
 	
-	}
+	};
 
 // ==================================================================
 // Helper to get url parameter
@@ -247,7 +273,7 @@ jQuery.noConflict();
 			}
 		}
 		
-	};
+	}
 	
 // ==================================================================
 // Sticker banner/header
@@ -641,7 +667,7 @@ jQuery.noConflict();
 			}
 		});
 
-		if (item_IDs) {
+		if (!$.isEmptyObject(item_IDs)) {
 			$(info_msg).html(msg_icons.before+msg_strings.tg_export_items.before);
 			$(info_box).addClass(box_load);
 			$('[name="tg_export_items"]').val(JSON.stringify(item_IDs));
@@ -654,6 +680,9 @@ jQuery.noConflict();
 			}, 800);
 		} else {
 			$('.tg-export-msg').html(msg_strings.tg_export_items.empty);
+			setTimeout(function() {
+				$('.tg-export-msg').html('');
+			}, 1500);
 		}
 
 	});
@@ -698,9 +727,10 @@ jQuery.noConflict();
 	var import_data = null,
 		import_content = '.tg-import-content',
 		import_spinner = '.tg-import-loading .spinner',
-		import_file_uploaded   = '#tg-import-file[type="file"]',
-		import_message_success = '.tg-import-msg-success',
-		import_message_error   = '.tg-import-msg-error';
+		import_file_uploaded      = '#tg-import-file[type="file"]',
+		import_message_success    = '.tg-import-msg-success',
+		import_item_message_error = '.tg-import-item-msg-error',
+		import_message_error      = '.tg-import-msg-error';
 	
 	$(document).on('click','#tg_import_items, #tg-import-demo', function() {
 		
@@ -713,28 +743,39 @@ jQuery.noConflict();
 			}
 		});
 
-		Ajax_Helper({
-			nonce      : tg_admin_global_var.nonce,
-			action     : 'backend_grid_ajax',
-			func       : $(this).data('action'),
-			item_data  : import_data,
-			item_names : item_names,
-			grid_demo  : $(this).data('grid-demo'),
-			callbacks : {
-				before  : show_message_load,
-				success : function(ajax_data, response, msg) {
-					$(info_msg).html(msg);
-					setTimeout(function() {
-						$(info_box).removeClass(box_load);
-						if (response.content) {
-							var grid_list = $(response.content).html();
-							$(over_list).html(grid_list);
-						}
-					}, 800);
-				},
-				error   : show_message_error
-			}
-		});
+		if (item_names.length !== 0 || $(this).data('grid-demo')) {
+
+			Ajax_Helper({
+				nonce      : tg_admin_global_var.nonce,
+				action     : 'backend_grid_ajax',
+				func       : $(this).data('action'),
+				item_data  : import_data,
+				item_names : item_names,
+				grid_demo  : $(this).data('grid-demo'),
+				callbacks : {
+					before  : show_message_load,
+					success : function(ajax_data, response, msg) {
+						$(info_msg).html(msg);
+						setTimeout(function() {
+							$(info_box).removeClass(box_load);
+							if (response.content) {
+								var grid_list = $(response.content).html();
+								$(over_list).html(grid_list);
+							}
+						}, 800);
+					},
+					error   : show_message_error
+				}
+			});
+		
+		} else {
+			
+			$(import_item_message_error).html(msg_strings.tg_import_items.empty);
+			setTimeout(function() {
+				$(import_item_message_error).html('');
+			}, 1500);
+		
+		}
 
 	});
 	
@@ -825,8 +866,8 @@ jQuery.noConflict();
 		$source_type = $('.the_grid_source_type.tomb-type-image_select'),
 		$grid_skins = $('#tg-grid-skins'),
 		$grid_skins_loading = $('#tg-grid-skins-loading'),
-		dft_post_style = $('.the_grid_style input:checked').val(),
-		dft_post_style = (dft_post_style === 'justified') ? 'grid' : dft_post_style,
+		dft_post_value = $('.the_grid_style input:checked').val(),
+		dft_post_style = (dft_post_value === 'justified') ? 'grid' : dft_post_value,
 		dft_maso_skin  = (typeof tg_admin_global_var.default_skin !== 'undefined') ? tg_admin_global_var.default_skin.masonry : null,
 		dft_grid_skin  = (typeof tg_admin_global_var.default_skin !== 'undefined') ? tg_admin_global_var.default_skin.grid : null,
 		dft_skin_name  = (dft_post_style === 'grid') ?  dft_grid_skin : dft_maso_skin,
@@ -901,17 +942,25 @@ jQuery.noConflict();
 		};
 		
 		$(document).on('click','#tg-grid-skins .tg-item, #tg-grid-skins .tg-item *', function(e) {
-			e.preventDefault();
-			if ($source_type.find('input[type="radio"]:checked').val() == 'post_type') {
-				// retieve current post for skin selection
-				get_current_post_skin();
-				skin_data_arr[current_post] = $(this).closest('.tg-item').find('.tg-item-skin-name').data('slug');
+			
+			var eclass = $(e.target).attr('class');
+			
+			if (eclass && (eclass.indexOf('tg-edit-skin') > 0 || eclass.indexOf('dashicons-admin-tools') >= 0)) {
+				return;
 			} else {
-				current_post_skin = $(this).closest('.tg-item').find('.tg-item-skin-name').data('slug');
-				$('.the_grid_social_skin').val(current_post_skin);
+				e.preventDefault();
+				if ($source_type.find('input[type="radio"]:checked').val() == 'post_type') {
+					// retieve current post for skin selection
+					get_current_post_skin();
+					skin_data_arr[current_post] = $(this).closest('.tg-item').find('.tg-item-skin-name').data('slug');
+				} else {
+					current_post_skin = $(this).closest('.tg-item').find('.tg-item-skin-name').data('slug');
+					$('.the_grid_social_skin').val(current_post_skin);
+				}
+				// update skin options array
+				update_selected_skin();
 			}
-			// update skin options array
-			update_selected_skin();
+			
 		});
 		
 		var update_post_skin = function(el) {
@@ -1355,6 +1404,11 @@ jQuery.noConflict();
 		$('#tg-grid-'+style+'-skin').removeClass('skin-hidden');
 		
 	});
+	
+	/*** prevent click on item link (custom skin preview) ***/
+	$(document).on('click','.tg-custom-skins-overview .tg-item-inner, .tg-custom-skins-overview .tg-item-inner *', function(e) {
+		e.preventDefault();
+	});
 
 // ==================================================================
 // The Grid - Import demo skins
@@ -1363,8 +1417,6 @@ jQuery.noConflict();
 	// import demo skins
 	$(document).on('click', '#tg-import-skin-demo', function() {
 
-		var $this = $(this);
-		
 		Ajax_Helper({
 			nonce     : tg_admin_global_var.nonce,
 			action    : 'backend_grid_ajax',
@@ -1392,73 +1444,95 @@ jQuery.noConflict();
 // The Grid - Get custom skin settings
 // ==================================================================
 
-	function TG_fect_skin_data() {
+	function TG_fetch_skin_data() {
 		
 		var json = {};
 		
-		json['item'] = {};
-		json['elements'] = {};
+		json.item = {};
+		json.elements = {};
 		
 		// store elements settings for each item area
 		$('.tg-skin-build-inner [data-item-area]').each(function() {
 			
 			var area = $(this).data('item-area');
-			json['elements'][area] = {};
+			json.elements[area] = {};
 			
 			if ($(this).is(':visible')) {
-				$(this).find('.tg-element-draggable').each(function() {
+				$(this).find('> .tg-element-draggable').each(function() {
 					
 					var $this = $(this);
-					json['elements'][area][$this.data('name')] = $this.data('settings');
+					json.elements[area][$this.data('name')] = $this.data('settings');
 					
+					/*** store element content ***/
+					var $content = $(this).clone();
+					$content.find('.tg-element-helper, .ui-resizable-handle, .tg-element-icon').remove();
+					$content = $content.html();
+					json.elements[area][$this.data('name')].content = $content;
+
 				});
 			}
 			
         });
-		
+
 		// store item layout settings
 		$('.tg-panel-item > div > [data-settings]').each(function() {
 			
 			var prefix  = $(this).data('prefix');
 			var element = $(this).data('settings');
 
-			if ($(this).data('style') && element != 'animations') {
+			if ($(this).data('style') && $.inArray(element, ['animations', 'action', 'z-index']) === -1) {
 
-				if (!json['item']['containers']) {
-					json['item']['containers'] = {};
+				if (!json.item.containers) {
+					json.item.containers = {};
 				}
-				json['item']['containers'][element] = {};
+				json.item.containers[element] = {};
 				
 				$(this).find('[data-settings="styles"]').each(function() {
 					
 					var settings = $(this).data('settings');
-					json['item']['containers'][element][settings] = {};
+					json.item.containers[element][settings] = {};
 					
 					$(this).find('[data-settings]').each(function() {
 						
 						prefix = $(this).data('prefix');
-						json['item']['containers'][element][settings][$(this).data('settings')] = TG_field_value($(this), prefix);
+						json.item.containers[element][settings][$(this).data('settings')] = TG_field_value($(this), prefix);
+						
+						// add z-index (layer depth)
+						if ($(this).data('settings') === 'idle_state') {
+							var z_index = $('[name="'+prefix+'z-index"]').val();
+							json.item.containers[element][settings][$(this).data('settings')]['z-index'] = (z_index) ? z_index : '';
+						}
 						
 					});
 					
+					// add hover setting
+					json.item.containers[element][settings].is_hover = $(this).find('[name="is_hover"]').is(':checked');
+					
+					// add animation settings
 					var $animation = $('.tg-panel-item [data-settings="animation"] [data-settings=\''+element+'\']');
-					json['item']['containers'][element][settings]['is_hover'] = $(this).find('[name="is_hover"]').is(':checked');
-					json['item']['containers'][element]['animation'] = TG_field_value($animation, $animation.data('prefix'));
+					json.item.containers[element].animation = TG_field_value($animation, $animation.data('prefix'));
+					
+					// add action settings
+					var $action = $('.tg-panel-item [data-settings="action"] [data-settings=\''+element+'\']');
+					json.item.containers[element].action = TG_field_value($action, $action.data('prefix'));
 					
 				});
 				
-			} else if (element != 'animations'){
+			} else if ($.inArray(element, ['animations', 'action', 'z-index']) === -1){
 				
 				if (element != 'global_css'){
-					json['item'][$(this).data('settings')] = TG_field_value($(this), prefix);
+					json.item[$(this).data('settings')] = TG_field_value($(this), prefix);
 				} else {
-					json['item'][$(this).data('settings')] = $(this).find('textarea').val();
+					json.item[$(this).data('settings')] = $(this).find('textarea').val();
 				}
 				
 			}
             
         });
-		
+
+		// store skin name
+		json.item.layout.skin_name = $('[name="skin_name"]').val();
+
 		return json;
 		
 	}
@@ -1471,7 +1545,7 @@ jQuery.noConflict();
 		
 		var $this   = $(this);
 		
-		var json = TG_fect_skin_data();
+		var json = TG_fetch_skin_data();
 
 		Ajax_Helper({
 			nonce     : tg_admin_global_var.nonce,
@@ -1510,7 +1584,7 @@ jQuery.noConflict();
 
 	$(document).on('click', '#tg_download_skin', function() {
 		
-		var json = TG_fect_skin_data();
+		var json = TG_fetch_skin_data();
 		$('[name="tg_export_skin"]').val(JSON.stringify(json));
 		$('[name="tg_export_skin"]').trigger('click');
 		
@@ -1529,11 +1603,12 @@ jQuery.noConflict();
 // The Grid - Delete/Clone skin
 // ==================================================================
 	
-	$(document).on('click', '#tg-delete-skin, #tg-clone-skin', function() {
+	$(document).on('click', '.tg-delete-skin, .tg-clone-skin', function() {
 
-		var $this = $(this);
+		var $this = $(this),
+			$tab  = $('.tg-skins-style-button.tg-selected').data('style'),
+			result  = confirm(tg_admin_global_var.box_messages[$this.data('action')].message);
 		
-		var result  = confirm(tg_admin_global_var.box_messages[$this.data('action')].message);
 		if (!result) {
 			return false;
 		}
@@ -1547,15 +1622,14 @@ jQuery.noConflict();
 				before  : show_message_load,
 				success : function(ajax_data, response, msg) {
 					$(info_msg).html(msg);
-					/*if ($this.data('action') === 'tg_delete_skin') {
-						$this.closest('.tg-grid-holder').TG_Layout('remove', $this.closest('.tg-item')[0]).TG_Layout();
-					}*/
 					setTimeout(function() {
 						$(info_box).removeClass(box_load);
 						if (response.content) {
 							var skin_list = $(response.content);
+							skin_list.find('.tg-skins-style-button').removeClass('tg-selected');
 							$('.tg-custom-skins-overview').replaceWith(skin_list);
 							$('.tg-grid-holder').The_Grid();
+							$('.tg-skins-style-button[data-style="'+$tab+'"]').trigger('click');
 						}
 					}, 800);
 				},
@@ -1564,6 +1638,75 @@ jQuery.noConflict();
 		});
 		
 	});
+
+// ==================================================================
+// The Grid - Get skin elements
+// ==================================================================
+	
+	// declare global var for skin element
+	window.TG_skin_elements = {};
+	
+	var $elements_holder = $('.tg-elements-inner');
+	
+	if ($elements_holder.length) {
+		
+		var $elements_msg = $('<div class="tg-panel-elements-msg"></div>');
+		
+		$.ajax({
+			url: ajaxurl,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				nonce  : tg_admin_global_var.nonce,
+				action : 'backend_grid_ajax',
+				func   : 'tg_get_elements'
+			},
+			beforeSend: function() {
+				
+				$elements_msg.html(msg_strings.tg_get_elements.before);
+				$elements_holder.find('.tg-native-elements, .tg-custom-elements').html($elements_msg);
+				
+			},
+			error: function(response) {
+				
+				$elements_msg.html(msg_strings.tg_get_elements.error);
+				$elements_holder.find('.tg-native-elements, .tg-custom-elements').html($elements_msg);
+				
+			},
+			success: function(response){
+				
+				$elements_holder.find('.tg-native-elements, .tg-custom-elements').html('');
+				
+				// append elements
+				if (response.content) {
+					$elements_holder.find('.tg-element-styles-holder').append(response.content.styles);
+					$elements_holder.find('.tg-native-elements').append(response.content.native_elements);
+					$elements_holder.find('.tg-custom-elements').append(response.content.custom_elements);
+				}
+				
+				// store elements settings for later
+				window.TG_skin_elements = (response.content.settings) ? response.content.settings : {};
+
+				// set elements colors
+				if (typeof TG_skin_elements === 'object') {
+					
+					for (var slug in TG_skin_elements) {
+
+						if (TG_skin_elements.hasOwnProperty(slug)) {
+							
+							var settings = JSON.parse(TG_skin_elements[slug]);
+							TG_element_color('[data-slug="'+slug+'"]', settings);
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+		});
+	
+	}
 	
 // ==================================================================
 // The Grid - Save skin element
@@ -1585,9 +1728,21 @@ jQuery.noConflict();
         	return;
     	}
 		
+		var $element = $('.tg-element-draggable.tg-element-selected');
+		
 		// get element settings
-		var tg_element_settings = /*$.parseJSON(JSON.stringify(*/$('.tg-element-draggable.tg-element-selected').data('settings')/*))*/;
-		//$('body').append(JSON.stringify(tg_element_settings));
+		var tg_element_settings = $element.data('settings');
+		
+		/*** get element content/color scheme ***/
+		var $content = $element.clone();
+		$content.find('.tg-element-helper, .ui-resizable-handle, .tg-element-icon').remove();
+		$content = $content.html();
+		tg_element_settings.content = $content;
+		tg_element_settings['color-scheme'] = ($element.closest('.tg-light').length) ? 'tg-light' : 'tg-dark';	
+
+		// Generate native element json array
+		//console.log(JSON.stringify(tg_element_settings));
+
 		Ajax_Helper({
 			nonce     : tg_admin_global_var.nonce,
 			action    : 'backend_grid_ajax',
@@ -1601,57 +1756,98 @@ jQuery.noConflict();
 
 					// if element exists
 					if (response.content === 'exists') {
+						
 						$(info_box).removeClass(box_load);
 						tg_overwrite_element  = confirm(tg_admin_global_var.box_messages[$this.data('action')].message2);
+						
 						if (tg_overwrite_element) {
 							$('#tg-element-save').trigger('click');
 						} else {
 							tg_overwrite_element = '';
 						}
+						
 						return false;
+						
 					}
 					
 					
 					var $element = $(response.content.markup);
 					if (tg_overwrite_element) {
+
+						var $old_element = $('.tg-element-custom[data-slug="'+response.content.slug+'"]');
 						// replace existing element if overwrite
-						$('.tg-element-custom[data-slug="'+response.content.slug+'"]').closest('.tg-element-holder').replaceWith($element);
-						$('.tg-element-styles[data-slug="'+response.content.slug+'"]').remove();
-					} else {
-						// append new element with styles
-						$('.tg-elements-inner .tg-custom-elements').prepend($element);
+						if ($old_element.closest('.tomb-tab-content').hasClass($element.find('.tomb-tab').data('target'))) {
+
+							$old_element.closest('.tg-element-holder').replaceWith($element.find('.tg-element-holder'));
+						
+						// if existing element have different content from new, then check tab and remove if empty
+						} else {
+							
+							tg_overwrite_element = false;
+							var $tab_content = $old_element.closest('.tomb-tab-content');
+							
+							if ($tab_content.find('.tg-element-holder').length === 1) {
+		
+								var classes = $tab_content.attr('class').split(/\s+/),
+									$tab_li = $('.tg-custom-elements').find('[data-target="'+classes[1]+'"]');
+								
+								// move tab back remove tab holder and tab li
+								$tab_content.closest('.tg-move-tab').removeClass('tg-move-tab');
+								$tab_li.remove();
+								$tab_content.remove();
+								
+							}
+							
+							// remove old element
+							$old_element.closest('.tg-element-holder').remove();
+							
+						}
 						
 					}
-					$('.tg-element-styles-holder').append(response.content.styles);
-					TG_element_color('[data-slug="'+response.content.slug+'"]', tg_element_settings['source']);
 					
-					// add settings to element
-					$element.find('.tg-element-custom').data('settings', tg_element_settings);
-					$('.tg-no-custom-element').hide();
-					
-					var initial_width;
-					$element.find('.tg-element-custom').draggable({
-						connectToSortable: '.tg-skin-build-inner .tg-area-droppable',
-						helper: 'clone',
-						zIndex: 99999,
-						appendTo: 'body',
-						start: function(event, ui) {
-							var width  = $(ui.helper).outerWidth(),
-								item_width = $('.tg-item-inner').innerWidth(),
-								min_width  = (width > item_width) ? item_width : width;
-			
-							$(ui.helper).css({
-								'width': width,
-								'min-width': min_width,
-								'max-width': item_width,
-							});
+					if (!tg_overwrite_element) {
+						
+						// append new element with styles
+						var tab     = $element.find('.tomb-tab').data('target'),
+							$holder = $('.tg-elements-inner .tg-custom-elements').find('.'+tab);
+
+						if ($holder.length) {
+							$holder.prepend($element.find('.tg-element-holder'));
+						} else {
 							
-							initial_width = $(ui.helper)[0].getBoundingClientRect().width;
-							/*** get data attribute ***/
-							$(ui.helper).css({'height':$(ui.helper)[0].getBoundingClientRect().height});
-							$(ui.helper).data('settings', $(event.target).data('settings'));
+							var $element_list = $('.tg-elements-inner .tg-custom-elements ul');
+							
+							if (!$element_list.length) {
+								
+								$('.tg-elements-inner .tg-custom-elements').append($element);
+
+							} else {
+							
+								$element_list.append($element.find('li'));
+								$element.find('.tomb-tab-content').insertAfter($('.tg-elements-inner .tg-custom-elements ul'));
+								
+								// sort li
+								var listitems = $element_list.children('li').get();
+								listitems.sort(function(a, b) {
+								   return $(a).data('target').match(/\d+/) - $(b).data('target').match(/\d+/);
+								});
+								$.each(listitems, function(idx, itm) { $element_list.append(itm); });
+							
+							}
+							
 						}
-					}).disableSelection();
+						
+					}
+					
+					// append element styles
+					$('.tg-element-styles-holder').append(response.content.styles);
+					// set element color
+					TG_element_color('[data-slug="'+response.content.slug+'"]', tg_element_settings);
+					// add element to global skin elements
+					TG_skin_elements[response.content.slug] = JSON.stringify(tg_element_settings);
+
+					// add settings to element
+					$('.tg-no-custom-element').hide();
 					
 					tg_overwrite_element = '';
 					$(info_msg).html(msg);
@@ -1688,20 +1884,82 @@ jQuery.noConflict();
 			callbacks : {
 				before  : show_message_load,
 				success : function(ajax_data, response, msg) {
+					
 					$(info_msg).html(msg);
+					
+					// remove tab content and li if no more element in tab content
+					var $tab_content = $this.closest('.tomb-tab-content');
+					if ($tab_content.find('.tg-element-holder').length === 1) {
+
+						var classes = $tab_content.attr('class').split(/\s+/),
+							$tab_li = $('.tg-custom-elements').find('[data-target="'+classes[1]+'"]');
+						
+						// move tab back remove tab holder and tab li
+						$tab_content.closest('.tg-move-tab').removeClass('tg-move-tab');
+						$tab_li.remove();
+						$tab_content.remove();
+						
+					}
+					
+					// remove element
 					$this.closest('.tg-element-holder').remove();
+					
+					// remove element style to prevent conflict
 					$('.tg-element-styles-holder .tg-element-styles[data-slug="'+$this.prevAll('[data-slug]').data('slug')+'"]').remove();
+					
+					// if no custom element show no element msg
 					if (!$('.tg-custom-elements .tg-element-holder').length) {
 						$('.tg-no-custom-element').show();
 					}
+
+					// delete element from global skin element array
+					var slug = $this.prevAll('[data-slug]').data('slug');
+					delete TG_skin_elements[slug];
+
 					setTimeout(function() {
 						$(info_box).removeClass(box_load);
 					}, 800);
+					
 				},
 				error   : show_message_error
 			}
 		});
 		
 	});
+	
+// ==================================================================
+// The Grid - Get Flickr Photoset list (name and ID)
+// ==================================================================
+
+	$(document).on('click', '#tg_flickr_get_photosets_list', function() {
+
+		var $this = $(this);
+
+		Ajax_Helper({
+			nonce     : tg_admin_global_var.nonce,
+			action    : 'backend_grid_ajax',
+			func      : $this.data('action'),
+			user_url  : $('[name="the_grid_flickr_user_url"]').val(),
+			callbacks : {
+				before  : show_message_load,
+				success : function(ajax_data, response, msg) {
+					$this.next('div').remove();
+					$(response.content).insertAfter($this);
+					setTimeout(function() {
+						$(info_box).removeClass(box_load);
+					}, 800);
+					
+				},
+				error   : show_message_error
+			}
+		});
+		
+	});
+	
+	// set flickr photoset ID from photosets list fetched with  ajax
+	$(document).on('change', '.tg_flickr_get_photosets_list select', function() {
+		$('[name="the_grid_flickr_photoset_id"]').val($(this).val());
+	});
+
 
 })(jQuery);

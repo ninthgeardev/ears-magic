@@ -12,11 +12,15 @@ if (!defined('ABSPATH')) {
 
 // Get current post ID
 if (isset($_GET['id']) && !empty($_GET['id'])) {
+    
 	$post_ID = $_GET['id'];
+    
 } else {
+    
 	// generate one if post id does not exist
 	$post = get_default_post_to_edit('the_grid', true);
 	$_GET['id'] = $post_ID = $post->ID;
+    
 }
 
 echo '<div id="post_ID" value="'.$post_ID.'"></div>';
@@ -35,6 +39,9 @@ $prefix = TG_PREFIX;
 // get/set grid name
 $grid_name = get_post_meta($post_ID, $prefix.'name', true);
 $grid_name = ($grid_name) ? $grid_name : 'New Grid';
+
+// check if next gen is active
+$nextgen = class_exists('nggdb') ? true : false;
 
 // build metabox
 $grid_settings = array(
@@ -155,12 +162,27 @@ $grid_settings = array(
 						'value' => 'vimeo',
 						'image' => TG_PLUGIN_URL . 'backend/assets/images/vimeo-logo.png'
 					),
-					/*array (
+					array (
+						'label' => 'Facebook',
+						'value' => 'facebook',
+						'image' => TG_PLUGIN_URL . 'backend/assets/images/facebook-logo.png'
+					),
+					array (
+						'label' => 'Twitter',
+						'value' => 'twitter',
+						'image' => TG_PLUGIN_URL . 'backend/assets/images/twitter-logo.png'
+					),
+					array (
 						'label' => 'Flickr',
 						'value' => 'flickr',
 						'image' => TG_PLUGIN_URL . 'backend/assets/images/flickr-logo.png'
 					),
 					array (
+						'label' => 'RSS Feed',
+						'value' => 'rss',
+						'image' => TG_PLUGIN_URL . 'backend/assets/images/rss-logo.png'
+					),
+					/*array (
 						'label' => '500px',
 						'value' => '500px',
 						'image' => TG_PLUGIN_URL . 'backend/assets/images/500px-logo.png'
@@ -170,16 +192,7 @@ $grid_settings = array(
 						'value' => 'dribbble',
 						'image' => TG_PLUGIN_URL . 'backend/assets/images/dribbble-logo.png'
 					),
-					array (
-						'label' => 'Twitter',
-						'value' => 'twitter',
-						'image' => TG_PLUGIN_URL . 'backend/assets/images/twitter-logo.png'
-					),
-					array (
-						'label' => 'Facebook',
-						'value' => 'facebook',
-						'image' => TG_PLUGIN_URL . 'backend/assets/images/facebook-logo.png'
-					)*/
+					*/
 				),
 				'tab' => __( 'Source', 'tg-text-domain' )
 			),
@@ -187,7 +200,7 @@ $grid_settings = array(
 				'id'   => $prefix.'item_number',
 				'name' => __( 'Item Number', 'tg-text-domain' ),
 				'desc' => __( 'Enter the number of items to load inside the grid.', 'tg-text-domain' ),
-				'sub_desc' => '<strong>'.__( '* -1 allows to load all item of the current select source', 'tg-text-domain' ).'<br>'.__( '* 0 correspond to the standard number of ', 'tg-text-domain' ).'<a href="'.admin_url('options-reading.php').'" target="_blank">'.__( 'post per page.', 'tg-text-domain' ).'</a></strong>',
+				'sub_desc' => '<strong>'.__( '* -1 allows to load all items (only for Post Type)', 'tg-text-domain' ).'<br>'.__( '* 0 corresponds to the default number of ', 'tg-text-domain' ).'<a href="'.admin_url('options-reading.php').'" target="_blank">'.__( 'post per page.', 'tg-text-domain' ).'</a></strong>',
 				'type' => 'number',
 				'label' => '',
 				'sign'  => '',
@@ -544,8 +557,472 @@ $grid_settings = array(
 				'type' => 'section_end',
 				'tab' => __( 'Source', 'tg-text-domain' ),
 			),
-				
-
+			
+			array(
+				'id'   => 'section_facebook_start',
+				'name' => __( 'Facebook Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'facebook')
+				)
+			),
+			array(
+				'id' => $prefix . 'facebook_source',
+				'name' => __('Source', 'tg-text-domain'),
+				'desc' => __( 'Please select Facebook source to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'page_timeline',
+				'options' => array (
+					'page_timeline' =>  __('Facebook public page', 'tg-text-domain'),
+					'group'         =>  __('Public group page', 'tg-text-domain'),                      
+					'album'         =>  __('Public album', 'tg-text-domain')	
+				),
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'facebook_page',
+				'name' => __( 'Facebook Page', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Page Name (or url) of a public Facebook Page', 'tg-text-domain' ),
+				'sub_desc' => __( 'Not work with personal profile', 'tg-text-domain' ),
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'facebook_source', '==', 'page_timeline')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'facebook_group_id',
+				'name' => __( 'Facebook Group ID', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Facebook Group ID', 'tg-text-domain' ),
+				'sub_desc' =>  __( 'You will find the Group ID in the Facebook URL', 'tg-text-domain' ).' <a href="https://lookup-id.com/">('. __( 'Find groud ID', 'tg-text-domain' ).')</a>',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'facebook_source', '==', 'group')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'facebook_album_id',
+				'name' => __( 'Facebook Album ID', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a facebook album ID', 'tg-text-domain' ),
+				'sub_desc' => __( 'You will find the album ID in the Facebook URL', 'tg-text-domain' ),
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'facebook_source', '==', 'album')
+				)
+			),
+			array(
+				'id'   => 'section_facebook_end',
+				'type' => 'section_end',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+			),
+			array(
+				'id'   => 'section_twitter_start',
+				'name' => __( 'Twitter Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'twitter')
+				)
+			),
+			array(
+				'id' => $prefix . 'twitter_source',
+				'name' => __('Source', 'tg-text-domain'),
+				'desc' => __( 'Please select Twitter source to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'user_timeline',
+				'options' => array (
+					'user_timeline' =>  __('User Timeline', 'tg-text-domain'),
+					'search'        =>  __('Tweets by search', 'tg-text-domain'), 
+					'favorites'     =>  __('User Favorites', 'tg-text-domain'),                      
+					'list_timeline' =>  __('User List', 'tg-text-domain')	
+				),
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'twitter_include',
+				'name' => __( 'Included Content', 'tg-text-domain' ),
+				'desc' => __( 'Check content to include from Twitter', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'checkbox_list',
+				'std' => array('gallery','video','audio','quote','link'),
+				'options' => array(
+					'retweets' =>  __('Retweets', 'tg-text-domain'),
+					'replies'  =>  __('Replies', 'tg-text-domain')
+				),
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'twitter_source', '!=', 'search')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'twitter_username',
+				'name' => __( 'Twitter Username', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Twitter Username', 'tg-text-domain' ),
+				'sub_desc' => '('.__( 'Note: Do not add @', 'tg-text-domain' ).')',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'twitter_source', '!=', 'search')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'twitter_listname',
+				'name' => __( 'Twitter List Name', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Twitter List Name', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'twitter_source', 'contains', 'list_timeline')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'twitter_searchkey',
+				'name' => __( 'Twitter Search Key Word', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter any word or #hashtag', 'tg-text-domain' ),
+				'sub_desc' => __( 'look', 'tg-text-domain' ).' <a href="https://dev.twitter.com/rest/public/search" target="_blank">'.__( 'here', 'tg-text-domain' ).' </a>'.__( 'for advanced terms', 'tg-text-domain' ),
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'twitter_source', '==', 'search')
+				)
+			),
+			array(
+				'id'   => 'section_twitter_end',
+				'type' => 'section_end',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+			),
+			array(
+				'id'   => 'section_flickr_start',
+				'name' => __( 'Flickr Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr')
+				)
+			),
+			array(
+				'id' => $prefix . 'flickr_source',
+				'name' => __('Source', 'tg-text-domain'),
+				'desc' => __( 'Please select Flickr source to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'public_photos',
+				'options' => array (
+					'public_photos' =>  __('Public Photos', 'tg-text-domain'),
+					'photo_sets'    =>  __('Photoset', 'tg-text-domain'),
+					'gallery'       =>  __('Gallery', 'tg-text-domain'),                       
+					'group'         =>  __('Groups Photos', 'tg-text-domain')	
+				),
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'flickr_user_url',
+				'name' => __( 'Flickr User URL', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Flickr user url', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr'),
+					array($prefix.'flickr_source', 'contains', 'photo')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'flickr_photoset_id',
+				'name' => __( 'Flickr Photoset ID', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Flickr photoset id', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr'),
+					array($prefix.'flickr_source', '==', 'photo_sets')
+				)
+			),
+			array(
+				'id'   => $prefix.'flickr_photoset_get',
+				'name' => __( 'Get Photoset ID', 'tg-text-domain' ),
+				'desc' =>  __( 'Click here to fetch the photoset from the current flickr user url', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'custom',
+				'std'  => '',
+				'options' => '<div class="tomb-button button-primary" id="tg_flickr_get_photosets_list" data-action="tg_get_flickr_photosets">'.__( 'Get Photoset(s)', 'tg-text-domain' ).'</div>',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr'),
+					array($prefix.'flickr_source', '==', 'photo_sets')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'flickr_gallery_url',
+				'name' => __( 'Flickr Gallery URL', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Flickr gallery URL', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr'),
+					array($prefix.'flickr_source', '==', 'gallery')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id'   => $prefix.'flickr_group_url',
+				'name' => __( 'Flickr Group URL', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a Flickr group url', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'flickr'),
+					array($prefix.'flickr_source', '==', 'group')
+				)
+			),
+			array(
+				'id'   => 'section_flickr_end',
+				'type' => 'section_end',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+			),
+			array(
+				'id'   => 'section_rss_start',
+				'name' => __( 'RSS Feed Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'rss')
+				)
+			),
+			array(
+				'id'   => $prefix.'rss_feed_url',
+				'name' => __( 'RSS Feed URL', 'tg-text-domain' ),
+				'desc' => __( 'Enter your RSS Feed url(s)', 'tg-text-domain' ),
+				'sub_desc' => __( 'Several urls, separated by a comma, are allowed (e.g.: url1.com, url2.com)', 'tg-text-domain' ) .'<br>'.__( 'N.B.: A RSS feed has a limited amount of posts. So you will not able, most of the time, to load more than 20-30 posts', 'tg-text-domain' ),
+				'type' => 'text',
+				'std'  => '',
+				'size' => 320,
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'rss')
+				)
+			),
+			array(
+				'id'   => 'section_rss_end',
+				'type' => 'section_end',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+			),
+			/*array(
+				'id'   => 'section_nextgen_start',
+				'name' => __( 'NexGen Gallery Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'nextgen')
+				)
+			),
+			array(
+				'id'   => $prefix . 'nextgen_source',
+				'name' => __( 'NexGen Gallery Settings' ),
+				'desc' => '',
+				'type' => 'section_start',
+				'color' => '#ffffff',
+				'background' => '#34495e',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'source_type', '==', 'nextgen')
+				)
+			),
+			array(
+				'id' => $prefix . 'nextgen_source',
+				'name' => __('Source', 'tg-text-domain'),
+				'desc' => __( 'Please select a NextGen source to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'public_photos',
+				'options' => array (
+					'gallery'        =>  __('Gallery', 'tg-text-domain'),
+					'album'          =>  __('Album', 'tg-text-domain'),
+					'single_images'  =>  __('Single Images', 'tg-text-domain'),                       
+					'recent_images'  =>  __('Recent Images', 'tg-text-domain'),
+					'random_images'  =>  __('Random Images', 'tg-text-domain'),
+					'search_images'  =>  __('Search Images', 'tg-text-domain'),
+					'tags_gallery'   =>  __('Tags Gallery', 'tg-text-domain'),
+					'tags_album'     =>  __('Tags Album', 'tg-text-domain')
+				),
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id' => $prefix . 'nextgen_gallery_id',
+				'name' => __('Gallery', 'tg-text-domain'),
+				'desc' => __( 'Select a gallery to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'public_photos',
+				'options' => $nextgen ? The_Grid_Nextgen::get_gallery_list() : array(),
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'nextgen_source', '==', 'gallery')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id' => $prefix . 'nextgen_album_id',
+				'name' => __('Albums', 'tg-text-domain'),
+				'desc' => __( 'Select an album to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'public_photos',
+				'options' => $nextgen ? The_Grid_Nextgen::get_album_list() : array(),
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'nextgen_source', '==', 'album')
+				)
+			),
+			array(
+				'id'   => $prefix.'nextgen_image_ids',
+				'name' => __( 'Images ID', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter a your image IDs from NextGen plugin', 'tg-text-domain' ),
+				'sub_desc' =>  __( 'IDs, must be comma separated. IDs Ranges are accepted (e.g.: 2, 5, 8-14, 20, 30-50)', 'tg-text-domain' ),
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'nextgen_source', '==', 'single_images')
+				)
+			),
+			array(
+				'id'   => $prefix.'nextgen_search_request',
+				'name' => __( 'Search Query', 'tg-text-domain' ),
+				'desc' =>  __( 'Enter your search query', 'tg-text-domain' ),
+				'sub_desc' =>  __( 'Accept comma separated multiplue queries (e.g.: book, story)', 'tg-text-domain' ),
+				'type' => 'text',
+				'size' => 320,
+				'std'  => '',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'nextgen_source', '==', 'search_images')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
+				'id' => $prefix . 'nextgen_tags',
+				'name' => __('Tags', 'tg-text-domain'),
+				'desc' => __( 'Select tag(s) to display in the grid.', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'width' => 200,
+				'type' => 'select',
+				'std' => 'public_photos',
+				'options' => $nextgen ? The_Grid_Nextgen::get_tag_list() : array(),
+				'tab' => __( 'Source', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix.'nextgen_source', '==', 'tags_gallery')
+				)
+			),
+			array(
+				'id'   => 'section_nextgen_end',
+				'type' => 'section_end',
+				'tab' => __( 'Source', 'tg-text-domain' ),
+			),*/
 			array(
 				'id'   => 'section_post_status_start',
 				'name' => __( 'Content Status', 'tg-text-domain' ),
@@ -588,7 +1065,7 @@ $grid_settings = array(
 			array(
 				'id'   => 'section_cats_start',
 				'name' => __( 'Category Filter', 'tg-text-domain' ),
-				'desc' => __( 'Order your grid by categories', 'tg-text-domain' ),
+				'desc' => __( 'Filter your grid by taxonomy terms', 'tg-text-domain' ),
 				'type' => 'section_start',
 				'color' => '#ffffff',
 				'background' => '#34495e',
@@ -598,14 +1075,24 @@ $grid_settings = array(
 				)
 			),
 			array(
+				'id'   => $prefix.'categories_input',
+				'name' => '',
+				'desc' => '',
+				'sub_desc' => '',
+				'type' => 'custom',
+				'options' => '<div data-tg-taxonomy-terms=\''.$the_grid_base->get_all_terms().'\'></div>',
+				'std' => '',
+				'tab' => __( 'Source', 'tg-text-domain' )
+			),
+			array(
 				'id'   => $prefix.'categories',
-				'name' => __( 'Categories', 'tg-text-domain'  ),
-				'desc' => __( 'Select categories or tags for the current post type(s).', 'tg-text-domain' ).'<br>'.__( 'If no category is selected, then all available categories will be available for filter.', 'tg-text-domain' ),
+				'name' => __( 'Category/Taxonomy terms', 'tg-text-domain'  ),
+				'desc' => __( 'Select taxonomy term(s) from the current post type(s).', 'tg-text-domain' ),
 				'sub_desc' => '<strong>'.__( '* Multiple selection is posssible', 'tg-text-domain' ).'</strong>',
 				'type' => 'multiselect',
-				'placeholder' => __( 'Select categories', 'tg-text-domain' ),
+				'placeholder' => __( 'Select taxonomy terms', 'tg-text-domain' ),
 				'width' => 410,
-				'options' => $the_grid_base->get_formated_categories(),
+				'options' => '',
 				'meta_holder' => 'tg-cat-val',
 				'std' => '',
 				'tab' => __( 'Source', 'tg-text-domain' )
@@ -616,8 +1103,8 @@ $grid_settings = array(
 			),
 			array(
 				'id'   => $prefix.'categories_child',
-				'name' => __( 'Child Categories', 'tg-text-domain' ),
-				'desc' => __( 'Allows to display child categories of previous selected categories.', 'tg-text-domain' ),
+				'name' => __( 'Child Terms', 'tg-text-domain' ),
+				'desc' => __( 'Whether or not to include children for hierarchical taxonomies.', 'tg-text-domain' ),
 				'sub_desc' => '',
 				'type' => 'checkbox',
 				'tab' => __( 'Source', 'tg-text-domain' )
@@ -1190,6 +1677,22 @@ $grid_settings = array(
 				)
 			),
 			array(
+				'id'   => $prefix.'item_fitrows',
+				'name' => __( 'Item Fit Rows', 'tg-text-domain' ),
+				'sub_desc' => '',
+				'desc' => __('Items are arranged into rows. Rows progress vertically.', 'tg-text-domain').'<br>'.__('Similar to what you would expect from a classic column layout.', 'tg-text-domain'),
+				'type' => 'checkbox',
+				'checkbox_title' => '',
+				'tab' => __( 'Grid', 'tg-text-domain' ),
+				'required' => array(
+					array($prefix . 'style', '==', 'masonry')
+				)
+			),
+			array(
+				'type' => 'break',
+				'tab' => __( 'Grid', 'tg-text-domain' )
+			),
+			array(
 				'id'   => $prefix.'item_force_size',
 				'name' => __( 'Force Item Sizes', 'tg-text-domain' ),
 				'sub_desc' => '<strong>'. __( '* This option will override all item sizes set in each post/item', 'tg-text-domain' ) .'</strong>',
@@ -1287,7 +1790,7 @@ $grid_settings = array(
 				'desc' => '',
 				'type' => 'custom',
 				'options' =>
-					'<label class="the_grid_resonsive_settings_columns required tomb-row" data-required="the_grid_style,!=,justified">'.__( 'Number of Columns', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_rowheights required tomb-row" data-required="the_grid_style,==,justified">'.__( 'Row Heights', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_gutter">'.__( 'Items Spacings (gutter)', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_widths">'.__( 'Browser Widths', 'tg-text-domain' ).'</label>',
+					'<label class="the_grid_resonsive_settings_columns tomb-row" data-tomb-required="the_grid_style,!=,justified">'.__( 'Number of Columns', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_rowheights tomb-row" data-tomb-required="the_grid_style,==,justified">'.__( 'Row Heights', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_gutter">'.__( 'Items Spacings (gutter)', 'tg-text-domain' ).'</label><label class="the_grid_resonsive_settings_widths">'.__( 'Browser Widths', 'tg-text-domain' ).'</label>',
 				'tab' => __( 'Grid', 'tg-text-domain' )
 			),
 			array(
@@ -1757,7 +2260,7 @@ $grid_settings = array(
 			array(
 				'id'   => $prefix.'filters_title',
 				'name' => __( 'Filter(s)', 'tg-text-domain' ),
-				'desc' => __( 'Drag and drop available filter items in active filter area.', 'tg-text-domain' ).'<br>'.__( 'You can add unlimited number of filter areas in order to create complex filtering system..', 'tg-text-domain' ).'<br>'.__( 'Each new filter added will be appear in the layout tab.', 'tg-text-domain' ),
+				'desc' => __( 'Drag and drop available filter items in active filter area.', 'tg-text-domain' ).'<br>'.__( 'You can add unlimited number of filter areas in order to create complex filtering system..', 'tg-text-domain' ).'<br>'.__( 'Each new filter added will appear in the layout tab.', 'tg-text-domain' ),
 				'type' => 'custom',
 				'options' => '',
 				'tab' => __( 'Filter/Sort', 'tg-text-domain' )
@@ -1769,7 +2272,7 @@ $grid_settings = array(
 			array(
 				'id'   => $prefix.'filter_onload',
 				'name' => __( 'Filter by on load', 'tg-text-domain'  ),
-				'desc' => __( 'Filter the grid by one or multi categories on load.', 'tg-text-domain' ),
+				'desc' => __( 'Filter the grid by taxonomy/category term(s) on load.', 'tg-text-domain' ),
 				'sub_desc' => '',
 				'type' => 'multiselect',
 				'meta_holder' => 'tg-filter-load',
@@ -2663,8 +3166,8 @@ $grid_settings = array(
 			),
 			array(
 				'id' => $prefix . 'navigation_bg',
-				'name' => __('Navigation Backgound Color', 'tg-text-domain'),
-				'desc' => __('Choose a backgound color.', 'tg-text-domain'),
+				'name' => __('Navigation Background Color', 'tg-text-domain'),
+				'desc' => __('Choose a background color.', 'tg-text-domain'),
 				'sub_desc' => '<strong>* '.__('Not all navigation style support background color.', 'tg-text-domain').'</strong>',
 				'type' => 'color',
 				'rgba' => true,
@@ -2673,8 +3176,8 @@ $grid_settings = array(
 			),
 			array(
 				'id' => $prefix . 'navigation_accent_bg',
-				'name' => __('Navigation Backgound Accent Color', 'tg-text-domain'),
-				'desc' => __('Choose an accent backgound color (hover/active).', 'tg-text-domain'),
+				'name' => __('Navigation Background Accent Color', 'tg-text-domain'),
+				'desc' => __('Choose an accent background color (hover/active).', 'tg-text-domain'),
 				'sub_desc' => '<strong>* '.__('Not all navigation style support background color.', 'tg-text-domain').'</strong>',
 				'type' => 'color',
 				'rgba' => true,
@@ -3124,5 +3627,25 @@ $grid_settings = array(
 			),
 	),
 );
+
+/*if ($nextgen) {
+	
+	foreach ($grid_settings['fields'] as $key => $val) {
+		
+		if (isset($val['id']) && $val['id'] == $prefix.'source_type') {
+			
+			$grid_settings['fields'][$key]['options'][] = array (
+				'label' => 'NextGen Gallery',
+				'value' => 'nextgen',
+				'image' => TG_PLUGIN_URL . 'backend/assets/images/NextGen-logo.png'
+			);
+			
+			break;
+			
+		}
+		
+	}
+	
+}*/
 
 new TOMB_Metabox($grid_settings);

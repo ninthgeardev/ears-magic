@@ -79,8 +79,9 @@ if ( ! class_exists( 'TOMB_Image_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
-			$the_field_id = $field['id'];
-			return esc_url( $_POST[$the_field_id] );
+
+			return esc_url( $new );
+			
 		}
 
 	}

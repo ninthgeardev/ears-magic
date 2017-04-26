@@ -65,7 +65,7 @@
 	-o-transition: -o-transform 0.2s ease-in-out;
 	transition: transform 0.2s ease-in-out;
 }
-.honiara .tg-center-outer {
+.honiara .tg-center-holder {
 	padding: 30px;
 }
 .honiara:hover .tg-item-content-holder {

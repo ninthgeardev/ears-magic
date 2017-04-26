@@ -1,8 +1,7 @@
 .alofi a,
 .alofi a:active,
 .alofi a:focus,
-.alofi .tg-item-overlay,
-.alofi .tg-media-button {
+.alofi .tg-item-overlay {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;

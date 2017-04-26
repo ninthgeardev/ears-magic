@@ -60,7 +60,7 @@ class The_Grid_Shortcode {
 	* @since 1.0.0
 	*/
 	public function register_shortcode($atts, $content = null){
-		
+
 		extract(shortcode_atts(array(
 			'name' => '',
 	    ), $atts));
@@ -147,54 +147,59 @@ new The_Grid_Shortcode();
 // Register The Grid for Visual Composer
 if (class_exists('WPBakeryVisualComposerAbstract')) {
 	
-	// create grid list selector shortcode name
-	vc_add_shortcode_param( 'grid_list', 'grid_list_settings_field');
-	function grid_list_settings_field($settings, $value) {
+	// if vc_add_shortcode_param exists (>= v4.7.4)
+	if (function_exists('vc_add_shortcode_param')) {
 		
-		$base = new The_Grid_Base();
-		echo $base->get_grid_shortcode_list($value);
-		
-		echo '<script type="text/javascript">';
-			echo '
-			var value = jQuery(".vc_ui-panel-content-container .tg-grid-shortcode-value").val();
-			if (value) {
-				jQuery(".vc_ui-panel-content-container .tg-list-item-holder .tg-list-item[data-name=\'"+value+"\']").addClass("selected");
-			} else {
-				var $grid = jQuery(".vc_ui-panel-content-container .tg-list-item-holder .tg-list-item:first-child");
-				$grid.addClass("selected");
-				jQuery(".vc_ui-panel-content-container .tg-grid-shortcode-value").val($grid.data("name"));
-			}
-			';
-		echo '</script>';
-		
-	}
-	
-	// add Visual Composer element to VC Popup List Elements
-	add_action('vc_before_init', 'the_grid_VC');
-	function the_grid_VC() {
-		
-		vc_map( array(
-			'name' => __('The Grid', 'tg-text-domain'),
-			'description' => __( 'Add a predefined Grid', 'tg-text-domain'),
-			'base' => 'the_grid',
-			'icon' => 'the-grid-vc-icon',
-			'category' => __('The Grid', 'tg-text-domain'),
-			'show_settings_on_create' => true,
-			'js_view' => 'VcTheGrid',
-			'front_enqueue_js' => TG_PLUGIN_URL.'/backend/assets/js/admin-vc.js',
-			'params' => array(
-				array(
-					'type' => 'grid_list',
-					'holder' => '',
-					'heading' => 'name',
-					'param_name' => 'name',
-					'admin_label' => true,
-					'value' => '',
-					'save_always' => true,
+		// create grid list selector shortcode name
+		vc_add_shortcode_param( 'grid_list', 'grid_list_settings_field');
+		function grid_list_settings_field($settings, $value) {
+			
+			$base = new The_Grid_Base();
+			echo $base->get_grid_shortcode_list($value);
+			
+			echo '<script type="text/javascript">';
+				echo '
+				var value = jQuery(".vc_ui-panel-content-container .tg-grid-shortcode-value").val();
+				if (value) {
+					jQuery(".vc_ui-panel-content-container .tg-list-item-holder .tg-list-item[data-name=\'"+value+"\']").addClass("selected");
+				} else {
+					var $grid = jQuery(".vc_ui-panel-content-container .tg-list-item-holder .tg-list-item:first-child");
+					$grid.addClass("selected");
+					jQuery(".vc_ui-panel-content-container .tg-grid-shortcode-value").val($grid.data("name"));
+				}
+				';
+			echo '</script>';
+			
+		}
+
+		// add Visual Composer element to VC Popup List Elements
+		add_action('vc_before_init', 'the_grid_VC');
+		function the_grid_VC() {
+			
+			vc_map( array(
+				'name' => __('The Grid', 'tg-text-domain'),
+				'description' => __( 'Add a predefined Grid', 'tg-text-domain'),
+				'base' => 'the_grid',
+				'icon' => 'the-grid-vc-icon',
+				'category' => __('The Grid', 'tg-text-domain'),
+				'show_settings_on_create' => true,
+				'js_view' => 'VcTheGrid',
+				'front_enqueue_js' => TG_PLUGIN_URL.'/backend/assets/js/admin-vc.js',
+				'params' => array(
+					array(
+						'type' => 'grid_list',
+						'holder' => '',
+						'heading' => 'name',
+						'param_name' => 'name',
+						'admin_label' => true,
+						'value' => '',
+						'save_always' => true,
+					)
 				)
-			)
-		));	
-		
+			));	
+			
+		}
+	
 	}
 	
 }

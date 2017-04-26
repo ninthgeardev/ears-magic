@@ -1,7 +1,6 @@
 .maputo a,
-.maputo a:hover,
 .maputo .tg-item-image,
-.maputo .tg-media-button,
+.maputo.tg-item .tg-item-audio-poster,
 .maputo a:active,
 .maputo a:focus,
 .maputo .tg-share-icons i {
@@ -14,6 +13,9 @@
 	-ms-transition: all 0.25s ease;
 	-o-transition: all 0.25s ease;
 	transition: all 0.25s ease;
+}
+.maputo .tg-center-holder {
+	text-align: center;
 }
 .maputo .tg-media-button:hover,
 .maputo a:not(.mejs-volume-slider):hover {
@@ -76,7 +78,7 @@
     width: 67px;
     height: 67px;
 	margin: 0 auto;
-	font-weight: 600;
+	font-weight: 500;
 }
 .maputo .tg-item-media-holder.light .tg-item-comment i,
 .maputo .tg-item-media-holder.light .tg-media-button i,
@@ -164,19 +166,22 @@
 	transform: translate3d(0,0,0);
 }
 .maputo .tg-item-image,
+.maputo .tg-item-audio-poster,
 .maputo .tg-item-media-poster {
-    width: auto !important;
-    max-width: none !important;
-    height: auto !important;
-	transform: translateZ(0);
-	outline: 1px solid transparent;
+	-webkit-transition: all 0.6s ease;
+	-moz-transition: all 0.6s ease;
+	-ms-transition: all 0.6s ease;
+	-o-transition: all 0.6s ease;
+	transition: all 0.6s ease;
 }
 .maputo:not(.tg-is-playing):not(.tg-force-play):hover .tg-item-image,
+.maputo:not(.tg-is-playing):not(.tg-force-play):hover .tg-item-audio-poster,
 .maputo:not(.tg-is-playing):not(.tg-force-play):hover .tg-item-media-poster {
-	top: -5%;
-	bottom: -5%;
-	left: -5%;
-	right: -5%;
+    -webkit-transform: perspective(500px) scale3d(1.1,1.1,1.1);
+    -moz-transform: perspective(500px) scale3d(1.1,1.1,1.1);
+    -ms-transform: perspective(500px) scale3d(1.1,1.1,1.1);
+    -o-transform: perspective(500px) scale3d(1.1,1.1,1.1);
+    transform: perspective(500px) scale3d(1.1,1.1,1.1);
 }
 .maputo.tg-is-playing .tg-item-overlay,
 .maputo.tg-force-play .tg-item-overlay {

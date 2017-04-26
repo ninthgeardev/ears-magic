@@ -39,7 +39,7 @@
 						onsubmit: function( e ) {
 							var shortcode_str = '[' + sh_tag + ' name="'+$('.tg-grid-shortcode-value').val()+'"]';
 							//insert shortcode to tinymce
-							editor.insertContent( shortcode_str);
+							editor.insertContent(shortcode_str);
 						}
 					});
 				});

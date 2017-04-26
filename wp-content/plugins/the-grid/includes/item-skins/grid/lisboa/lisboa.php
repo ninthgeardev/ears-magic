@@ -15,19 +15,12 @@ if (!defined('ABSPATH')) {
 
 $tg_el = The_Grid_Elements();
 
-$media_args = array(
-	'icons' => array(
-		'image' => '<i class="tg-icon-search2"></i>'
-	)
-);
-
 $terms_args = array(
 	'separator' => ', '
 );
 
 $excerpt_args = array(
-	'length' => 100,
-	'separator' => ', '
+	'length' => 100
 );
 
 $output = $tg_el->get_media_wrapper_start();
@@ -38,7 +31,7 @@ $output = $tg_el->get_media_wrapper_start();
 		$output .= $tg_el->get_the_excerpt($excerpt_args);
 		$output .= $tg_el->get_the_terms($terms_args);
 	$output .= $tg_el->get_center_wrapper_end();
-	$output .= $tg_el->get_media_button($media_args);
+	$output .= $tg_el->get_media_button();
 $output .= $tg_el->get_media_wrapper_end();
 		
 return $output;

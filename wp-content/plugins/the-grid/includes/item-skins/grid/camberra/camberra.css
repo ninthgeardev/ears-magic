@@ -1,7 +1,6 @@
 .camberra a,
 .camberra a:active,
 .camberra a:focus,
-.camberra .tg-media-button,
 .camberra .tg-item-media-holder {
 	text-decoration: none;
     border: none;
@@ -13,12 +12,11 @@
 	-o-transition: opacity 0.25s ease, color 0.25s ease, -o-transform 0.4s ease-in-out;
 	transition: opacity 0.25s ease, color 0.25s ease, transform 0.4s ease-in-out;
 }
-.camberra.tg-item,
-.camberra .tg-center-outer {
+.camberra.tg-item {
 	overflow: hidden;
 }
-.camberra .tg-center-inner {
-	position: absolute;
+.camberra .tg-center-holder {
+	text-align: center;
 }
 .camberra .tg-item-content,
 .camberra .tg-item-media-holder,
@@ -42,6 +40,12 @@
 	top: 100%;
 	padding: 22px;
 	background: #ffffff;
+
+}
+.camberra.tg-is-playing .tg-item-media-holder .tg-item-content,
+.camberra.tg-force-play .tg-item-media-holder .tg-item-content {
+    opacity: 1;
+    visibility: visible;
 }
 .camberra:hover .tg-item-media-holder {
 	-webkit-transform: translateY(-100%);

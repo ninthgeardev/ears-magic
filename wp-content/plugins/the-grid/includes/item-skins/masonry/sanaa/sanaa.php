@@ -17,8 +17,7 @@ $tg_el = The_Grid_Elements();
 
 // main data
 $colors       = $tg_el->get_colors();
-$media_image  = $tg_el->get_attachement_url();
-$link_button  = $tg_el->get_link_button();
+$image        = $tg_el->get_attachment_url();
 $permalink    = $tg_el->get_the_permalink();
 $target       = $tg_el->get_the_permalink_target();
 $background   = 'style="background:'.$colors['overlay']['title'].'"';
@@ -35,13 +34,13 @@ if ($media_content) {
 	
 	$output .= $tg_el->get_media_wrapper_start();
 		$output .= $media_content;
-		$output .= ($media_image && $permalink ) ? '<a class="tg-woo-link" href="'.$permalink .'" target="'.$target.'"></a>' : null;
-		$output .= ($media_image) ? $tg_el->get_product_on_sale() : null;
-		$output .= ($media_image) ? $tg_el->get_product_rating() : null;
-		$output .= ($media_image && $product_cart) ? '<div class="tg-item-cart-holder">' : null;
-			$output .= ($media_image && $product_cart) ? $tg_el->get_overlay() : null;
-			$output .= ($media_image && $product_cart) ? preg_replace('/(<a\b[^><]*)>/i', '$1 style="color:'.$colors['overlay']['title'].'">', $product_cart) : null;
-		$output .= ($media_image && $product_cart) ? '</div>' : null;
+		$output .= ($image && $permalink ) ? '<a class="tg-woo-link" href="'.$permalink .'" target="'.$target.'"></a>' : null;
+		$output .= ($image) ? $tg_el->get_product_on_sale() : null;
+		$output .= ($image) ? $tg_el->get_product_rating() : null;
+		$output .= ($image && $product_cart) ? '<div class="tg-item-cart-holder">' : null;
+			$output .= ($image && $product_cart) ? $tg_el->get_overlay() : null;
+			$output .= ($image && $product_cart) ? preg_replace('/(<a\b[^><]*)>/i', '$1 style="color:'.$colors['overlay']['title'].'">', $product_cart) : null;
+		$output .= ($image && $product_cart) ? '</div>' : null;
 	$output .= $tg_el->get_media_wrapper_end();
 
 }

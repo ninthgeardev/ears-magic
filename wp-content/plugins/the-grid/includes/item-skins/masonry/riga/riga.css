@@ -1,6 +1,4 @@
 .riga a,
-.riga a:hover,
-.riga .tg-media-button,
 .riga a:active,
 .riga a:focus,
 .riga .tg-share-icons i {
@@ -18,8 +16,8 @@
 .riga a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.riga .tg-center-inner {
-	position: absolute;
+.riga .tg-center-holder {
+	text-align: center;
 }
 .riga .tg-item-content-holder {
 	position: relative;

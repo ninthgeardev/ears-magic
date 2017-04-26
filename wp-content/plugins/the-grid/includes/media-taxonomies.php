@@ -179,7 +179,7 @@ class Media_Taxonomies {
 								'checked_ontop' => true,
 								'walker'        => new Walker_WP_Media_Taxonomy_Checklist($post_id)
 							));	
-							$terms_list .= ob_get_contents();
+							$terms_list = ob_get_contents();
 							ob_end_clean();	
 							$output .= $terms_list;	
 				$output .= '</ul>';

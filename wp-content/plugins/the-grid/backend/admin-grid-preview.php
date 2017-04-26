@@ -20,13 +20,6 @@ class The_Grid_preview extends The_Grid {
 	}
 	
 	/**
-	* Serialization disabled
-	* @since 1.0.0
-	*/
-	private function __sleep() {
-	}
-	
-	/**
 	* De-serialization disabled
 	* @since 1.0.0
 	*/

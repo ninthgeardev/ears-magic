@@ -47,17 +47,21 @@ $check_box = '<svg class="tg-checkbox-icon" version="1.1" xmlns="http://www.w3.o
 $warning = '<svg class="tg-warning-icon" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/" x="0px" y="0px" width="38px" height="38px" viewBox="0 0 64 64" xml:space="preserve"><path fill="#F19186" d="M31,48c1.65,0,3-1.35,3-3s-1.35-3-3-3s-3,1.35-3,3S29.35,48,31,48z M31,44c0.55,0,1,0.45,1,1s-0.45,1-1,1 s-1-0.45-1-1S30.45,44,31,44z"/><path fill="#F19186" d="M31,40c1.65,0,3-1.35,3-3V21c0-1.65-1.35-3-3-3s-3,1.35-3,3v16C28,38.65,29.35,40,31,40z M30,21 c0-0.55,0.45-1,1-1s1,0.45,1,1v16c0,0.55-0.45,1-1,1s-1-0.45-1-1V21z"/><path fill="#F19186" d="M9,56h44c3.86,0,7-3.14,7-7c0-1.42-0.65-2.94-0.73-3.11c-0.02-0.05-0.05-0.09-0.08-0.14L36.75,11.02 c-0.02-0.03-0.04-0.07-0.06-0.1C35.38,9.09,33.25,8,31,8s-4.38,1.09-5.69,2.93c-0.02,0.03-0.04,0.06-0.06,0.1L2.8,45.76 c-0.03,0.04-0.05,0.09-0.08,0.14C2.65,46.06,2,47.58,2,49C2,52.86,5.14,56,9,56z M4.53,46.77l22.43-34.72c0,0,0-0.01,0.01-0.01 C27.91,10.76,29.41,10,31,10s3.09,0.76,4.03,2.04c0,0,0,0.01,0.01,0.01l22.43,34.72C57.64,47.18,58,48.2,58,49c0,2.76-2.24,5-5,5H9 c-2.76,0-5-2.24-5-5C4,48.2,4.36,47.18,4.53,46.77z"/></svg>
 ';
 
+$builder_icon = '<svg class="tg-builder-icon" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="38px" height="36px" viewBox="0 0 48 48"><g transform="translate(0.5, 0.5)"><line data-cap="butt" data-color="color-2" fill="none" stroke="#777777" stroke-width="1" stroke-miterlimit="10" x1="8" y1="16" x2="16" y2="8" stroke-linejoin="miter" stroke-linecap="butt"></line><line data-cap="butt" data-color="color-2" fill="none" stroke="#777777" stroke-width="1" stroke-miterlimit="10" x1="42" y1="34" x2="34" y2="42" stroke-linejoin="miter" stroke-linecap="butt"></line><polyline data-color="color-2" fill="none" stroke="#777777" stroke-width="1.5" stroke-linecap="square" stroke-miterlimit="10" points="25,33 34,42 44,44 42,34 33,25 " stroke-linejoin="miter"></polyline><polyline data-color="color-2" fill="none" stroke="#777777" stroke-width="1.5" stroke-linecap="square" stroke-miterlimit="10" points="23,15 12,4 4,12 15,23 " stroke-linejoin="miter"></polyline><polygon fill="none" stroke="#777777" stroke-width="1.5" stroke-linecap="square" stroke-miterlimit="10" points="14,44 4,34 34,4 34,4 44,14 " stroke-linejoin="miter"></polygon><line fill="none" stroke="#777777" stroke-width="1" stroke-linecap="square" stroke-miterlimit="10" x1="22" y1="16" x2="24" y2="18" stroke-linejoin="miter"></line><line fill="none" stroke="#777777" stroke-width="1" stroke-linecap="square" stroke-miterlimit="10" x1="28" y1="10" x2="32" y2="14" stroke-linejoin="miter"></line><line fill="none" stroke="#777777" stroke-width="1" stroke-linecap="square" stroke-miterlimit="10" x1="16" y1="22" x2="20" y2="26" stroke-linejoin="miter"></line><line fill="none" stroke="#777777" stroke-width="1" stroke-linecap="square" stroke-miterlimit="10" x1="10" y1="28" x2="12" y2="30" stroke-linejoin="miter"></line></g></svg>';
+
 $update = '<div class="tg-row">';
 	
 	$update .= '<div class="tomb-spacer" style="height: 30px"></div>';
 	
-	$plugin_info = get_option('the_grid_plugin_info', '');
+	$plugin_info      = get_option('the_grid_plugin_info', '');
 	$envato_api_token = get_option('the_grid_envato_api_token', '');
-	$current_version = TG_VERSION;
-	$last_version = (isset($plugin_info['version'])) ? $plugin_info['version'] : __( 'You must be registered to know available version', 'tg-text-domain' );
-	$updated_at = (isset($plugin_info['updated_at'])) ? ' ('.date('m/d/Y',strtotime($plugin_info['updated_at'])).')' : null;
-	$license = (isset($plugin_info['license'])) ? $plugin_info['license'] : null;
-	$purchase_code = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
+	$force_register   = get_option('the_grid_force_registration', '');
+	$unregister_panel = apply_filters('tg_grid_unregister', false);
+	$current_version  = TG_VERSION;
+	$last_version     = (isset($plugin_info['version'])) ? $plugin_info['version'] : __( 'You must be registered to know available version', 'tg-text-domain' );
+	$updated_at       = (isset($plugin_info['updated_at'])) ? ' ('.date('m/d/Y',strtotime($plugin_info['updated_at'])).')' : null;
+	$license          = (isset($plugin_info['license'])) ? $plugin_info['license'] : null;
+	$purchase_code    = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
 
 	$supported_until = (isset($plugin_info['supported_until'])) ? $plugin_info['supported_until'] : null;
 	if ($supported_until) {
@@ -65,84 +69,91 @@ $update = '<div class="tg-row">';
 		$diff  = $date-time();
 		$supported_until = floor($diff/(60*60*24));
 	}
+	
+	if (!$unregister_panel || $purchase_code || $force_register) {
 
-	$update .= '<div class="tg-col tg-col-3">';
-		$update .= '<div class="tg-container">';
-			$update .= '<div class="tg-container-header">';
-				$update .= '<div class="tg-container-title">'. __( 'Plugin Activation', 'tg-text-domain' ) .'</div>';
-				$update .= ($purchase_code) ? $pad_open : $pad_lock;
-			$update .= '</div>';
-			
-			
-			if ($purchase_code) {
-			
-				$update .= '<div class="tg-container-inner tg-container-register">';
-					$update .= '<div class="tg-text-icon">';
-						$update .= $card_icon;
-						$update .= '<div class="tg-text-icon-title">'. __( 'Purchase Code', 'tg-text-domain' ) .' ('.$license.')</div>';
-						$update .= '<div class="tg-purchase-code">'.$purchase_code.'</div>';
-					$update .= '</div>';
-					if ($supported_until > 0) {
-						$update .= '<div class="tg-text-icon">';
-							$update .= $ticket_icon;
-							$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support', 'tg-text-domain' ) .' ('.$supported_until.' '.__( 'days left', 'tg-text-domain' ) .')</div>';
-							$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
-							$update .= '<a class="tg-button" target="_blank" href="https://themeoneticket.ticksy.com/">'.__( 'Open a ticket', 'tg-text-domain' ) .'</a>';
-						$update .= '</div>';
-					} else {
-						$update .= '<div class="tg-text-icon">';
-							$update .= $ticket_icon;
-							$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support (Expired)', 'tg-text-domain' ) .'</div>';
-							$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
-							$update .= '<a class="tg-button" target="_blank" href="http://codecanyon.net/item/the-grid-responsive-grid-builder-for-wordpress/13306812">'.__( 'Extend support', 'tg-text-domain' ) .'</a>';
-						$update .= '</div>';
-					}
-					$update .= '<div class="tomb-spacer" style="height: 14px"></div>';
-					$update .= '<div><span class="tg-button tg-button-register">'. __( 'Change your personal Token', 'tg-text-domain' ) .'</span></div>';
+		$update .= '<div class="tg-col tg-col-3">';
+			$update .= '<div class="tg-container">';
+				$update .= '<div class="tg-container-header">';
+					$update .= '<div class="tg-container-title">'. __( 'Plugin Activation', 'tg-text-domain' ) .'</div>';
+					$update .= ($purchase_code) ? $pad_open : $pad_lock;
 				$update .= '</div>';
-			
-			} else {
+
+				if ($purchase_code) {
 				
-				$update .= '<div class="tg-container-inner tg-container-register">';
-					$update .= '<div class="tg-text-icon">';
-						$update .= $update_icon;
-						$update .= '<div class="tg-text-icon-title">'. __( 'Live Updates', 'tg-text-domain' ) .'</div>';
-						$update .= '<div class="tg-text-icon-desc">'. __( 'Fresh versions directly to your admin', 'tg-text-domain' ) .'</div>';
+					$update .= '<div class="tg-container-inner tg-container-register">';
+						$update .= '<div class="tg-text-icon">';
+							$update .= $card_icon;
+							$update .= '<div class="tg-text-icon-title">'. __( 'Purchase Code', 'tg-text-domain' ) .' ('.$license.')</div>';
+							$update .= '<div class="tg-purchase-code">'.$purchase_code.'</div>';
+						$update .= '</div>';
+						if ($supported_until > 0) {
+							$update .= '<div class="tg-text-icon">';
+								$update .= $ticket_icon;
+								$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support', 'tg-text-domain' ) .' ('.$supported_until.' '.__( 'days left', 'tg-text-domain' ) .')</div>';
+								$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
+								$update .= '<a class="tg-button" target="_blank" href="https://themeoneticket.ticksy.com/">'.__( 'Open a ticket', 'tg-text-domain' ) .'</a>';
+							$update .= '</div>';
+						} else {
+							$update .= '<div class="tg-text-icon">';
+								$update .= $ticket_icon;
+								$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support (Expired)', 'tg-text-domain' ) .'</div>';
+								$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
+								$update .= '<a class="tg-button" target="_blank" href="http://codecanyon.net/item/the-grid-responsive-grid-builder-for-wordpress/13306812">'.__( 'Extend support', 'tg-text-domain' ) .'</a>';
+							$update .= '</div>';
+						}
+						$update .= '<div class="tomb-spacer" style="height: 14px"></div>';
+						$update .= '<div><span class="tg-button tg-button-register">'. __( 'Change your personal Token', 'tg-text-domain' ) .'</span></div>';
 					$update .= '</div>';
-					$update .= '<div class="tg-text-icon">';
-						$update .= $support_icon;
-						$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support', 'tg-text-domain' ) .'</div>';
-						$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
+				
+				} else {
+					
+					$update .= '<div class="tg-container-inner tg-container-register">';
+						$update .= '<div class="tg-text-icon">';
+							$update .= $update_icon;
+							$update .= '<div class="tg-text-icon-title">'. __( 'Live Updates', 'tg-text-domain' ) .'</div>';
+							$update .= '<div class="tg-text-icon-desc">'. __( 'Fresh versions directly to your admin', 'tg-text-domain' ) .'</div>';
+						$update .= '</div>';
+						$update .= '<div class="tg-text-icon">';
+							$update .= $builder_icon;
+							$update .= '<div class="tg-text-icon-title">'. __( 'Skin Builder', 'tg-text-domain' ) .'</div>';
+							$update .= '<div class="tg-text-icon-desc">'. __( 'Create your own skins with ease', 'tg-text-domain' ) .'</div>';
+						$update .= '</div>';
+						$update .= '<div class="tg-text-icon">';
+							$update .= $support_icon;
+							$update .= '<div class="tg-text-icon-title">'. __( 'Premium Ticket Support', 'tg-text-domain' ) .'</div>';
+							$update .= '<div class="tg-text-icon-desc">'. __( 'Direct help from our qualified support team', 'tg-text-domain' ) .'</div>';
+						$update .= '</div>';
+						$update .= '<div class="tomb-spacer" style="height: 15px"></div>';
+						$update .= '<div><span class="tg-button tg-button-register">'. __( 'Register The Grid', 'tg-text-domain' ) .'</span></div>';
 					$update .= '</div>';
-					$update .= '<div class="tg-text-icon">';
-						$update .= $doc_icon;
-						$update .= '<div class="tg-text-icon-title">'. __( 'Online Documentation', 'tg-text-domain' ) .'</div>';
-						$update .= '<div class="tg-text-icon-desc">'. __( 'The best start for The Grid beginners', 'tg-text-domain' ) .'</div>';
-					$update .= '</div>';
-					$update .= '<div class="tomb-spacer" style="height: 15px"></div>';
-					$update .= '<div><span class="tg-button tg-button-register">'. __( 'Register The Grid', 'tg-text-domain' ) .'</span></div>';
+	
+				}
+	
+				$update .= '<div class="tg-container-inner tg-container-register-token">';
+					$update .= '<div class="tg-text-icon-title">'. __( 'Global OAuth Personal Token', 'tg-text-domain' ) .'</div>';
+					$update .= '<p>'. __( 'OAuth is a protocol that lets external apps request authorization to private details in a user\'s Envato Market account without entering their password.', 'tg-text-domain' ).'</p>';
+					$update .= '<input name="the_grid_envato_api_token" type="text" class="tomb-text" style="width:320px" value="'.$envato_api_token.'" placeholder="'. __( 'Enter your Envato API Personal Token', 'tg-text-domain' ) .'">';
+					$update .= '<p><em>'. __( 'You will need to', 'tg-text-domain' ) .' <strong><a target="_blank" href="http://theme-one.com/docs/the-grid/#!/register_plugin">'.  __( 'generate a personal token', 'tg-text-domain' ) .'</a></strong>, '.  __( 'and then insert it above.', 'tg-text-domain' ) .'</em></p>';
+					$update .= '<div class="tomb-spacer" style="height: 10px"></div>';
+					$update .= '<div><span id="tg-grid-save-envato-api-token" class="tg-button tg-button-register-token">'. __( 'Save Changes', 'tg-text-domain' ) .'</span><div class="spinner"></div><strong></strong></span></div>';
 				$update .= '</div>';
-
-			}
-
-			$update .= '<div class="tg-container-inner tg-container-register-token">';
-				$update .= '<div class="tg-text-icon-title">'. __( 'Global OAuth Personal Token', 'tg-text-domain' ) .'</div>';
-				$update .= '<p>'. __( 'OAuth is a protocol that lets external apps request authorization to private details in a user\'s Envato Market account without entering their password.', 'tg-text-domain' ) .'</p>';
-				$update .= '<input name="the_grid_envato_api_token" type="text" class="tomb-text" style="width:320px" value="'.$envato_api_token.'" placeholder="'. __( 'Enter your Envato API Personal Token', 'tg-text-domain' ) .'">';
-				$update .= '<p><em>'. __( 'You will need to', 'tg-text-domain' ) .' <a target="_blank" href="https://build.envato.com/create-token/?purchase:download=t&purchase:verify=t&purchase:list=t">'.  __( 'generate a personal token', 'tg-text-domain' ) .'</a>, '.  __( 'and then insert it above.', 'tg-text-domain' ) .'</em></p>';
-				$update .= '<div class="tomb-spacer" style="height: 10px"></div>';
-				$update .= '<div><span id="tg-grid-save-envato-api-token" class="tg-button tg-button-register-token">'. __( 'Save Changes', 'tg-text-domain' ) .'</span><div class="spinner"></div><strong></strong></span></div>';
+				
 			$update .= '</div>';
-			
 		$update .= '</div>';
-	$update .= '</div>';
+	
+	}
+	
+	$registration_msg = (!empty($unregister_panel) && is_bool($unregister_panel) !== true) ? $unregister_panel : __( 'If you have a valid purchase of The Grid, you can register it to get automatic updates. Otherwise updates will come with your theme.', 'tg-text-domain' );
+    $registration_msg = (!empty($registration_msg)) ? '<span style="width:65%;display:inline-block">'.$registration_msg.'</span>' : null;
 	
 	$update .= '<div class="tg-col tg-col-3">';
 		$update .= '<div class="tg-container">';
 			$update .= '<div class="tg-container-header">';
 				$update .= '<div class="tg-container-title">'. __( 'Automatic Updates', 'tg-text-domain' ) .'</div>';
-				$update_icon = (version_compare($last_version, $current_version) <=  0 && version_compare( $last_version, '0.0.1', '>=' )) ? $check_box  : $syncing;
-				$update .= ($purchase_code) ? $update_icon : $pad_lock;
+				$update_icon = (version_compare($last_version, $current_version) <=  0 && version_compare( $last_version, '0.0.1', '>=' )) ? $pad_open  : $syncing;
+                $update_icon = ($unregister_panel && !$force_register) ? $pad_open : $update_icon;
+				$update .= ($purchase_code || ($unregister_panel && !$force_register)) ? $update_icon : $pad_lock;
 			$update .= '</div>';
 			$update .= '<div class="tg-container-inner tg-container-update">';
 				$update .= '<div class="tg-text-icon">';
@@ -154,36 +165,43 @@ $update = '<div class="tg-row">';
 					$update .= $info_icon2;
 					$update .= '<div class="tg-text-icon-title">'. __( 'Last Available Version', 'tg-text-domain' ) .'</div>';
 					$version = (version_compare( $last_version, '0.0.1', '>=' )) ? 'v'.$last_version : $last_version;
+					$version = (!$unregister_panel || $purchase_code || $force_register) ? $version : $registration_msg;
 					$update .= '<div class="tg-text-icon-desc">'. $version .'</div>';
 				$update .= '</div>';
 				$update .= '<div class="tomb-spacer" style="height: 64px"></div>';
-				if (version_compare( $last_version, '0.0.1', '<' ))  {
-					$update .= '<div><span class="tg-button tg-button-live-no-update">'. __( 'Register to Access Update', 'tg-text-domain' ) .'</span></div>';
-				} else if ((version_compare($last_version, $current_version) >  0) && current_user_can('update_plugins')) {
-					
-					// plugin slug
-					$name = 'The Grid';
-					$slug = 'the-grid/the-grid.php';
-					// Upgrade link.
-					$upgrade_link = add_query_arg( array(
-						'action' => 'upgrade-plugin',
-						'plugin' => $slug,
-					), self_admin_url( 'update.php' ) );
-					// update link
-					$update .= sprintf(
-						'<a class="update-now tg-button tg-button-live-update" href="%1$s" aria-label="%2$s" data-name="%3$s %6$s" data-plugin="%4$s" data-slug="%5$s" data-version="%6$s">%7$s</a>',
-						wp_nonce_url( $upgrade_link, 'upgrade-plugin_' . $slug ),
-						esc_attr__( 'Update %s now', 'envato-market' ),
-						esc_attr( $name ),
-						esc_attr( $slug ),
-						sanitize_key( dirname( $slug ) ),
-						esc_attr( $last_version ),
-						esc_html__( 'Update Now', 'envato-market' )
-					);
-					$update .= '</span><div class="spinner"></div><strong></strong>';
-				} else if ((version_compare($last_version, $current_version) ==  0)) {
-					$update .= '<div><span class="tg-button tg-button-live-update" id="tg-check-update">'. __( 'Check for updates', 'tg-text-domain' ) .'</span><div class="spinner"></div><strong></strong></div>';
+				
+				if (!$unregister_panel || $purchase_code || $force_register) {
+				
+					if (version_compare( $last_version, '0.0.1', '<' ))  {
+						$update .= '<div><span class="tg-button tg-button-live-no-update">'. __( 'Register to Access Update', 'tg-text-domain' ) .'</span></div>';
+					} else if ((version_compare($last_version, $current_version) >  0) && current_user_can('update_plugins')) {
+						
+						// plugin slug
+						$name = 'The Grid';
+						$slug = 'the-grid/the-grid.php';
+						// Upgrade link.
+						$upgrade_link = add_query_arg( array(
+							'action' => 'upgrade-plugin',
+							'plugin' => $slug,
+						), self_admin_url( 'update.php' ) );
+						// update link
+						$update .= sprintf(
+							'<a class="update-now tg-button tg-button-live-update" href="%1$s" aria-label="%2$s" data-name="%3$s %6$s" data-plugin="%4$s" data-slug="%5$s" data-version="%6$s">%7$s</a>',
+							wp_nonce_url( $upgrade_link, 'upgrade-plugin_' . $slug ),
+							esc_attr__( 'Update %s now', 'envato-market' ),
+							esc_attr( $name ),
+							esc_attr( $slug ),
+							sanitize_key( dirname( $slug ) ),
+							esc_attr( $last_version ),
+							esc_html__( 'Update Now', 'envato-market' )
+						);
+						$update .= '</span><div class="spinner"></div><strong></strong>';
+					} else {
+						$update .= '<div><span class="tg-button tg-button-live-update" id="tg-check-update">'. __( 'Check for updates', 'tg-text-domain' ) .'</span><div class="spinner"></div><strong></strong></div>';
+					}
+				
 				}
+				
 			$update .= '</div>';
 		$update .= '</div>';
 	$update .= '</div>';

@@ -2,22 +2,24 @@
 .pracia a:active,
 .pracia a:focus,
 .pracia .tg-item-title,
-.pracia .tg-media-button,
 .pracia .tg-item-media-holder,
 .pracia .tg-item-content-holder {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;
     box-shadow: none;
-	-webkit-transition: opacity 0.25s ease, color 0.25s ease, -webkit-transform 0.25s ease-in-out;
-	-moz-transition: opacity 0.25s ease, color 0.25s ease, -moz-transform 0.25s ease-in-out;
-	-ms-transition: opacity 0.25s ease, color 0.25s ease, -ms-transform 0.25s ease-in-out;
-	-o-transition: opacity 0.25s ease, color 0.25s ease, -o-transform 0.25s ease-in-out;
-	transition: opacity 0.25s ease, color 0.25s ease, transform 0.25s ease-in-out;
+	-webkit-transition: all 0.25s ease-in-out;
+	-moz-transition: all 0.25s ease-in-out;
+	-ms-transition: all 0.25s ease-in-out;
+	-o-transition: all 0.25s ease-in-out;
+	transition: all 0.25s ease-in-out;
 }
 .pracia.tg-item,
-.pracia .tg-center-outer {
+.pracia .tg-center-holder {
 	overflow: hidden;
+}
+.pracia .tg-center-holder {
+	text-align: center;
 }
 .pracia .tg-item-media-holder {
 	bottom: 60px;
@@ -43,16 +45,18 @@
 	width: 100%;
 	height: 100%;
 }
-.tg-layout-justified .pracia .tg-center-outer {
+.tg-layout-justified .pracia .tg-center-holder {
 	padding-bottom: 60px;
 }
 .tg-layout-justified .pracia .tg-item-content-holder,
 .pracia .tg-item-overlay {
 	opacity: 0;
+	visibility: hidden;
 }
-.tg-layout-justified .pracia:hover .tg-item-content-holder,
-.pracia:hover .tg-item-overlay {
+.tg-layout-justified .pracia:not(.tg-is-playing):not(.tg-force-play):hover .tg-item-content-holder,
+.pracia:not(.tg-is-playing):not(.tg-force-play):hover .tg-item-overlay {
 	opacity: 1;
+	visibility: visible;
 }
 .pracia .tg-item-content-holder {
 	height: 60px;

@@ -3263,7 +3263,7 @@ return Item;
     this._getMeasurement( 'columnWidth', 'outerWidth' );
     this._getMeasurement( 'gutter', 'outerWidth' );
     this.measureColumns();
-
+	
     // reset column Y
     var i = this.cols;
     this.colYs = [];
@@ -3271,7 +3271,10 @@ return Item;
       this.colYs.push( 0 );
     }
 
-    this.maxY = 0;
+    this.x = 0;
+	this.y = 0;
+	this.maxY = 0;
+	
   };
 
   Masonry.prototype.measureColumns = function() {
@@ -3322,11 +3325,31 @@ return Item;
     var minimumY = Math.min.apply( Math, colGroup );
     var shortColIndex = utils.indexOf( colGroup, minimumY );
 
+	// for fitrow
+	if (this.options.isFitRows) {
+		var itemWidth = item.size.outerWidth + this.gutter;
+		var containerWidth = this.TG_Layout.size.innerWidth + this.gutter;
+		if (this.x !== 0 && itemWidth + this.x > containerWidth ) {
+			this.x = 0;
+			this.y = this.maxY;
+		}
+	} else {
+		this.x = this.columnWidth * shortColIndex,
+     	this.y = minimumY	
+	}
+
     // position the brick
     var position = {
-      x: this.columnWidth * shortColIndex,
-      y: minimumY
+      x: this.x,
+      y: this.y
     };
+	
+
+	// for fitrow
+	if (this.options.isFitRows) {
+		this.maxY = Math.max( this.maxY, this.y + item.size.outerHeight + this.gutter);
+		this.x += itemWidth;
+	}
 
     // apply setHeight to necessary columns
     var setHeight = minimumY + item.size.outerHeight + this.gutter;
@@ -3382,7 +3405,7 @@ return Item;
   };*/
 
   Masonry.prototype._getContainerSize = function() {
-    this.maxY = Math.max.apply( Math, this.colYs );
+    this.maxY = (!this.options.isFitRows) ? Math.max.apply( Math, this.colYs ) : this.maxY;
     var size = {
       height: this.maxY-this.gutter
     };

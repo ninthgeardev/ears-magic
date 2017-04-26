@@ -15,8 +15,8 @@
 .quito a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.quito .tg-center-inner {
-	position: absolute;
+.quito .tg-center-holder {
+	text-align: center;
 }
 .quito .tg-overlay-image,
 .quito .tg-overlay-color {
@@ -64,10 +64,10 @@
     font-weight: 600;
     letter-spacing: 1px;
 }
-.quito .light .tg-cats-holder span {
+.quito .tg-light .tg-cats-holder span {
 	background: rgba(0,0,0,0.2);
 }
-.quito .dark .tg-cats-holder span {
+.quito .tg-dark .tg-cats-holder span {
 	background: rgba(175,175,175,0.08);
 }
 .quito .tg-item-title,
@@ -139,20 +139,20 @@
     text-align: center;
     width: 40px;
 }
-.quito .dark .tg-media-button,
-.quito .dark .tg-link-button {
+.quito .tg-dark .tg-media-button,
+.quito .tg-dark .tg-link-button {
 	background: rgba(255,255,255,0.5);
 }
-.quito .dark .tg-media-button:hover,
-.quito .dark .tg-link-button:hover {
+.quito .tg-dark .tg-media-button:hover,
+.quito .tg-dark .tg-link-button:hover {
 	background: rgba(255,255,255,0.85);
 }
-.quito .light .tg-media-button,
-.quito .light .tg-link-button {
+.quito .tg-light .tg-media-button,
+.quito .tg-light .tg-link-button {
 	background: rgba(0,0,0,0.15);
 }
-.quito .light .tg-media-button:hover,
-.quito .light .tg-link-button:hover {
+.quito .tg-light .tg-media-button:hover,
+.quito .tg-light .tg-link-button:hover {
 	background: rgba(0,0,0,0.35);
 }
 .quito .tg-item-footer {

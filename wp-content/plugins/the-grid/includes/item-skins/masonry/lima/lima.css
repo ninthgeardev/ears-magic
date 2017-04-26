@@ -1,6 +1,4 @@
 .lima a,
-.lima a:hover,
-.lima .tg-media-button,
 .lima a:active,
 .lima a:focus,
 .lima .tg-share-icons i {
@@ -86,20 +84,20 @@
 	font-size: 18px;
 	line-height: 44px;
 }
-.lima .dark .tg-media-button,
-.lima .dark .tg-link-button {
+.lima .tg-dark .tg-media-button,
+.lima .tg-dark .tg-link-button {
 	background: rgba(255,255,255,0.5);
 }
-.lima .dark .tg-media-button:hover,
-.lima .dark .tg-link-button:hover {
+.lima .tg-dark .tg-media-button:hover,
+.lima .tg-dark .tg-link-button:hover {
 	background: rgba(255,255,255,0.85);
 }
-.lima .light .tg-media-button,
-.lima .light .tg-link-button {
+.lima .tg-light .tg-media-button,
+.lima .tg-light .tg-link-button {
 	background: rgba(0,0,0,0.15);
 }
-.lima .light .tg-media-button:hover,
-.lima .light .tg-link-button:hover {
+.lima .tg-light .tg-media-button:hover,
+.lima .tg-light .tg-link-button:hover {
 	background: rgba(0,0,0,0.35);
 }
 .lima .tg-icon-arrows-out-2 {
@@ -133,7 +131,7 @@
 	transform: translate3d(0,44px,0);
 }
 .lima div.tg-item-overlay,
-.lima div.tg-media-button,
+.lima a.tg-media-button,
 .lima .tg-link-button {
 	opacity: 0;
 	-webkit-transition: background 0.15s ease-in-out, opacity 0.3s ease-in-out, -webkit-transform 0.3s ease-in-out;

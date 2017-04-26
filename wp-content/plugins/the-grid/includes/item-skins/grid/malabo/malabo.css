@@ -2,8 +2,7 @@
 .malabo a:active,
 .malabo a:focus,
 .malabo .tg-cats-holder,
-.malabo .tg-item-title,
-.malabo .tg-media-button {
+.malabo .tg-item-title {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;
@@ -16,6 +15,9 @@
 }
 .malabo.tg-item {
 	overflow: hidden;
+}
+.malabo .tg-center-holder {
+	text-align: center;
 }
 .malabo .tg-item-content,
 .malabo .tg-item-media-holder,

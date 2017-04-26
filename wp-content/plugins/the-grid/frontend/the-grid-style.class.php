@@ -23,6 +23,16 @@ class The_Grid_Styles {
 	public $grid_data;
 	
 	/**
+	* skin fonts
+	*
+	* @since 1.0.0
+	* @access protected
+	*
+	* @var array
+	*/
+	protected $skin_fonts = array();
+	
+	/**
 	* Base class
 	*
 	* @since 1.0.0
@@ -70,6 +80,9 @@ class The_Grid_Styles {
 		// reassign grid css for later (grid layout)
 		$this->grid_data['grid_css'] = $styles;
 		
+		// get fonts families
+		$this->grid_data['grid_fonts'] = $this->font_family();
+
 		// return new grid data
 		return $this->grid_data;
 		
@@ -290,7 +303,7 @@ class The_Grid_Styles {
 		if (is_array($item_skins) && $this->grid_data['source_type'] == 'post_type') {
 
 			foreach ($item_skins as $item_skin) {	
-				$item_skin_slug = (array_key_exists($item_skin,$get_skins)) ? $item_skin : '';
+				$item_skin_slug = array_key_exists($item_skin,$get_skins) ? $item_skin : '';
 				if (!empty($item_skin_slug) && $get_skins[$item_skin_slug]['type'] != $grid_style) {
 					$item_skin_slug = '';
 				}
@@ -308,13 +321,16 @@ class The_Grid_Styles {
 
 		foreach ($skins as $skin) {	
 
-			$skin_slug = (array_key_exists($skin, $get_skins)) ? $skin : $this->base->default_skin($grid_style);
+			$skin_slug = (array_key_exists($skin, $get_skins) && $get_skins[$skin]['type'] == $grid_style) ? $skin : $this->base->default_skin($grid_style);
 			if (!$skin_slug) {
 				return false;
 			}
 			
 			if ($get_skins[$skin_slug]['css'] == 'is_custom_skin') {
-				$styles .= The_Grid_Custom_Table::get_skin_styles($skin_slug);
+				$skin_data = The_Grid_Custom_Table::get_skin_styles($skin_slug);
+				$skin_data = json_decode($skin_data, true);
+				$styles   .= (isset($skin_data['css'])) ? $skin_data['css'] : null;
+				$this->skin_fonts = (isset($skin_data['font']) && $skin_data['font']) ? array_merge_recursive($this->skin_fonts, json_decode($skin_data['font'], true)) : $this->skin_fonts;
 			} else {
 				ob_start();
 				include $get_skins[$skin_slug]['css'];
@@ -324,7 +340,7 @@ class The_Grid_Styles {
 			}
 			
 		}
-		
+
 		return $styles;
 		
 	}
@@ -339,8 +355,8 @@ class The_Grid_Styles {
 		$grid_ID = $this->grid_data['css_id'];
 		
 		$schemes    = array('dark','light');
-		$title_tags = array('h1','h1 a','h2','h2 a','h3','h3 a','h4','h4 a','h5','h5 a','h6','h6 a','a','a.tg-link-url','i','.tg-media-button', '.tg-item-price span');
-		$para_tags  = array('p', 'div', 'ol', 'ul', 'li');
+		$title_tags = array('div', 'h1','h1 a','h2','h2 a','h3','h3 a','h4','h4 a','h5','h5 a','h6','h6 a','a','a.tg-link-url','i','.tg-media-button', '.tg-item-price span');
+		$para_tags  = array('p', 'ol', 'ul', 'li');
 		$span_tags  = array('span','.no-liked .to-heart-icon path','.empty-heart .to-heart-icon path', '.tg-item-comment i', '.tg-item-price del span');
 		
 		$tags = array(
@@ -361,12 +377,12 @@ class The_Grid_Styles {
 		$colors = null;
 		foreach ($schemes as $scheme) {
 			foreach ($tags as $tag => $classes) {
-				$classes   = implode(',.tg-item .'.$scheme.' ', $classes);
+				$classes   = implode(',.tg-item .tg-'.$scheme.' ', $classes);
 				$def_color = $default[$scheme.'_'.$tag];
 				$color_options = $this->base->getVar($this->grid_data,'grid_colors', array());
 				$color_scheme  = $this->base->getVar($color_options,$scheme, array());
 				$color_value   = $this->base->getVar($color_scheme,$tag,$def_color);
-				$colors .= ($color_value) ? '.tg-item .'.$scheme.' '.$classes.'{color:'.$color_value.';fill:'.$color_value.';stroke:'.$color_value.';border-color:'.$color_value.';}' : '';
+				$colors .= ($color_value) ? '.tg-item .tg-'.$scheme.' '.$classes.'{color:'.$color_value.';fill:'.$color_value.';stroke:'.$color_value.';border-color:'.$color_value.';}' : '';
 			}
 		}
 
@@ -383,6 +399,19 @@ class The_Grid_Styles {
 				   
 		return $styles;
 		
+	}
+	
+	/**
+	* Retrieve font family from css
+	* @since 1.0.0
+	*/
+	public function font_family() {
+				
+		$font_url = $this->base->get_google_fonts($this->skin_fonts);
+
+		return ($font_url) ? '<link href="'.esc_url($font_url).'" rel="stylesheet" property="stylesheet" type="text/css" media="all">' : null;
+		
+	
 	}
 	
 	/**

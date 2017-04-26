@@ -86,13 +86,6 @@ class The_Grid_Skins_Preview extends The_Grid {
 	}
 	
 	/**
-	* Serialization disabled
-	* @since 1.0.0
-	*/
-	private function __sleep() {
-	}
-	
-	/**
 	* De-serialization disabled
 	* @since 1.0.0
 	*/
@@ -213,7 +206,7 @@ class The_Grid_Skins_Preview extends The_Grid {
 	* @since 1.0.0
 	*/
 	public function filter_skin($var) {
-		return ($var['type'] == $this->grid_style);
+		return (isset($var['type']) && $var['type'] == $this->grid_style);
 	}
 	
 	/**
@@ -241,27 +234,9 @@ class The_Grid_Skins_Preview extends The_Grid {
 			
 			$item_base = new The_Grid_Item_Skin();
 			$this->skins = $item_base->get_skin_names();
-			$this->custom_skins_settings();
 
 		}
-		
-		
-	}
-	
-	/**
-	* Set custom skins settings
-	* @since 1.0.0
-	*/
-	public function custom_skins_settings() {
-		
-		$custom_skin_settings = get_option('tg_custom_skins_settings');
-		
-		if (is_array($custom_skin_settings) && !empty($custom_skin_settings)) {
 			
-			$this->skins = array_replace_recursive($this->skins, $custom_skin_settings);
-			
-		}
-		
 	}
 
 	/**
@@ -273,7 +248,7 @@ class The_Grid_Skins_Preview extends The_Grid {
 		$skins = array();
 		
 		foreach($this->grid_skins as $skin => $data) {
-			if ($data['type'] == $this->grid_style) {
+			if (isset($data['type']) && $data['type'] == $this->grid_style) {
 				$skins[] = $data['slug'];
 			}
 		}
@@ -288,8 +263,8 @@ class The_Grid_Skins_Preview extends The_Grid {
 				'post_type'               => array('post'),
 				'style'                   => $this->grid_style,
 				'items_format'            => array('video'),
-				'item_ratio_x'            => 1,
-				'item_ratio_y'            => 1,
+				'item_x_ratio'            => 4,
+				'item_y_ratio'            => 3,
 				'default_image'           => TG_PLUGIN_URL . 'backend/assets/images/skin-placeholder.jpg',
 				'skin_content_background' => '#ffffff',
 				'skin_overlay_background' => 'rgba(52, 73, 94, 0.75)',
@@ -322,7 +297,8 @@ class The_Grid_Skins_Preview extends The_Grid {
 				'layout'                  => (!$this->custom_skins) ? 'horizontal' : 'vertical',
 				'row_nb'                  => ($this->grid_style == 'grid') ? 2 : 1,
 				'slider_itemNav'          => 'basic',
-				'area_bottom2'            => '{"styles":"","functions":["the_grid_get_slider_bullets"]}',
+				'search_text'             => __( 'Search skin', 'tg-text-domain' ),
+				'area_bottom2'            => '{"styles":"","functions":["the_grid_get_left_arrow","the_grid_get_slider_bullets","the_grid_get_right_arrow"]}',
 				'transition'              => 600,
 				'item_skins'              => $skins,
 				'video_lightbox'          => true
@@ -362,16 +338,19 @@ class The_Grid_Skins_Preview extends The_Grid {
 		$this->grid_items = array();
 
 		// sort the skins by alphabetical asc order
-		usort($this->grid_skins, function ($a,$b){ return strcmp($a['slug'], $b['slug']); });
+		usort($this->grid_skins, function ($a,$b){ 
+			// remove custom skin prefix 'tg-' to correctly sort
+			return strcmp(str_replace('tg-','',$a['slug']), str_replace('tg-','',$b['slug']));
+		});
 
-		foreach($this->grid_skins as $skin) {
+		foreach($this->grid_skins as $skin => $data) {
 
 			$this->grid_items[] = array(
 				'ID'              => 'fake',
 				'date'            => current_time('timestamp'),
 				'post_type'       => 'post',
 				'sticky'          => null,
-				'format'          => (!in_array($skin['slug'],array('vaduz','victoria','podgorica'))) ? 'image' : 'video',
+				'format'          => (!in_array($data['slug'],array('vaduz','victoria','podgorica'))) ? 'image' : 'video',
 				'url'             => 'javascript:;',
 				'title'           => 'The post title',
 				'excerpt'         => 'Actique exilium principis is in nullos Constantio et absolutum quorum movebantur ita intendebantur ubi gladii sub coopertos facile uncosque in poenales coopertos ubi eculei quemquam sceleste ex alii Constantio parabat principis Paulus exilium deiectos movebantur intend.',
@@ -412,12 +391,12 @@ class The_Grid_Skins_Preview extends The_Grid {
 				'quote'           => null,
 				'link'            => null,
 				'meta_data'       => array(
-					'the_grid_item_skin_id' => $skin['id'],
-					'the_grid_item_filter'  => $skin['filter'],
-					'the_grid_item_skin'    => $skin['slug'],
-					'the_grid_item_name'    => $skin['name'],
-					'the_grid_item_col'     => $skin['col'],
-					'the_grid_item_row'     => $skin['row']
+					'the_grid_item_skin_id' => isset($data['id'])     ? $data['id'] : null,
+					'the_grid_item_filter'  => isset($data['filter']) ? $data['filter'] : null,
+					'the_grid_item_skin'    => isset($data['slug'])   ? $data['slug'] : null,
+					'the_grid_item_name'    => isset($data['name'])   ? $data['name'] : null,
+					'the_grid_item_col'     => isset($data['col'])    ? $data['col'] : 1,
+					'the_grid_item_row'     => isset($data['row'])    ? $data['row'] : 1,
 				),
 				'product' => array(
 					'price'         => '<span class="amount">179$</span>',
@@ -425,14 +404,14 @@ class The_Grid_Skins_Preview extends The_Grid {
 					'regular_price' => '<span class="amount">179$</span>',
 					'sale_price'    => '<span class="amount">99$</span>',
 					'rating'        => '<div class="star-rating"><span style="width:90%"></span></div>',
-					'text_rating'   => __( '4.5 out of 5', 'tg-text-domain' ),
+					'text_rating'   => 4.5,
 					'on_sale'       => '<span class="onsale">'.__( 'Sale!', 'tg-text-domain' ).'</span>',
 					'cart_button'   => '<a href="" rel="nofollow" data-product_id="-1" data-product_sku="" data-quantity="0" class="button add_to_cart_button product_type_simple">'.__( 'Add to cart', 'tg-text-domain' ).'</a>',
 					'wishlist'    => ''
 				)
 			);
 		}	
-
+		
 	}
 
 	/**
@@ -499,14 +478,16 @@ class The_Grid_Skins_Preview extends The_Grid {
 				'id'   => '.selected',
 				'name' => __( 'Selected Skin', 'tg-text-domain' )
 			);
+			
+			// add search field
+			tg_get_template_part('grid', 'search-field', true, $args);
 		
 		}
 		
 		// retrieve all filter for current grid style
 		foreach($this->skins as $skin => $data) {
-			if ($data['type'] == $this->grid_style) {
-				$item_filter = esc_attr($data['filter']);
-				if(!in_array($data['filter'], $grid_filters, true) && $data['filter']){
+			if (isset($data['type']) && $data['type'] == $this->grid_style) {
+				if(isset($data['filter']) && !in_array($data['filter'], $grid_filters, true) && $data['filter']){
 					$grid_filters[$data['filter']] = array(
 						'taxo' => 'skin_filter',
 						'id'   => '.'.sanitize_key($data['filter']),
@@ -524,7 +505,7 @@ class The_Grid_Skins_Preview extends The_Grid {
 			'filter_dropdown_title' => '',
 			'active_filters'        => array()
 		);
-		
+			
 		if (count($grid_filters) > 0) {
 			// generate filters from template
 			tg_get_template_part('filter', 'buttons', true, $args);
@@ -550,6 +531,7 @@ class The_Grid_Skins_Preview extends The_Grid {
 	*/
 	public function add_skin_name($output, $args) {
 
+		$id   = $args['meta_data']['the_grid_item_skin_id'];
 		$slug = $args['meta_data']['the_grid_item_skin'];
 		$name = $args['meta_data']['the_grid_item_name'];
 		$name = (!$name) ? $slug : $name;
@@ -558,6 +540,11 @@ class The_Grid_Skins_Preview extends The_Grid {
 			$output .= '<i class="dashicons dashicons-yes"></i>';
 			$output .= '<span>'.esc_html(ucfirst($name)).'</span>';
 			$output .= '<span class="tg-select-skin">'.__( 'Select this skin', 'tg-text-domain' ).'</span>';
+			if ($id) {
+				$output .= '<a class="tg-button tg-edit-skin" target="_blank" href="'.admin_url( 'admin.php?page=the_grid_skin_builder&id='.esc_attr($id)).'">';
+					$output .= '<i class="dashicons dashicons-admin-tools"></i>';
+				$output .= '</a>';
+			}
 		$output .= '</div>';
 		
 		return $output;
@@ -577,9 +564,9 @@ class The_Grid_Skins_Preview extends The_Grid {
 
 		$output = '<div class="tg-item-custom-skin-name" data-id="'.esc_attr($id).'">';
 			$output .= '<span>'.esc_html(ucfirst($name)).'</span>';
-			$output .= '<div class="tg-button" id="tg-delete-skin" data-action="tg_delete_skin" data-id="'.esc_attr($id).'"><i class="dashicons dashicons-trash"></i></div>';		
-			$output .= '<div class="tg-button" id="tg-clone-skin" data-action="tg_clone_skin" data-id="'.esc_attr($id).'"><i class="dashicons dashicons-images-alt2"></i></div>';
-			$output .= '<a class="tg-button" id="tg-edit-skin" href="'.admin_url( 'admin.php?page=the_grid_skin_builder&id='.esc_attr($id)).'"><i class="dashicons dashicons-admin-tools"></i></a>';
+			$output .= '<div class="tg-button tg-delete-skin" data-action="tg_delete_skin" data-id="'.esc_attr($id).'"><i class="dashicons dashicons-trash"></i></div>';		
+			$output .= '<div class="tg-button tg-clone-skin" data-action="tg_clone_skin" data-id="'.esc_attr($id).'"><i class="dashicons dashicons-images-alt2"></i></div>';
+			$output .= '<a class="tg-button tg-edit-skin" href="'.admin_url( 'admin.php?page=the_grid_skin_builder&id='.esc_attr($id)).'"><i class="dashicons dashicons-admin-tools"></i></a>';
 		$output .= '</div>';
 		
 		return $output;

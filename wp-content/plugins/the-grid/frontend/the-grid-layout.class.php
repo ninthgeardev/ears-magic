@@ -40,13 +40,6 @@ class The_Grid_Layout {
 	}
 	
 	/**
-	* Serialization disabled
-	* @since 1.0.0
-	*/
-	private function __sleep() {
-	}
-	
-	/**
 	* De-serialization disabled
 	* @since 1.0.0
 	*/
@@ -123,6 +116,9 @@ class The_Grid_Layout {
 		
 		// grid layout RTL
 		$grid_rtl = $this->grid_data['rtl'];
+		
+		// item fitrow (Masonry)
+		$item_fitrows = ($grid_layout == 'vertical' && $grid_style == 'masonry') ? $this->grid_data['item_fitrows'] : null;
 		
 		// grid filter combination
 		$filter_comb = $this->grid_data['filter_combination'];
@@ -215,6 +211,7 @@ class The_Grid_Layout {
 		$data_attr .= ' data-row="'.esc_attr($grid_row_nb).'"';
 		$data_attr .= ' data-layout="'.esc_attr($grid_layout).'"';
 		$data_attr .= ' data-rtl="'.esc_attr($grid_rtl).'"';
+		$data_attr .= ' data-fitrows="'.esc_attr($item_fitrows).'"';
 		$data_attr .= ' data-filtercomb="'.esc_attr($filter_comb).'"';
 		$data_attr .= ' data-filterlogic="'.esc_attr($filter_logic).'"';
 		$data_attr .= ' data-filterload ="'.esc_attr($filter_onload).'"';
@@ -227,7 +224,7 @@ class The_Grid_Layout {
 		$data_attr .= ' data-ratio="'.esc_attr($item_ratio).'"';
 		$data_attr .= ' data-cols="'.esc_attr($grid_cols).'"';
 		$data_attr .= ' data-rows="'.esc_attr($grid_rows).'"';
-		$data_attr .= ' data-animation="'.esc_attr($animation).'"';
+		$data_attr .= ' data-animation=\''.esc_attr($animation).'\'';
 		$data_attr .= ' data-transition="'.esc_attr($transition).'"';
 		$data_attr .= ' data-ajaxmethod="'.esc_attr($ajax_method).'"';
 		$data_attr .= ' data-ajaxdelay="'.esc_attr($ajax_delay).'"';
@@ -334,27 +331,50 @@ class The_Grid_Layout {
 	* Retrieve all post type terms
 	* @since 1.0.0
 	*/
-	public function get_post_terms($terms, $order) {
-			
-		$i = 0;
-		$filters = array();
+	public function get_post_terms($filters, $order) {
+
+		$terms   = array();
+		$filters = json_decode($filters, true);
+
+		// get all terms ids
+		$filters = array_map(function($filter) {
+			return $filter['id'];
+		}, $filters);
 		
-		$terms = json_decode($terms);
-		
-		if (isset($terms) && !empty($terms)) {
-			foreach ($terms as $term) {
-				$name = get_term($term->id, $term->taxonomy);
-				if (isset($name->name)) {
-					$filters[$i]['id']    = $term->id;
-					$filters[$i]['name']  = $name->name;
-					$filters[$i]['taxo']  = $term->taxonomy;
-					$filters[$i]['count'] = $name->count;
-					$i++;
-				}
-			}
+		// process term ids
+		if ($term_ids = array_filter($filters, 'is_int')) {
+			$terms = array_merge($terms, get_terms(
+				get_taxonomies(),
+				array(
+					'orderby'    => 'include',
+					'hide_empty' => false,
+					'include'    => $term_ids
+				)
+			));
 		}
 		
-		return $filters;
+		// process taxonomy slugs
+		if ($taxonomies = array_filter($filters, 'is_string')) {
+			$terms = array_merge($terms, get_terms(
+				$taxonomies,
+				array(
+					'hide_empty' => false
+				)
+			));
+		}
+		
+		// build filters array
+		$filters = array();
+		foreach ($terms as $term) {
+			$filters[] = array(
+				'id'    => (int) $term->term_id,
+				'name'  => (string) $term->name,
+				'taxo'  => (string) $term->taxonomy,
+				'count' => (int) $term->count
+			);	
+		}
+
+		return array_map('unserialize', array_unique(array_map('serialize', (array) $filters)));
 		
 	}
 	
@@ -366,16 +386,16 @@ class The_Grid_Layout {
 		
 		switch ($order) {
 			case 'number_asc':
-				usort($array, function ($a,$b){ return $a['count'] - $b['count']; });
+				usort($array, function ($a,$b){ return intval($a['count']) - intval($b['count']); });
 				break;
 			case 'number_desc':
-				usort($array, function ($a,$b){ return $b['count'] - $a['count']; });
+				usort($array, function ($a,$b){ return intval($b['count']) - intval($a['count']); });
 				break;
 			case 'alphabetical_asc':
-				usort($array, function ($a,$b){ return strcmp($a['name'], $b['name']); });
+				usort($array, function ($a,$b){ return strcasecmp($a['name'], $b['name']); });
 				break;
 			case 'alphabetical_desc':
-				usort($array, function ($a,$b){ return strcmp($b['name'], $a['name']); });
+				usort($array, function ($a,$b){ return strcasecmp($b['name'], $a['name']); });
 				break;
 		}
 		
@@ -388,7 +408,7 @@ class The_Grid_Layout {
 	* @since 1.0.0
 	*/
 	public function output() {
-
+		
 		// retrieve whole grid content
 		ob_start();
 		$this->get_content();

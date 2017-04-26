@@ -26,6 +26,10 @@ $size4_c = get_option('the_grid_size4_crop', true);
 $size5_w = get_option('the_grid_size5_width', 500);
 $size5_h = get_option('the_grid_size5_height', 99999);
 $size5_c = get_option('the_grid_size5_crop', '');
+
+
+$force_register = get_option('the_grid_force_registration', '');
+
 // other options
 $lightbox       = get_option('the_grid_lightbox', 'the_grid');
 $lb_bg          = get_option('the_grid_ligthbox_background', 'rgba(0,0,0,0.8)');
@@ -85,7 +89,7 @@ $form .= '<div class="tomb-tab-content general tomb-tab-show">';
 		$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
 		$form .= '<label class="tomb-label tomb-label-outside">'. __( 'Enable post formats on any post type', 'tg-text-domain' ) .'</label>';
 		$form .= '<div class="tomb-row tomb-type-checkbox tomb-field">';
-			$form .= '<p class="tomb-desc">'. __( 'This options allows to add post formats options on any post types.', 'tg-text-domain' ). '<br>'. __( 'You should check this option if your theme doesn\'t handle post formats options.', 'tg-text-domain' ) .'<br>'. __( 'Learn more about post formats in Wordpress:', 'tg-text-domain' ) .'<strong> <a href="https://en.support.wordpress.com/posts/post-formats/" target="_blank">'. __( 'Post Formats', 'tg-text-domain' ) .'</a></strong></p>';
+			$form .= '<p class="tomb-desc">'. __( 'This options allows to add post formats options on any post types.', 'tg-text-domain' ). '<br>'. __( 'You should check this option if your theme doesn\'t handle post formats options.', 'tg-text-domain' ) .'<br>'. __( 'Learn more about post formats in Wordpress:', 'tg-text-domain' ) .' <a href="https://en.support.wordpress.com/posts/post-formats/" target="_blank">'. __( 'Post Formats', 'tg-text-domain' ) .'</a></p>';
 			$form .= '<div class="tomb-switch">';
 				$form .= '<input type="checkbox" class="tomb-checkbox" name="the_grid_post_formats" id="the_grid_post_formats" data-default="" '.checked(!empty($post_formats), 1, false).'>';
 				$form .= '<label for="the_grid_post_formats"></label>';
@@ -136,7 +140,7 @@ $form .= '<div class="tomb-tab-content general tomb-tab-show">';
 		
 		$form .= '<div class="tomb-spacer"></div>';
 	
-		$form .= '<div class="tomb-row tomb-type-checkbox tomb-field required" data-required="the_grid_mediaelement,==,true">';
+		$form .= '<div class="tomb-row tomb-type-checkbox tomb-field" data-tomb-required="the_grid_mediaelement,==,true">';
 			$form .= '<label class="tomb-label">'. __( 'Add Mediaelement Grid StyleSheet', 'tg-text-domain' ) .'</label>';
 			$form .= '<div class="tomb-switch">';
 				$form .= '<input type="checkbox" class="tomb-checkbox" name="the_grid_mediaelement_css" id="the_grid_mediaelement_css" data-default="" value="'.$media_css.'" '.checked( ! empty( $media_css ), 1, false ).'>';
@@ -203,6 +207,28 @@ $form .= '<div class="tomb-tab-content general tomb-tab-show">';
 			$form .= '</div>';
 		$form .= '</div>';
 	$form .= '</div>';
+	
+	$form .= '<div class="tomb-clearfix"></div>';
+
+	if (apply_filters('tg_grid_unregister', false)) {
+	
+		// Force Registration
+		$form .= '<div class="tg-box-side">';
+			$form .= '<h3>'. __( 'Force Registration', 'tg-text-domain' ) .'</h3>';
+		$form .= '</div>';
+		$form .= '<div class="inside tg-box-inside">';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<label class="tomb-label tomb-label-outside">'. __( 'Force Registration Panel to be displayed', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-row tomb-type-checkbox tomb-field">';
+				$form .= '<p class="tomb-desc">'. __( 'This options allows to register The Grid even if your theme hides the registration panel', 'tg-text-domain' ) .'</p>';
+				$form .= '<div class="tomb-switch">';
+					$form .= '<input type="checkbox" class="tomb-checkbox" name="the_grid_force_registration" id="the_grid_force_registration" data-default="" value="'.$force_register.'" '.checked( ! empty( $force_register ), 1, false ).'>';
+					$form .= '<label for="the_grid_force_registration"></label>';
+				$form .= '</div>';
+			$form .= '</div>';
+		$form .= '</div>';
+	
+	}
 
 $form .= '</div>';
 
@@ -218,7 +244,7 @@ $form .= '<div class="tomb-tab-content image-size">';
 	$form .= '<div class="inside tg-box-inside">';
 		$form .= '<div class="tomb-row tomb-field">';
 			$form .= '<label class="tomb-label">'. __( 'Image Sizes Settings', 'tg-text-domain' ) .'</label>';
-			$form .= '<p class="tomb-desc">'. __( 'Following image sizes can be set and used to load fitted images in each grid item.','tg-text-domain' ) .'<br>'.  __( 'These size are accessible in each grid settings (under media tab).', 'tg-text-domain' ) .'<br>'.  __( 'It allows to preserve loading speed while preserving optimal image quality.', 'tg-text-domain' ).'<br><br>'. __( 'Learn more about image size in Wordpress:', 'tg-text-domain' ) .'<i><strong> <a href="https://codex.wordpress.org/Function_Reference/add_image_size" target="_blank">'. __( 'add_image_size', 'tg-text-domain' ) .'</a></strong></i></p>';
+			$form .= '<p class="tomb-desc">'. __( 'Following image sizes can be set and used to load fitted images in each grid item.','tg-text-domain' ) .'<br>'.  __( 'These sizes are accessible in each grid settings (under media tab).', 'tg-text-domain' ) .'<br>'.  __( 'It allows to preserve loading speed while preserving optimal image quality.', 'tg-text-domain' ).'<br><br><strong>'.  __( 'N.B.','tg-text-domain' ).'</strong>: '. __( 'By setting an empty or "0" value to the width and height, image size will not be generated.', 'tg-text-domain' ).'<br><br>'. __( 'Learn more about image size in Wordpress:', 'tg-text-domain' ) .'<i> <a href="https://codex.wordpress.org/Function_Reference/add_image_size" target="_blank">'. __( 'add_image_size', 'tg-text-domain' ) .'</a></i></p>';
 		$form .= '</div>';
 		$form .= '<div class="tomb-clearfix"></div>';
 		$form .= '<div class="tomb-spacer" style="height: 5px"></div>';
@@ -353,7 +379,7 @@ $form .= '<div class="tomb-tab-content image-size">';
 			$form .= '<div class="dashicons dashicons-lightbulb"></div>';
 			$form .= '<div class="tomb-info-box-holder">';
 				$form .= '<h3 class="tomb-info-box-title">'. __( 'Regenerate your images!', 'tg-text-domain' ) .'</h3>';
-				$form .= '<p class="tomb-info-box-content">'. __( 'We highly recommend to regenerate your thumbnail images in order to correctly apply the previous settings.', 'tg-text-domain' ) .'<br>'. __( 'If you change these settings or just install this plugin on an old wordpress installation then you must regenerate your thumbnail.', 'tg-text-domain' ) .'<br>'. __( 'It exists a lot of plugins that easily allows you to regenerate thumbnails like:', 'tg-text-domain' ) .'<i><strong> <a href="https://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">'. __( 'Regenerate Thumbnails Plugin', 'tg-text-domain' ) .'</a></strong></i></p>';
+				$form .= '<p class="tomb-info-box-content">'. __( 'We highly recommend to regenerate your thumbnail images in order to correctly apply the previous settings.', 'tg-text-domain' ) .'<br>'. __( 'If you change these settings or just install this plugin on an old wordpress installation then you must regenerate your thumbnail.', 'tg-text-domain' ) .'<br>'. __( 'It exists a lot of plugins that easily allows you to regenerate thumbnails like:', 'tg-text-domain' ) .'<i> <a href="https://wordpress.org/plugins/regenerate-thumbnails/" target="_blank">'. __( 'Regenerate Thumbnails Plugin', 'tg-text-domain' ) .'</a></i></p>';
 				$form .= '<div style="clear:both"></div>';
 			$form .= '</div>';
 		$form .= '</div>';
@@ -478,7 +504,7 @@ $form .= '<div class="tomb-tab-content lightbox">';
 	$form .= '<div class="tomb-clearfix"></div>';
 	
 	// Lightbox autoplay
-	$form .= '<div class="tomb-row tomb-field required" data-required="the_grid_lightbox,==,the_grid">';
+	$form .= '<div class="tomb-row tomb-field" data-tomb-required="the_grid_lightbox,==,the_grid">';
 		$form .= '<label class="tomb-label">'. __( 'AutoPlay Video', 'tg-text-domain' ) .'</label>';
 		$form .= '<p class="tomb-desc">'. __( 'Automatically play video (hosted & embedded) in the lightbox.', 'tg-text-domain' ) .'</p>';
 		$form .= '<div class="tomb-switch">';
@@ -490,7 +516,7 @@ $form .= '<div class="tomb-tab-content lightbox">';
 	$form .= '<div class="tomb-clearfix"></div>';
 	
 	// Lightbox background color
-	$form .= '<div class="tomb-row tomb-field required" data-required="the_grid_lightbox,==,the_grid">';
+	$form .= '<div class="tomb-row tomb-field" data-tomb-required="the_grid_lightbox,==,the_grid">';
 		$form .= '<label class="tomb-label">'. __( 'Background Color', 'tg-text-domain' ) .'</label>';
 		$form .= '<p class="tomb-desc">'. __( 'Please, select the overlay background color of the lightbox.', 'tg-text-domain' ) .'</p>';
 		$form .= '<input class="tomb-colorpicker" name="the_grid_ligthbox_background" type="text" data-alpha="1" data-default="rgba(0,0,0,0.8)" value="'.$lb_bg.'" />';
@@ -499,7 +525,7 @@ $form .= '<div class="tomb-tab-content lightbox">';
 	$form .= '<div class="tomb-clearfix"></div>';
 	
 	// Lightbox text color
-	$form .= '<div class="tomb-row tomb-field required" data-required="the_grid_lightbox,==,the_grid">';
+	$form .= '<div class="tomb-row tomb-field" data-tomb-required="the_grid_lightbox,==,the_grid">';
 		$form .= '<label class="tomb-label">'. __( 'Text Color', 'tg-text-domain' ) .'</label>';
 		$form .= '<p class="tomb-desc">'. __( 'Please, select text color of the lightbox.', 'tg-text-domain' ) .'</p>';
 		$form .= '<input class="tomb-colorpicker" name="the_grid_ligthbox_color" type="text" data-default="#ffffff" value="'.$lb_color.'" />';
@@ -657,6 +683,82 @@ $form .= '<div class="tomb-tab-content social-api tomb-tab-show">';
 			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_vimeo_api_key" name="the_grid_vimeo_api_key" value=\''.$vimeo_api_key.'\'>';	
 			$form .= '<p class="tomb-sub-desc">'.__( 'You can find more information about the Vimeo API key', 'tg-text-domain' ).' <a target="_blank" href="https://developer.vimeo.com/apps">'.__( 'here', 'tg-text-domain' ).'</a></p>';					
 		$form .= '</div>';
+	$form .= '</div>';
+		
+	$form .= '<div class="tomb-clearfix"></div>';
+	
+	$form .= '<div class="tg-box-side">';
+		$form .= '<h3>'. __( 'Facebook API', 'tg-text-domain' ) .'</h3>';
+	$form .= '</div>';
+	$form .= '<div class="inside tg-box-inside">';
+	
+		$facebook_app_ID  = get_option('the_grid_facebook_app_ID', '');
+		$form .= '<div class="tomb-row tomb-field the_grid_facebook">';
+			$form .= '<label class="tomb-label">'. __( 'Facebook App ID', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<p class="tomb-desc">'.__( 'Please enter your Facebook App ID:', 'tg-text-domain' ).'</p>';
+			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_facebook_app_ID" name="the_grid_facebook_app_ID" value=\''.$facebook_app_ID.'\'>';						
+		$form .= '</div>';
+		
+		$form .= '<div class="tomb-clearfix"></div>';
+		
+		$facebook_app_secret  = get_option('the_grid_facebook_app_secret', '');
+		$form .= '<div class="tomb-row tomb-field the_grid_facebook">';
+			$form .= '<label class="tomb-label">'. __( 'Facebook App Secret', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<p class="tomb-desc">'.__( 'Please enter your Facebook App Secret:', 'tg-text-domain' ).'</p>';
+			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_facebook_app_secret" name="the_grid_facebook_app_secret" value=\''.$facebook_app_secret.'\'>';	
+			$form .= '<p class="tomb-sub-desc">'.__( 'Please register your Website app with Facebook to get these values:', 'tg-text-domain' ).' <a target="_blank" href="https://developers.facebook.com/docs/apps/register">'.__( 'Register an App', 'tg-text-domain' ).'</a></p>';					
+		$form .= '</div>';
+		
+	$form .= '</div>';
+	
+	$form .= '<div class="tomb-clearfix"></div>';
+	
+	$form .= '<div class="tg-box-side">';
+		$form .= '<h3>'. __( 'Twitter API', 'tg-text-domain' ) .'</h3>';
+	$form .= '</div>';
+	$form .= '<div class="inside tg-box-inside">';
+	
+		$twitter_consumer_key  = get_option('the_grid_twitter_consumer_key', '');
+		$form .= '<div class="tomb-row tomb-field the_grid_twitter">';
+			$form .= '<label class="tomb-label">'. __( 'Twitter Consumer Key', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<p class="tomb-desc">'.__( 'Please enter your Twitter consumer key:', 'tg-text-domain' ).'</p>';
+			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_twitter_consumer_key" name="the_grid_twitter_consumer_key" value=\''.$twitter_consumer_key.'\'>';					
+		$form .= '</div>';
+		
+		$form .= '<div class="tomb-clearfix"></div>';
+		
+		$twitter_consumer_secret  = get_option('the_grid_twitter_consumer_secret', '');
+		$form .= '<div class="tomb-row tomb-field the_grid_facebook">';
+			$form .= '<label class="tomb-label">'. __( 'Twitter Consumer Secret', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<p class="tomb-desc">'.__( 'Please enter your Twitter consumer secret:', 'tg-text-domain' ).'</p>';
+			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_twitter_consumer_secret" name="the_grid_twitter_consumer_secret" value=\''.$twitter_consumer_secret.'\'>';	
+			$form .= '<p class="tomb-sub-desc">'.__( 'Register your Twitter App to generate your Consumer Key & Secret:', 'tg-text-domain' ).' <a target="_blank" href="https://apps.twitter.com/">'.__( 'Register an App', 'tg-text-domain' ).'</a></p>';					
+		$form .= '</div>';
+		
+	$form .= '</div>';
+
+	$form .= '<div class="tomb-clearfix"></div>';
+	
+	$form .= '<div class="tg-box-side">';
+		$form .= '<h3>'. __( 'Flickr API', 'tg-text-domain' ) .'</h3>';
+	$form .= '</div>';
+	$form .= '<div class="inside tg-box-inside">';
+	
+		$flickr_api_key  = get_option('the_grid_flickr_api_key', '');
+		$form .= '<div class="tomb-row tomb-field the_grid_flickr">';
+			$form .= '<label class="tomb-label">'. __( 'Flickr API Key', 'tg-text-domain' ) .'</label>';
+			$form .= '<div class="tomb-spacer" style="height: 15px"></div>';
+			$form .= '<p class="tomb-desc">'.__( 'Please enter your Flickr API key:', 'tg-text-domain' ).'</p>';
+			$form .= '<input type="text" style="width: 420px;" class="tomb-text the_grid_flickr_api_key" name="the_grid_flickr_api_key" value=\''.$flickr_api_key.'\'>';	
+			$form .= '<p class="tomb-sub-desc">'.__( 'Register your Flickr App to generate your API Key:', 'tg-text-domain' ).' <a target="_blank" href="https://www.flickr.com/services/api/misc.api_keys.html">'.__( 'Register an App', 'tg-text-domain' ).'</a></p>';			
+		$form .= '</div>';
+		
+		$form .= '<div class="tomb-clearfix"></div>';
+		
 	$form .= '</div>';
 
 $form .= '</div>';

@@ -1,8 +1,7 @@
 .lusaka a,
 .lusaka a:active,
 .lusaka a:focus,
-.lusaka .tg-item-overlay,
-.lusaka .tg-media-button {
+.lusaka .tg-item-overlay {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;

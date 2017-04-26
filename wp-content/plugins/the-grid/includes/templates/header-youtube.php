@@ -35,7 +35,7 @@ if ($tg_grid_data['source_type'] == 'youtube') {
 				$youtube = '<div class="tg-youtube-channel-header">';
 				
 					$youtube .= '<a class="tg-youtube-channel-logo" href="'.esc_url('https://www.youtube.com/channel/'.$channel_id.'/').'" target="_blank">';
-						$youtube .= '<img src="'.esc_url($logo).'" alt="Red Bull">';
+						$youtube .= '<img src="'.esc_url($logo).'" alt="">';
 					$youtube .= '</a>';
 					
 					$youtube .= '<div class="tg-youtube-channel-banner" style="background-image: url('.esc_url($banner).')"></div>';

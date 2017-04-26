@@ -1,6 +1,4 @@
 .victoria a,
-.victoria a:hover,
-.victoria .tg-media-button,
 .victoria a:active,
 .victoria a:focus,
 .victoria .tg-share-icons i {
@@ -35,12 +33,15 @@
     display: block;
     font-size: 18px;
     line-height: 24px;
+	height: 24px;
     font-weight: 600;
     margin: 0 !important;
     padding: 0 !important;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis;
+	-ms-text-overflow: ellipsis;
+	-moz-binding: url('ellipsis.xml#ellipsis');
 }
 .victoria .tg-item-title a {
 	padding: 0 !important;
@@ -75,13 +76,13 @@
 .victoria .tg-media-button,
 .victoria .tg-link-button {
 	position: relative;
-	display: inline-block;
-	vertical-align: middle;
-	height: 75px;
-	width: 75px;
-	margin: 0;
-	padding: 0;
-	cursor: pointer;
+    display: block;
+    vertical-align: middle;
+    height: 75px;
+    width: 75px;
+    margin: 0 auto;
+    padding: 0;
+    cursor: pointer;
 }
 .victoria .tg-item-overlay,
 .victoria .tg-media-button,

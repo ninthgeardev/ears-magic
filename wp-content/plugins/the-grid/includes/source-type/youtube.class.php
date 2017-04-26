@@ -11,13 +11,85 @@ if (!defined('ABSPATH')) {
 }
 
 class The_Grid_Youtube {
-
+	
+	/**
+	* Youtube API Key
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
 	private $api_key;
+	
+	/**
+	* Youtube transient
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
 	private $transient_sec;
+	
+	/**
+	* Youtube error
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string
+	*/
 	private $error;
 	
+	/**
+	* Grid data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
 	private $grid_data;
 	
+	/**
+	* Youtube count
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var integer
+	*/
+	private $count;
+	
+	/**
+	* Youtube media data
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var array
+	*/
+	private $media = array();
+	
+	/**
+	* Youtube last media
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string/array
+	*/
+	private $last_media = array();
+	
+	/**
+	* Youtube paramters
+	*
+	* @since 1.0.0
+	* @access private
+	*
+	* @var string/array
+	*/
 	private $order;
 	private $source_type;
 	private $playlist_id;
@@ -25,11 +97,6 @@ class The_Grid_Youtube {
 	private $video_ids = array();
 	private $videos_details = array();
 	
-	private $count;
-	private $media = array();
-	private $last_media = array();
-	
-
 	/**
 	* Initialize the class and set its properties.
 	* @since 1.0.0
@@ -48,7 +115,7 @@ class The_Grid_Youtube {
 	*/
 	public function get_API_key(){
 		
-		$this->api_key = get_option('the_grid_youtube_api_key', '');
+		$this->api_key = trim(get_option('the_grid_youtube_api_key', ''));
 		
 		if (empty($this->api_key)) {
 			$error_msg  = __( 'You didn\'t authorize The Grid to', 'tg-text-domain' );
@@ -57,7 +124,7 @@ class The_Grid_Youtube {
 			$error_msg .= '</a>';
 			throw new Exception($error_msg);
 		}
-		
+
 	}
 	
 	/**
@@ -117,13 +184,18 @@ class The_Grid_Youtube {
 		$this->count = ($this->count > 50) ? 50 : $this->count;
 		
 		// get last media from ajax
-		$this->last_media = (isset($_POST['grid_ajax']) && !empty($_POST['grid_ajax'])) ? $_POST['grid_ajax']['pageToken'] : array();
+		$this->last_media = (isset($_POST['grid_ajax']) && !empty($_POST['grid_ajax'])) ? $_POST['grid_ajax'] : array();
+		$this->last_media['pageToken'] = (isset($this->last_media['pageToken'])) ? $this->last_media['pageToken'] : '';
+		$this->last_media['count'] = (isset($this->last_media['count'])) ? (int) $this->last_media['count'] : 0;
 		
-		// retrieve Instagram data
-		if ($this->last_media != 'none') {
-			$this->get_media();
+		if (isset($this->last_media['total']) && $this->last_media['count'] >= $this->last_media['total']) {
+			return '';
 		}
+		
+		// retrieve Youtube data
+		$this->get_media();
 
+		
 		return $this->media;
 		
 	}
@@ -146,12 +218,19 @@ class The_Grid_Youtube {
 				$this->get_playlist();
 				$this->get_video_ids();
 				break;
+			case 'videos':
+				$videos_array = explode(',', $this->video_ids);
+				$this->last_media['total'] = count($videos_array);
+				$videos_array = array_slice($videos_array, $this->last_media['count'], $this->count);
+				$this->video_ids = implode(',', $videos_array);
+				break;
 		}
 		
-		if (!empty($this->video_ids)) {
-			$this->get_video();
-			$this->media = $this->build_media_array($this->videos_details, '', '');
-		}
+		// get each video data
+		$this->get_video();
+
+		// store the total number of items retrieved
+		$this->last_media['count'] = $this->last_media['count'] + count($this->media);
 		
 	}
 	
@@ -164,18 +243,22 @@ class The_Grid_Youtube {
 		$this->video_ids = array();
 		
 		if (isset($this->media->items)) {
+			
 			// loop through each video details
 			foreach($this->media->items as $item) {
+				
 				// get video id (depends if playlist or not)
 				if (isset($item->id->videoId)) {
 					array_push($this->video_ids, $item->id->videoId);
 				} else if (isset($item->snippet->resourceId->videoId)) {
 					array_push($this->video_ids, $item->snippet->resourceId->videoId);
 				}
+				
 			}
-			$this->last_media['videos'] = $this->video_ids;
+
 			// prepare video id for videos youtube call
 			$this->video_ids = implode(',', $this->video_ids);
+			
 		}
 
 	}
@@ -186,10 +269,8 @@ class The_Grid_Youtube {
 	*/
 	public function get_channel_info() {
 		
-		$call = $this->_makeCall('channels', 'id', $this->channel_id, 'id,contentDetails,snippet,brandingSettings,statistics', '');
-		$this->last_media = array();
-		$this->last_media['pageToken'] = 'none';
-		
+		$call = $this->_makeCall('channels', 'id', $this->channel_id, 'id,contentDetails,snippet,brandingSettings,statistics');
+
 	}
 
 	/**
@@ -198,9 +279,9 @@ class The_Grid_Youtube {
 	*/
 	public function get_channel() {
 		
-		$call = $this->_makeCall('search', 'channelId', $this->channel_id, 'snippet&type=video', $this->last_media);
-		$this->last_media = array();
-		$this->last_media['pageToken'] = (isset($call->nextPageToken)) ? $call->nextPageToken : 'none';
+		$call = $this->_makeCall('search', 'channelId', $this->channel_id, 'snippet&type=video', true);
+		$this->last_media['pageToken'] = (isset($call->nextPageToken)) ? $call->nextPageToken : '';
+		$this->last_media['total'] = (isset($call->pageInfo->totalResults)) ? $call->pageInfo->totalResults : '';
 		
 	}
 	
@@ -210,9 +291,9 @@ class The_Grid_Youtube {
 	*/
 	public function get_playlist() {
 		
-		$call = $this->_makeCall('playlistItems', 'playlistId', $this->playlist_id, 'snippet,contentDetails', $this->last_media);
-		$this->last_media = array();
-		$this->last_media['pageToken'] = (isset($call->nextPageToken)) ? $call->nextPageToken : 'none';
+		$call = $this->_makeCall('playlistItems', 'playlistId', $this->playlist_id, 'snippet,contentDetails', true);
+		$this->last_media['pageToken'] = (isset($call->nextPageToken)) ? $call->nextPageToken : '';
+		$this->last_media['total'] = (isset($call->pageInfo->totalResults)) ? $call->pageInfo->totalResults : '';
 		
 	}
 	
@@ -221,13 +302,15 @@ class The_Grid_Youtube {
 	* @since 1.0.0
 	*/
 	public function get_video() {
-		
+
 		if (!empty($this->video_ids)) {
+			
 			$this->videos_details = $this->_makeCall('videos', 'id', $this->video_ids, 'snippet,contentDetails,statistics,status');
+			$this->media = $this->build_media_array($this->videos_details, '', '');
+			
 		}
-				
-	}
 	
+	}
 	
 	/**
 	* Youtube API call
@@ -236,9 +319,9 @@ class The_Grid_Youtube {
 	public function _makeCall($type, $id_type, $id, $part, $page = null) {
 
 		// set and retrieve response
-		$page  = (!empty($page)) ? '&pageToken='.$this->last_media : '';
+		$page  = $page ? '&pageToken='.$this->last_media['pageToken'] : '';
 		$order = ($type == 'search') ? '&order='.$this->order : '';
-		$url = 'https://www.googleapis.com/youtube/v3/'.$type.'?'.$id_type.'='.$id.'&part='.$part.'&maxResults='.$this->count.'&key='.$this->api_key.$page.$order;
+		$url   = 'https://www.googleapis.com/youtube/v3/'.$type.'?'.$id_type.'='.$id.'&part='.$part.'&maxResults='.$this->count.'&key='.$this->api_key.$page.$order;
 
 		$response = $this->get_response($url);
 
@@ -246,7 +329,6 @@ class The_Grid_Youtube {
 			$this->media = $response;
 			return $response;
 		}
-		
 
 	}
 	
@@ -261,20 +343,26 @@ class The_Grid_Youtube {
 		$transient_name = 'tg_grid_' . md5($url);
 		
 		if ($this->transient_sec > 0 && ($transient = get_transient($transient_name)) !== false) {
+			
 			$response = $transient;
+			
 		} else {
+			
 			$response = json_decode(wp_remote_fopen($url));
+			
 			if (isset($response->error->errors[0]->reason)) {
 				$error_msg  = __( 'Sorry, an error occurs from Youtube API:', 'tg-text-domain' );
 				$error_msg .= ' '.$response->error->errors[0]->reason;
 				throw new Exception($error_msg);
 			}
+			
 			if (isset($response->items) && !empty($response->items)){
 				set_transient($transient_name, $response, $this->transient_sec);
 			} else if (!$tg_is_ajax) {
 				$error_msg  = __( 'No content was found for the current Channel/Playlist/Videos.', 'tg-text-domain' );
 				throw new Exception($error_msg);
 			}
+			
 		}
 		
 		return $response;
@@ -286,16 +374,26 @@ class The_Grid_Youtube {
 	* @since 1.0.0
 	*/
 	public function covtime($duration){
+
+		$duration = new DateInterval($duration);
+		return (intval($duration->format('%h')) != 0) ? $duration->format('%H:%I:%S') : $duration->format('%I:%S');
 		
-    	$start = new DateTime('@0'); // Unix epoch
-		$start->add(new DateInterval($duration));
-		if (strlen($duration) > 8) {
-    		return $start->format('H:i:s');
-		} else {
-			return $start->format('i:s');
+	} 
+	
+	/**
+	* Get excerpt
+	* @since 2.0.0
+	*/
+	public function get_excerpt($data) {
+		
+		if (isset($data->snippet->description) && !empty($data->snippet->description)) {
+			
+			$attributes = ' target="_blank" class="tg-item-social-link"'; 
+			return preg_replace('/(https?:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/i', '<a href="$1"'.$attributes.'>$1</a>', $data->snippet->description);
+
 		}
-		
-	}  
+	
+	}
 	
 	/**
 	* Build data array for the grid
@@ -308,7 +406,7 @@ class The_Grid_Youtube {
 		if (isset($response->items)) {
 
 			foreach ($response->items as $data) {
-				
+
 				$videos[] = array(
 					'ID'              => $data->id,
 					'type'            => $type,
@@ -319,7 +417,7 @@ class The_Grid_Youtube {
 					'url'             => 'https://www.youtube.com/watch?v='.$data->id,
 					'url_target'      => '_blank',
 					'title'           => (isset($data->snippet->title)) ? $data->snippet->title : null,
-					'excerpt'         => (isset($data->snippet->description)) ? $data->snippet->description : null,
+					'excerpt'         => (isset($data->snippet->description)) ? $this->get_excerpt($data) : null,
 					'terms'           => null,
 					'author'          => array(
 						'ID'     => '',
@@ -351,13 +449,6 @@ class The_Grid_Youtube {
 					'meta_data'       => null
 				);
 	
-			}
-			
-			if ($this->source_type == 'videos') {
-				$last_media = ($this->last_media) ? $this->last_media : 0;
-				$videos = array_slice($videos, $last_media, $this->count);
-				$this->last_media = array();
-				$this->last_media['pageToken'] = $last_media + $this->count;
 			}
 
 		}

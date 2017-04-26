@@ -1,7 +1,6 @@
 .brasilia a,
 .brasilia a:active,
-.brasilia a:focus,
-.brasilia .tg-media-button {
+.brasilia a:focus {
 	text-decoration: none;
     border: none;
 	-webkit-box-shadow: none;

@@ -51,7 +51,9 @@ if ( ! class_exists( 'TOMB_Textarea_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
+			
 			return esc_textarea( $new );
+			
 		}
 
 	}

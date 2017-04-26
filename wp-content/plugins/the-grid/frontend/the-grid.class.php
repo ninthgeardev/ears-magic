@@ -43,7 +43,7 @@ class The_Grid {
 	public $grid_items;
 	
 	/**
-	* Timer
+	* Timer Start
 	*
 	* @since 1.0.0
 	* @access public
@@ -51,6 +51,15 @@ class The_Grid {
 	* @var integer
 	*/
 	protected $time_start;
+	
+	/**
+	* Timer End
+	*
+	* @since 1.0.0
+	* @access public
+	*
+	* @var integer
+	*/
 	protected $time_end;
 	
 	/**
@@ -78,13 +87,6 @@ class The_Grid {
 	* @since 1.0.0
 	*/
 	private function __clone() {
-	}
-	
-	/**
-	* Serialization disabled
-	* @since 1.0.0
-	*/
-	private function __sleep() {
 	}
 	
 	/**
@@ -167,11 +169,17 @@ class The_Grid {
 		// get grid styles
 		$this->get_styles();
 		// get grid layout
-		$output = $this->get_layout();
+		$layout = $this->get_layout();
+		
+		// add plugin version
+		$output  = $this->add_plugin_info();
 		// add debug info
-		$output = $this->add_debug_info($output);
+		$output .= $this->add_debug_info();
 		// add cache info
-		$output = $this->add_cache_info($output);		
+		$output .= $this->add_cache_info();
+		// add layout to output	
+		$output .= $layout;	
+			
 		// return the grid
 		if (!$template) {
 			return $output;
@@ -270,22 +278,22 @@ class The_Grid {
 	* Add grid cache info
 	* @since 1.0.0
 	*/
-	public function add_cache_info($output) {
+	public function add_plugin_info() {
+		
+		return '<!-- The Grid Plugin Version '.TG_VERSION.' -->';	
+		
+	}
+	
+	/**
+	* Add grid cache info
+	* @since 1.0.0
+	*/
+	public function add_cache_info() {
 		
 		// check if a cache date is available
-		$cache_date = (isset($this->grid_data['cache_date'])) ? $this->grid_data['cache_date'] : null;
-		
-		if (!empty($cache_date)) {
-				
-			// add cache comment tag
-			$cache_msg = '<!-- The Grid Cache Enabled - Date: '.$cache_date.' -->';
-			// re-assign plugin version
-			$output = preg_replace('~<!-- The Grid Plugin Version.+?-->~s', '<!-- The Grid Plugin Version '.TG_VERSION.' -->', $output);
-			$output = $cache_msg.$output;	
-			
-		}
-		
-		return $output;
+		$cache_date = isset($this->grid_data['cache_date']) ? $this->grid_data['cache_date'] : null;
+		// add cache comment tag
+		return $cache_date ? '<!-- The Grid Cache Enabled - Date: '.$cache_date.' -->' : null;
 		
 	}
 	
@@ -293,19 +301,17 @@ class The_Grid {
 	* Add debug info
 	* @since 1.0.0
 	*/
-	public function add_debug_info($output) {
+	public function add_debug_info() {
 		
 		if ($this->debug_mode) {
 			
 			// end mesure render time
 			$this->time_end();
 			// add cache comment tag
-			$debug_msg = '<!-- The Grid Debug Mode Enabled - Execution Time: '.round($this->time_end - $this->time_start,5).'s for '.count($this->grid_items).' items --->';
-			$output = $debug_msg.$output;	
+			return '<!-- The Grid Debug Mode Enabled - Execution Time: '.round($this->time_end - $this->time_start,5).'s for '.count($this->grid_items).' items -->';
+
 			
 		}
-		
-		return $output;
 		
 	}
 
@@ -326,11 +332,14 @@ if(!function_exists('The_Grid')) {
 			$the_grid = The_Grid::getInstance();
 			return $the_grid->render($name, $template);
 			
-		} catch ( Exception $e) {
-
+		} catch (Exception $e) {
+			
 			// display any error which occurred while building the grid
-			$error_msg = '<div class="tg-error-msg">';
-				$error_msg .= esc_html($e->getMessage());
+			$error_msg  = '<!-- The Grid Plugin Version '.TG_VERSION.' -->';
+			$error_msg .= $the_grid->add_debug_info();
+			$error_msg .= $the_grid->add_cache_info();
+			$error_msg .= '<div class="tg-error-msg" data-grid-name="'.$name.'">';
+				$error_msg .= wp_kses_post($e->getMessage());
 			$error_msg .= '</div>';
 			
 			if (!$template) {

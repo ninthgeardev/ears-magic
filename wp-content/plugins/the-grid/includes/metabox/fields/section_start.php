@@ -43,18 +43,16 @@ if ( ! class_exists( 'TOMB_Title_Field' ) ) {
 				$style2 = 'style="'.$color.'"';
 			}
 			
-			$required = null;
 			$required_fields = null;
 			if (isset($field['required'])) {
-				$required = ' required';
 				foreach ($field['required'] as $requireds) {
 					$required_fields .= $requireds[0].','.$requireds[1].','.$requireds[2].';';
 				}
 				$required_fields = rtrim($required_fields, ";");
-				$required_fields = ' data-required="'.$required_fields.'"';
+				$required_fields = ' data-tomb-required="'.$required_fields.'"';
 			}
 			
-			$output  = '<div class="tomb-section'.$required.'" id="'.$field['id'].'" '.$required_fields.'>';
+			$output  = '<div class="tomb-section" id="'.$field['id'].'" '.$required_fields.'>';
 				$output .= '<div class="tomb-section-left" '.$style.'>';
 					$output .= '<h3 class="tomb-section-title" '.$style2.'>'.$field['name'].'</h3>';
 					$output .= '<p class="tomb-section-desc">'.$field['desc'].'</p>';

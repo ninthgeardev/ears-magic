@@ -2,6 +2,11 @@
    00. Reset element
 /* ============================================================ */
 
+/*** fix flicker when animating ***/
+body {
+	backface-visibility: hidden;
+    overflow-x: visible !important;
+}
 .tg-skin-build-inner div {
     outline: 0;
     padding: 0;
@@ -16,6 +21,17 @@
 .tg-skin-build-inner u,
 .tg-skin-build-inner ins {
     text-decoration: underline;
+}
+
+/* ============================================================
+   00. Reset transitions
+/* ============================================================ */
+
+.tg-no-transition * {
+	-webkit-transition: none !important;
+    -moz-transition: none !important;
+    -ms-transition: none !important;
+    transition: none !important;
 }
 
 /* ============================================================
@@ -90,7 +106,8 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	position: absolute;
 	display: none;
 	top: 5px;
-	left: 5px;
+	left: 345px;
+	margin: 50px 0 0 0;
 	width: 3px;
 	border-radius: 3px;
 	background: rgba(0,0,0,0.2);
@@ -110,11 +127,43 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	text-align: right;
 }
 .tg-element-draggable,
-.tg-element-draggable * {
+.tg-element-draggable *:not(.ui-resizable-handle) {
 	cursor: move !important;
-	width: auto !important;
+	/*width: auto;*/
 }
-.tg-element-draggable *:not(del) {
+.tg-element-draggable *:not(del):not(.ui-resizable-handle) {
+	color: inherit !important;
+    margin: 0;
+    padding: 0;
+    color: inherit !important;
+    text-align: inherit;
+    font-size: inherit;
+    font-style: inherit;
+    line-height: inherit;
+    font-weight: inherit;
+    text-transform: inherit;
+    text-decoration: inherit;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border: none;
+}
+.tg-element-draggable {
+	vertical-align: middle;
+	box-sizing: border-box;
+}
+.tg-skin-build-inner:not(.tg-item-preview) .tg-element-draggable {
+	z-index: 2;
+}
+.tg-skin-build-inner:not(.tg-item-preview) .tg-element-draggable:hover {
+	z-index: 4 !important;
+}
+.tg-skin-build-inner.tg-item-preview .tg-element-draggable,
+.tg-skin-build-inner.tg-item-preview .tg-element-draggable *,
+.tg-skin-build-inner.view-3d-mode .tg-element-draggable,
+.tg-skin-build-inner.view-3d-mode .tg-element-draggable * {
+	cursor: default !important;
+}
+.tg-element-draggable *:not(del, .tg-element-helper) {
 	color: inherit !important;
 	text-align: inherit !important;
 	font-size: inherit !important;
@@ -123,6 +172,7 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	font-weight: inherit !important;
 	text-transform: inherit !important;
 	text-decoration: inherit !important;
+	backface-visibility: hidden;
 }
 .tg-element-draggable.ui-draggable-dragging:after {
 	content: "";
@@ -130,27 +180,48 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 .tg-state-highlight {
 	position: relative;
 	display: inline-block;
+	z-index: 3;
 	padding: 0;
 	margin: 0;
 	max-width: 100%;
-	border: 2px dashed rgba(0,0,0,0.1);
-	background: repeating-linear-gradient(-45deg, 
-    rgba(0,0,0,0) 1px, rgba(0,0,0,0) 2px, 
-    rgba(0,0,0,0.1) 4px, rgba(0,0,0,0) 5px);
+	vertical-align: middle;
 	box-sizing: border-box;
 }
-.tg-element-selected:before {
-	content: "\f107";
+.tg-element-helper {
+    position: absolute;
+	display: block;
+    opacity: 0;
+	visibility: hidden;
+    border: 1px dashed rgba(44,62,80,0.5) !important;
+    -webkit-transition: opacity 0.2s ease-in-out,  visibility 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out,  visibility 0.2s ease-in-out;
+    -ms-transition: opacity 0.2s ease-in-out,  visibility 0.2s ease-in-out;
+    -o-transition: opacity 0.2s ease-in-out,  visibility 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out,  visibility 0.2s ease-in-out;
+}
+.tg-element-helper:before {
+	position: absolute;
+	display: block;
+	content: "";
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	margin: -7px;
+}
+.tg-element-selected .tg-element-helper:before {
+    content: "\f107";
     position: absolute;
     display: block;
-	z-index: 3;
-    top: -25px;
+    z-index: 4;
+    top: -32px;
     left: 50%;
-    width: 26px;
+    width: 24px;
     height: 20px;
-    margin: 0 0 0 -13px;
+    margin: 0 0 0 -12px;
+    padding: 0px 7px;
     line-height: 20px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400;
     font-style: normal;
     background: #4ECDC4;
@@ -167,24 +238,49 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     text-shadow: none;
     text-decoration: none;
     -webkit-box-shadow: 0px 0px 6px 0 rgba(14,21,47,0.4);
-    box-shadow: 0px 0px 6px 0 rgba(14,21,47,0.4); 
+    box-shadow: 0px 0px 6px 0 rgba(14,21,47,0.4);
+    box-sizing: border-box;
 }
-.tg-element-selected:after {
+.tg-element-selected .tg-element-helper:after {
     content: "";
     position: absolute;
     display: block;
-	z-index: 3;
+    z-index: 4;
     width: 0;
     height: 0;
     left: 50%;
-    top: -5px;
+    top: -13px;
     margin-left: -5px;
     border-top: 5px solid #4ECDC4;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
 }
-.tg-item {
+.tg-line-break .tg-element-helper {
+	top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+}
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-element-helper.ui-resizable-resizing,
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .ui-sortable-helper .tg-element-helper,
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-state-highlight .tg-element-helper,
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-element-draggable:hover .tg-element-helper,
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-element-selected .tg-element-helper {
+	opacity: 1;
+	visibility: visible;
+}
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-state-highlight:not(.tg-no-hash),
+.tg-skin-build-inner:not(.tg-item-preview):not(.view-3d-mode) .tg-state-highlight .tg-element-helper {
+	border: none !important;
+	background: repeating-linear-gradient(-45deg, 
+    	rgba(0,0,0,0) 1px, rgba(0,0,0,0) 2px, 
+    	rgba(0,0,0,0.15) 4px, rgba(0,0,0,0) 5px);
+}
+div.tg-item {
 	margin: 0 auto;
+	flex: auto;
+	max-width: 100%;
+    padding: 80px 20px 40px 20px;
 }
 .tg-item,
 .tg-item * {
@@ -192,14 +288,11 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 }
-.tg-item-preview .tg-element-selected:before,
-.tg-item-preview .tg-element-selected:after {
-	display: none !important;
-}
 .tg-skin-build-inner {
+	overflow: hidden;
     height: auto;
     display: block;
-    padding: 20px;
+    padding: 80px;
     background: #f1f1f1;
     background-image: url('../images/checker-bg.gif');
     box-sizing: border-box; 
@@ -211,53 +304,64 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	height: auto;
 	min-height: 80px;
 }
+.tg-panel-skin .tg-container-header {
+    padding-right: 0;
+}
 .tg-panel-skin .tg-container-header .tg-button {
-	position: relative;
-	display: inline-block;
-	float: right;
-	margin: 8px 0 0 8px;
+    position: relative;
+    display: inline-block;
+    float: right;
+    margin: 0;
+    height: 51px;
+    color: #444 !important;
+    font-weight: 600;
+    line-height: 50px;
+    border-left: 1px solid rgba(0,0,0,0.065);
+    padding: 0 14px;
 }
-#tg-item-preview {
-	background: #2c3e50;
-}
-#tg-3d-view {
-    background: #2c3e50;
+.tg-panel-skin .tg-container-header .tg-button i {
+    line-height: 50px;
 }
 #tg-3d-view.is-previewed,
 #tg-item-preview.is-previewed {
 	background: #4ECDC4;
+	color: #ffffff !important;
 }
 .tg-skin-build-inner .tg-item-inner,
 .tg-skin-build-inner .tg-item-media-holder,
 .tg-skin-build-inner .tg-item-content-holder {
     position: relative;
     display: block;
-    width: 100%;
     padding: 0px;
-    min-height: 40px;
-    width: 100%;
-    max-width: 100%;
+    min-height: 80px;
     margin: 0 auto;
     -webkit-box-sizing: border-box;
     moz-box-sizing: border-box;
     box-sizing: border-box;     
 }
 .tg-skin-build-inner .tg-item-inner {
+	z-index: 0;
 	width: 380px;
+	max-width: 100%;
 }
 .tg-skin-build-inner .tg-item-media-holder {
 	height: 250px;
 }
+.tg-skin-build-inner.tg-grid-style .tg-item-media-holder {
+	margin: 0 !important;
+}
+
 .tg-skin-build-inner .tg-item-media-image {
-	background-image: url(http://localhost/wordpress/wp-content/plugins/the-grid/backend/assets/images/skin-placeholder.jpg);
+	background-image: url(../images/skin-placeholder.jpg);
 	background-repeat: no-repeat;
     background-size: cover;
 	background-position: 50% 50%;
 }
 .tg-skin-build-inner .tg-item-overlay,
-.tg-skin-build-inner .tg-item-media-content,
+.tg-skin-build-inner .tg-item-media-inner,
 .tg-skin-build-inner .tg-item-media-image,
-.tg-skin-build-inner .tg-item-overlay-content {
+.tg-skin-build-inner .tg-item-media-content,
+.tg-skin-build-inner .tg-item-overlay-content:not(.tg-center-inner) {
 	position: absolute !important;
 	display: block !important;
 	top: 0;
@@ -265,7 +369,15 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	right: 0;
 	bottom: 0;
 	min-height: 80px;
-	box-sizing: border-box; 
+	box-sizing: border-box;
+	outline: 1px solid transparent;
+}
+.tg-skin-build-inner .tg-item-media-inner {
+	overflow: hidden;
+	min-height: auto;
+}
+.tg-skin-build-inner .tg-center-inner.tg-area-droppable:not(.tg-area-filled) {
+	min-height: 80px;
 }
 .tg-skin-build-inner .tg-item-overlay {
     background-color: rgba(52,73,94,0.75) !important;
@@ -280,15 +392,23 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 .tg-skin-build-inner .tg-item-overlay-content[data-position="top"] {
 	bottom: auto;
 }
-.tg-skin-build-inner .tg-item-overlay-content[data-position="center"] {
-	z-index: 3;
-	top: 50%;
-	bottom: auto;
-	-webkit-transform: translateY(-50%);
+.tg-skin-build-inner .tg-center-holder {
+    position: absolute;
+    display: block;
+    top: 50%;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+	backface-visibility: hidden;
+	transform-style: preserve-3d;
+    -webkit-transform: translateY(-50%);
     -moz-transform: translateY(-50%);
     -ms-transform: translateY(-50%);
     -o-transform: translateY(-50%);
-    transform: translateY(-50%);   
+    transform: translateY(-50%);
 }
 .tg-skin-build-inner .tg-item-overlay-content[data-position="center"] > *{
 	vertical-align: middle;  
@@ -299,30 +419,18 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 .tg-skin-build-inner .tg-item-content-holder {
 	background: #ffffff !important;
 }
-.tg-skin-build-inner .tg-item-content-holder[data-position="bottom"] {
-	z-index: 2;
-}
-.tg-skin-build-inner .tg-item-clear {
-	clear: both;
-}
 .tg-area-droppable:before {
-    content: attr(data-name);
+	content: attr(data-name);
     position: absolute;
     display: block;
-	z-index: 0;
+    pointer-events: none;
+    z-index: 0;
     top: 50%;
     left: 50%;
-    width: 100px;
-    margin: -10px 0 0 -50px;
     text-align: center;
+    line-height: 66px;
     font-weight: 700;
     color: #4ECDC4;
-}
-.tg-area-droppable:after {
-    content: "";
-    position: absolute;
-    display: block;
-	z-index: 0;
     top: 5px;
     left: 5px;
     right: 5px;
@@ -331,29 +439,39 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     background: rgba(78,205,196,0.05);
 }
 .tg-item-preview .tg-area-droppable:before,
-.tg-item-preview .tg-area-droppable:after,
-.tg-area-filled .tg-area-droppable:before,
-.tg-area-filled .tg-area-droppable:after,
-.tg-area-filled.tg-area-droppable:before,
-.tg-area-filled.tg-area-droppable:after {
+.tg-area-filled.tg-area-droppable:before {
 	display: none;
 }
-.tg-area-filled.tg-area-droppable {
-	min-height: auto;
+.tg-item-media-content:before {
+	content: normal;
+	display: none;
 }
-.tg-item-clear {
+.tg-skin-build-inner .tg-item-overlay-content[data-position="center"] .tg-area-filled.tg-area-droppable,
+.tg-area-filled.tg-area-droppable {
+	min-height: auto !important;
+}
+.tg-area-filled.tg-item-content-holder[data-position="top"],
+.tg-area-filled.tg-item-content-holder[data-position="bottom"] {
+	min-height: 1px;
+}
+.tg-area-filled.tg-item-content-holder[data-position="top"]:after,
+.tg-area-filled.tg-item-content-holder[data-position="bottom"]:after {
+	position: relative;
+	display: block;
+	content: "";
 	clear: both;
 	height: 0;
 	opacity: 0 !important;
 }
 .tg-line-break {
 	position: relative;
-	display: block !important;
+	display: block;
     clear: both !important;
     height: 10px !important;
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+	font-family: inherit !important;
     text-align: center !important;   
     font-style: normal !important;
 	line-height: 10px !important;
@@ -365,6 +483,7 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	overflow: hidden !important;
     position: relative !important;
     display: block !important;
+	line-height: 8px !important;
 }
 .tg-line-break span span {
 	display: inline-block !important;
@@ -378,7 +497,7 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 .tg-line-break span span:after {
 	content: "";
     position: absolute;
-    height: 1px;
+    height: 2px;
     border-bottom: 1px dotted;
     border-top: 1px dotted;
     top: 3px;
@@ -392,11 +511,101 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	left: 100%;
 	margin-left: 10px;
 }
-.dark .tg-line-break span span {
+.tg-dark .tg-line-break,
+.tg-dark .tg-line-break span span {
 	color: #999999 !important;
 }
-.light .tg-line-break span span {
+.tg-light .tg-line-break,
+.tg-light .tg-line-break span span {
 	color: #f5f5f5 !important;
+}
+.tg-layer-highlight {
+	position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid rgba(231, 76, 60, 0.5) !important;
+    box-shadow: 0 0 8px 0 rgba(231, 76, 60, 0.5) !important;
+    background: rgba(231, 76, 60, 0.1) !important;
+}
+.tg-skin-build-inner:not(.view-3d-mode) .tg-item-inner > .tg-layer-highlight,
+.tg-item-media-holder > .tg-layer-highlight,
+.tg-item-media-content > .tg-layer-highlight {
+    z-index: 3;
+}
+
+/* ============================================================
+   00. ui resizable
+/* ============================================================ */
+
+.tg-element-draggable .ui-resizable {
+	position: absolute;
+}
+.tg-element-draggable .ui-resizable-handle {
+	position: absolute;
+    display: block;
+	width: 6px;
+    height: 6px;
+    outline: 1px solid rgba(44,62,80,0.5) !important;
+    background: rgba(44,62,80,0.065);
+    box-sizing: border-box;
+	-webkit-transition: background-color 0.2s ease-out;
+    -moz-transition: background-color 0.2s ease-out;
+	-ms-transition: background-color 0.2s ease-out;
+    -o-transition: background-color 0.2s ease-out;
+    transition: background-color 0.2s ease-out;
+}
+.tg-element-draggable.ui-sortable-helper .ui-resizable-handle {
+	opacity: 0;
+}
+.tg-element-draggable .ui-resizable-handle:hover {
+    background: #ffffff;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-s {
+	cursor: s-resize;
+    left: 50%;
+    bottom: -7px;
+    margin-left: -3px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-sw {
+	cursor: sw-resize;
+	left: -7px;
+	bottom: -7px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-se {
+	cursor: se-resize;
+	right: -7px;
+	bottom: -7px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-w { 	
+	cursor: w-resize;
+	left: -7px;
+	top: 50%;
+	margin-top: -3px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-e {
+	cursor: e-resize;
+	right: -7px;
+	top: 50%;
+	margin-top: -3px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-n {
+	cursor: n-resize;
+	left: 50%;
+	margin-left: -3px;
+	top: -7px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-nw {
+	cursor: nw-resize;
+	left: -7px;
+	top: -7px;
+}
+.tg-element-draggable .ui-resizable-handle.ui-resizable-ne {
+	cursor: ne-resize;
+	top: -7px;
+	right: -7px;
 }
 
 /* ============================================================
@@ -411,87 +620,113 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     transition: transform 0.8s ease-out;
 }
 .tg-item-overlay,
-.view-3d-mode .tg-area-droppable:after,
 .view-3d-mode .tg-item-media-image {
 	outline: 1px solid transparent;
 }
 .view-3d-mode .tg-item-content-holder,
+.view-3d-mode .tg-item-media-holder,
 .view-3d-mode .tg-item-media-content,
+.view-3d-mode .tg-item-media-inner,
 .view-3d-mode .tg-item-content-holder:after,
+.view-3d-mode .tg-item-content-holder:before,
 .view-3d-mode .tg-item-overlay:after,
-.view-3d-mode .tg-item-media-image:after {
-	-webkit-transition: -webkit-transform 0.8s ease-out 0.6s, opacity 0.8s ease-out 0.6s;
-    -moz-transition: -moz-transform 0.8s ease-out 0.6s, opacity 0.8s ease-out 0.6s;
-	-ms-transition: -ms-transform 0.8s ease-out 0.6s, opacity 0.8s ease-out 0.6s;
-    -o-transition: -o-transform 0.8s ease-out 0.6s, opacity 0.8s ease-out 0.6s;
-    transition: transform 0.8s ease-out 0.6s, opacity 0.8s ease-out 0.6s;
+.view-3d-mode .tg-item-media-holder:after,
+.view-3d-mode .tg-item-media-content:after {
+	-webkit-transition: -webkit-transform 0.8s ease-out 0.6s, opacity 1.2s ease-out 1s;
+    -moz-transition: -moz-transform 0.8s ease-out 0.6s, opacity 1.2s ease-out 1s;
+	-ms-transition: -ms-transform 0.8s ease-out 0.6s, opacity 1.2s ease-out 1s;
+    -o-transition: -o-transform 0.8s ease-out 0.6s, opacity 1.2s ease-out 1s;
+    transition: transform 0.8s ease-out 0.6s, opacity 1.2s ease-out 1s;
 }
 .view-3d-mode[data-col="1"] .tg-item-inner {
-	-webkit-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -moz-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -ms-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -o-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-	transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
+	-webkit-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -moz-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -ms-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -o-transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+	transform: perspective(1200px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
 }
 .view-3d-mode[data-col="2"] .tg-item-inner {
-	-webkit-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -moz-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -ms-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -o-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-	transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
+	-webkit-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -moz-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -ms-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -o-transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+	transform: perspective(2400px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
 }
 .view-3d-mode[data-col="3"] .tg-item-inner {
-	-webkit-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -moz-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -ms-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-    -o-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
-	transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) translateY(-4px) scale3d(0.9,0.9,0.9);
+	-webkit-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -moz-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -ms-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+    -o-transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
+	transform: perspective(3600px) rotateY(-45deg) rotateX(7deg) scale3d(0.95,0.95,1);
 }
-.tg-item-content-holder:after,
-.tg-item-overlay:after,
-.tg-item-media-image:after {
+/*.tg-item-content-holder:after,*/
+.tg-area-filled.tg-item-content-holder:before,
+.tg-item-content-holder:not(.tg-area-filled):after,
+.tg-item-media-holder:after,
+.tg-item-media-content:after {
 	content: attr(data-name);
 	position: absolute;
     display: block;
 	visibility: hidden;
-	font-size: 15px;
+	color: #444444;
+	font-size: 14px;
     font-weight: 600;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: -0.5px;
 	opacity: 0;
 }
-.view-3d-mode .tg-item-content-holder:after,
+/*.view-3d-mode .tg-item-content-holder:after,*/
+.view-3d-mode .tg-area-filled.tg-item-content-holder:before,
+.view-3d-mode .tg-item-content-holder:not(.tg-area-filled):after,
+
 .view-3d-mode .tg-item-overlay:after,
-.view-3d-mode .tg-item-media-image:after {
+.view-3d-mode .tg-item-media-holder:after,
+.view-3d-mode .tg-item-media-content:after  {
 	visibility: visible;
 	opacity: 1;
 }
-.tg-item-content-holder[data-position="bottom"]:after,
-.tg-item-media-image:after {
+.tg-area-filled.tg-item-content-holder[data-position="bottom"]:before,
+.tg-item-content-holder[data-position="bottom"]:not(.tg-area-filled):after {
+	height: 30px;
+    width: 100%;
+    top: 100%;
+    left: 0;
+    margin-top: 10px;
+    text-align: left;
+    border: none;
+    background: transparent;
+    line-height: 1;
+}
+.tg-item-media-holder:after {
     height: 30px;
-    top: 0;
+    margin-left: -36px;
+    top: 20px;
     left: 100%;
-    transform-origin: left top 0;
+    text-align: left;
     -webkit-transform: rotateZ(90deg) translateY(-40px);
     -moz-transform: rotateZ(90deg) translateY(-40px);
     -ms-transform: rotateZ(90deg) translateY(-40px);
     -o-transform: rotateZ(90deg) translateY(-40px);
-	transform: rotateZ(90deg) translateY(-40px);
+    transform: rotateZ(90deg) translateY(-40px);
 }
-.tg-item-content-holder[data-position="top"]:after {
-    top: 70px;
+.tg-item-media-holder:after {
+    margin-left: -16px;
+}
+.tg-area-filled.tg-item-content-holder[data-position="top"]:before,
+.tg-item-content-holder[data-position="top"]:not(.tg-area-filled):after {
+    top: -26px;
+    width: 100%;
     left: 0;
-    transform-origin: left top;
-    -webkit-transform: rotateZ(-90deg) translateY(-40px);
-    -moz-transform: rotateZ(-90deg) translateY(-40px);
-    -ms-transform: rotateZ(-90deg) translateY(-40px);
-    -o-transform: rotateZ(-90deg) translateY(-40px);
-    transform: rotateZ(-90deg) translateY(-40px);
+    text-align: left;
+    border: none;
+    background: transparent;
+    line-height: 1;
 }
-.tg-item-overlay:after {
+.tg-item-media-content:after {
 	bottom: 0;
     left: 0;
+	margin-left: 10px;
     transform-origin: left bottom;
     -webkit-transform: rotateZ(-90deg) translateY(-25px);
 	-moz-transform: rotateZ(-90deg) translateY(-25px);
@@ -501,6 +736,7 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 }
 .view-3d-mode .tg-item-inner,
 .view-3d-mode .tg-item-media-holder,
+.view-3d-mode .tg-item-media-inner,
 .view-3d-mode .tg-item-content-holder {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
@@ -511,46 +747,32 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
 }
-.view-3d-mode .tg-item-media-content {
-	z-index: 9;
-	-webkit-transform: translateZ(82px) translateX(35px) translateY(10px);
-    -moz-transform: translateZ(82px) translateX(35px) translateY(10px);
-    -ms-transform: translateZ(82px) translateX(35px) translateY(10px);
-    -o-transform: translateZ(82px) translateX(35px) translateY(10px);
-    transform: translateZ(82px) translateX(35px) translateY(10px);
+.view-3d-mode .tg-item-media-inner {
+	-webkit-transform: translateZ(-42px);
+    -moz-transform: translateZ(-42px);
+    -ms-transform: translateZ(-42px);
+    -o-transform: translateZ(-42px);
+    transform: translateZ(-42px);
 }
-
-.view-3d-mode .tg-item-content-holder[data-position="top"] {
-	-webkit-transform: translateY(-20px);
-    -moz-transform: translateY(-20px);
-    -ms-transform: translateY(-20px);
-    -o-transform: translateY(-20px);
-    transform: translateY(-20px);	
+.view-3d-mode .z-index-1 {
+	-webkit-transform: translateZ(42px);
+    -moz-transform: translateZ(42px);
+    -ms-transform: translateZ(42px);
+    -o-transform: translateZ(42px);
+    transform: translateZ(42px);
 }
-.view-3d-mode .tg-item-content-holder[data-position="bottom"] {
-	-webkit-transform: translateY(20px);
-    -moz-transform: translateY(20px);
-    -ms-transform: translateY(20px);
-    -o-transform: translateY(20px);
-    transform: translateY(20px);	
+.view-3d-mode .z-index-2 {
+	-webkit-transform: translateZ(82px);
+    -moz-transform: translateZ(82px);
+    -ms-transform: translateZ(82px);
+    -o-transform: translateZ(82px);
+    transform: translateZ(82px);
 }
 
 /* ============================================================
    00. Main container
 /* ============================================================ */
 
-.tg-svg-pencil {
-    position: absolute;
-    bottom: -105px;
-    right: -22px;
-}
-.tg-svg-pencil path {
-	stroke-width: 2.5px;
-    stroke: #4ECDC4;
-    stroke-linecap: round;
-    fill: none;
-    vector-effect: non-scaling-stroke;
-}
 .tg-important-rule-desc {
 	position: relative;
     padding: 10px 18px 8px 18px;
@@ -558,11 +780,12 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     color: #777;
 }
 .tg-important-rule-img {
-    width: 280px;
-    margin: 10px 30px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.065);	
+    position: relative;
+    display: block;
+    width: 290px;
+    margin: 10px auto;
 }
-.tg-wrap * {
+.tg-wrap *:not(input):not(textarea):not(.tg-skin-slug) {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -570,11 +793,19 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	-ms-user-select: none;
 	user-select: none;
 }
+.tg-skin-slug {
+	-webkit-touch-callout: all;
+	-webkit-user-select: all;
+	-khtml-user-select: all;
+	-moz-user-select: all;
+	-ms-user-select: all;
+	user-select: all;
+}	
 .tg-loading-editor {
 	position: absolute;
     display: block;
-	z-index: 3;
-	left: 260px;
+	z-index: 9999;
+	left: 261px;
 	right: 0;
 	top: 51px;
 	bottom: 0;
@@ -650,9 +881,33 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     -o-flex: auto;
     flex: auto;	
 }
-.tg-panel-item .tg-container-content {
+.tg-layout-settings {
+	position: relative;
 	display: block;
-	overflow: hidden;
+	height: 51px;
+	color: #ffffff;
+	background: #2c3e50;
+	font-size: 16px;
+	line-height: 51px;
+	text-align: center;	
+}
+.tg-layout-settings:before {
+    content: "\f135";
+    position: relative;
+    display: inline-block;
+    padding: 0 8px 0 0;
+    margin: 0 0 0 -6px;
+    font-size: 26px;
+    font-family: dashicons;
+    vertical-align: top;
+}
+.tg-component-style-properties > div,
+.tg-panel-item .tg-container-content {
+	overflow: visible;
+	display: block;
+    flex: initial;
+    flex-direction: initial;
+    justify-content: initial;
 }
 .tomb-row {
 	width: 100%;
@@ -684,21 +939,68 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	margin: 30px 15px 0 15px;
 }
 .tg-panel-elements {
-	margin: 30px 0 0 0;
+	position: fixed;
+    display: block;
+    z-index: 999;
+    top: 50%;
+    left: 50%;
+    width: 340px;
+	min-width: 340px;
+    margin: -270px 0 0 -170px;
+	border: none;
+	opacity: 0;
+    visibility: hidden;
+    -webkit-box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
+    -moz-box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
+    box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
+    -webkit-transition: opacity 0.2s ease-out;
+    -moz-transition: opacity 0.2s ease-out;
+    -ms-transition: opacity 0.2s ease-out;
+    -o-transition: opacity 0.2s ease-out;
+    transition: opacity 0.2s ease-out;
 }
-.tg-elements-inner .tomb-tabs-holder {
-	margin: 0;
+.tg-panel-elements .tg-elements-inner {
+	overflow: hidden;
+	min-height: 484px;
+	max-height: 484px;	
 }
-.tg-elements-inner .tomb-tab-content {
-	margin: 12px;
+.tg-panel-elements > .tomb-tab-content {
+    overflow-y: scroll;
+    position: absolute;
+    display: block;
+    top: 50px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
 }
-.tg-elements-inner  .tomb-tab.selected {
-    font-weight: 600;
+.tg-panel-elements .tg-container-header,
+.tg-panel-elements .tg-container-title {
+    color: #ffffff;
+    background: #2c3e50;
+    cursor: move;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+.tg-panel-elements .tg-container-title:before {
+    content: "\f480";
+    position: relative;
+    display: inline-block;
+    padding: 0 8px 0 0;
+    margin: 0 0 0 -6px;
+    font-size: 22px;
+    font-family: dashicons;
+    vertical-align: top;
+}
+.tg-panel-elements .tg-component-style-properties .tomb-tab-content {
+    height: 100%;
+	max-height: 384px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 .tg-elements-inner .tg-custom-element-name {
-    position: absolute;
+	position: absolute;
     overflow: hidden;
-	z-index: 999;
+    z-index: 999;
     white-space: nowrap;
     text-overflow: ellipsis;
     bottom: 0;
@@ -708,11 +1010,13 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     max-height: 14px;
     padding: 5px 30px 5px 10px;
     background: #f5f5f5;
-    color: #444444;
+    border-top: 1px solid rgba(255,255,255,1);
+    color: #777;
     text-align: left;
-    font-size: 12px;
+    font-style: italic;
+    font-size: 11px;
     line-height: 14px;
-    font-weight: 600;
+    font-weight: 400;
 }
 .tg-elements-inner .tg-element-overlay {
 	position: absolute;
@@ -737,21 +1041,46 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     background: #e74c3c;
     color: #ffffff;
 }
+.tg-no-default-element,
 .tg-no-custom-element {
-	padding: 56px 0 41px 0;
+    height: 100%;
+    padding: 56px 40px;
     margin: -10px auto;
     text-align: center;
     font-weight: 600;
     font-size: 16px;
+    letter-spacing: -0.5px;
+    box-sizing: border-box;
+}
+.tg-no-custom-element {
+    min-height: 445px;
     background-image: url(../images/save-as-template.jpg);
     background-repeat: no-repeat;
-    background-position: 100% 50%;
-    background-size: 25%;
+    background-position: -20px 200px;
+    background-size: 365px;
 }
-@media screen and (max-width: 1260px) {
-.tg-no-custom-element {
-    background-image: none;
-}
+.tg-panel-elements-msg {
+	position: absolute;
+    display: block;
+    top: 50%;
+    height: auto;
+    width: 100%;
+    padding: 20px;
+    margin: 0 auto;
+    line-height: 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    box-sizing: border-box;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+    -webkit-animation: tgfadein 0.5s ease-in alternate infinite;
+    -moz-animation: tgfadein 0.5s ease-in alternate infinite;
+    animation: tgfadein 0.5s ease-in alternate infinite;	
 }
 .tg-panel-item {
 	overflow: hidden;
@@ -761,16 +1090,41 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	max-width: 600px;
 	min-height: 465px;
 }
-
 .tg-panel-element .tg-component-panel {
-    min-height: 451px;
-    padding-bottom: 39px;
+    min-height: 450px;
+    padding-bottom: 40px;
+}
+.tg-panel-element .tomb-tab-content.tg-component-style-properties {
+	max-height: 345px;
+}
+.tg-panel-element .tomb-tab-content.tg-component-style-properties.tg-move-tab {
+	max-height: 397px;
 }
 .tg-panel-element .tg-component-style-properties .tomb-tab-content {
     display: block;
     max-height: 350px;
     overflow: auto;
 	overflow-x: hidden;
+}
+.tg-panel-item .tg-container-content,
+.tg-component-style-properties {
+    position: relative;
+    display: inline-block;
+    width: 700px;
+}
+.tg-component-style-properties.tg-move-tab,
+.tg-panel-item .tg-container-content.tg-move-tab {
+	-webkit-transform: translate3d(-340px,0,0);
+    -moz-transform: translate3d(-340px,0,0);
+    -ms-transform: translate3d(-340px,0,0);
+    transform: translate3d(-340px,0,0);
+}
+.tg-component-style-properties,
+.tg-panel-item .tg-container-content {
+	overflow: visible !important;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
 }
 .tg-panel-element {
 	position: fixed;
@@ -779,6 +1133,7 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	top: 50%;
 	left: 50%;
 	width: 340px;
+	height: auto !important;
 	margin: -270px 0 0 -170px;
 	border: none;
 	opacity: 0;
@@ -792,7 +1147,12 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     -o-transition: opacity 0.2s ease-out;
     transition: opacity 0.2s ease-out;
 }
-.tg-panel-element.tg-visible {
+.tg-panel-element.ui-draggable-dragging,
+.tg-panel-elements.ui-draggable-dragging {
+	z-index: 9999;
+}
+.tg-panel-element.tg-visible,
+.tg-panel-elements.tg-visible {
 	visibility: visible;
 	opacity: 1;
 }
@@ -803,6 +1163,11 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 	cursor: move;
     cursor: -moz-grab;
     cursor: -webkit-grab;
+}
+.tg-panel-element .tg-container-title span {
+    font-size: 14px;
+    padding: 0 8px;
+    color: #f1f1f1;
 }
 .tg-panel-element.ui-draggable-dragging .tg-container-header,
 .tg-panel-element.ui-draggable-dragging .tg-container-title {
@@ -840,9 +1205,6 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     text-align: center;
 	cursor: pointer;
 }
-.skin_slug.tomb-row {
-	display: none !important;
-}
 
 /* ============================================================
    00. Component panel
@@ -855,13 +1217,6 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
 .tomb-row .tomb-text {
 	font-size: 13px;
 }
-.skin_name.tomb-row {  
-    height: 99px;
-	padding: 12px 15px 0;
-    text-align: center;
-	background: #f5f6fa; 
-	border: none;   
-}
 .tomb-label {
     font-weight: 400;
     display: inline-block;
@@ -871,21 +1226,40 @@ input[type=number].tomb-text:hover + .tg-filter-tooltip {
     line-height: 28px;
     vertical-align: top;
 }
+.skin_name.tomb-row {  
+    height: 89px;
+	padding: 12px 15px 0;
+    text-align: center; 
+	border-bottom: 1px solid rgba(0,0,0,0.065);   
+}
 .skin_name.tomb-row .tomb-label {  
     width: 100%;
     font-size: 18px;
-    padding: 0;
+    padding: 1px 0 0 0;
+    color: #34495e;
+    font-size: 20px;
+    line-height: 32px;
+    font-weight: normal;
 }
 .skin_name.tomb-row input {  
-	margin: 10px;
-	height: 34px;
-    border: none;
+    margin: 4px;
+    height: 34px;
     font-size: 15px;
     line-height: 34px;
-    font-weight: 600;
+    font-weight: 900;
     text-align: center;
-	background: #ffffff;
-    color: #2c3e50;
+    background: #ffffff;
+    background: rgb(248, 248, 248);
+    border: none;
+}
+.tg-move-from-holder {
+    position: relative;
+    display: inline-block;
+    float: right;
+    margin: 0 25px 2px 0;
+}
+.tomb-row.element_idle_z-index {
+	display: none !important;
 }
 .tg-important-rule {
     position: absolute;
@@ -988,16 +1362,19 @@ li.tg-component-tab.selected {
 	color: #ffffff; 
 }
 .tg-component-styles > ul li,
-.tg-component-animation > ul li {
+.tg-component-animation > ul li,
+.tg-component-actions > ul li {
 	color: #ffffff;
 	background: rgba(102,116,128,0.63);
 }
 .tg-component-styles > ul li:hover,
-.tg-component-animation > ul li:hover { 
+.tg-component-animation > ul li:hover,
+.tg-component-actions > ul li:hover { 
     background: rgba(102,116,128,0.83);	
 }
 .tg-component-styles > ul li.selected,
-.tg-component-animation > ul li.selected {
+.tg-component-animation > ul li.selected,
+.tg-component-actions > ul li.selected {
     background: #4ECDC4;
 }
 .tg-component-panel .tomb-tab-content,
@@ -1009,9 +1386,9 @@ li.tg-component-tab.selected {
 #element_source {
 	overflow: hidden;
 }
-.tg-component-panel #element_source {
+/*.tg-component-panel #element_source {
     max-height: 400px;
-}
+}*/
 .tg-component-panel [data-target="hover_state"] i:after {
     content: "";
     position: absolute;
@@ -1044,13 +1421,15 @@ li.tg-component-tab.selected {
     line-height: 30px;
     box-sizing: border-box;
 	background: #ffffff;
+	border-top: none;
     border-bottom: 1px solid rgba(0,0,0,0.065);
 }
 .tg-component-style-properties ul li i,
 .tg-panel-item .tg-container-content > ul li i {
     line-height: 30px;
 }
-.tg-component-style-properties ul li.selected {
+.tg-component-style-properties ul li.selected,
+.tg-panel-item .tg-container-content > ul li.selected {
     color: #949494;
 }
 .tg-component-style-properties ul li:after,
@@ -1078,8 +1457,7 @@ li.tg-component-tab.selected {
 	background: #ffffff;
 }
 .tg-component-style-properties ul li:hover:after,
-.tg-panel-item .tg-container-content > ul li:hover:after,
-.tg-panel-item .tg-container-content > ul li.selected:after  {
+.tg-panel-item .tg-container-content > ul li:hover:after  {
 	opacity: 1;
 	-webkit-transform: translateX(0);
     -moz-transform: translateX(0);
@@ -1096,10 +1474,13 @@ li.tg-component-tab.selected {
 }
 .tomb-row.tomb-type-select,
 .tomb-row.tomb-type-color,
-.tomb-row.tomb-type-checkbox {
+.tomb-row.tomb-type-checkbox,
+[class*="background-position-x"].tomb-row,
+[class*="background-position-y"].tomb-row {
     padding: 11px 18px 6px 18px;
 }
 .tomb-row.tomb-type-text,
+[class*="excerpt_length"].tomb-row,
 [class*="font-size"].tomb-row,
 [class*="line-height"].tomb-row {
     padding: 10px 18px 8px 18px;
@@ -1108,7 +1489,10 @@ li.tg-component-tab.selected {
 .tomb-row.comment_icon,
 .tomb-row.lightbox_image_icon,
 .tomb-row.lightbox_audio_icon,
-.tomb-row.lightbox_video_icon {
+.tomb-row.lightbox_video_icon,
+.tomb-row.lightbox_pause_icon,
+.tomb-row.woo_cart_icon_simple,
+.tomb-row.woo_cart_icon_variable {
 	padding: 4px 18px 1px 18px;
 }
 .tomb-row.element_icon label,
@@ -1116,12 +1500,13 @@ li.tg-component-tab.selected {
 .tomb-row.lightbox_image_icon label,
 .tomb-row.lightbox_audio_icon label,
 .tomb-row.lightbox_video_icon label,
-.tomb-row.woocommerce_cart_icon_simple label,
-.tomb-row.woocommerce_cart_icon_variable label {
+.tomb-row.lightbox_pause_icon label,
+.tomb-row.woo_cart_icon_simple label,
+.tomb-row.woo_cart_icon_variable label {
 	padding: 6px 0 0 0;
 }
 [class*="_animation_"].tomb-row.tomb-type-select {
-    padding: 8px 18px 6px 18px
+    padding: 6px 18px 6px 18px
 }
 [class*="_width"].tomb-row,
 [class*="_height"].tomb-row,
@@ -1153,7 +1538,6 @@ li.tg-component-tab.selected {
 .tomb-type-textarea.tomb-row .tomb-label,
 .tomb-type-slider.tomb-row .tomb-label,
 [class*="_animation_"].tomb-row .tomb-label,
-[class*="_transition_"].tomb-row .tomb-label,
 [class*="background-image"].tomb-row .tomb-label {
 	width: 100%;
 }
@@ -1164,26 +1548,44 @@ li.tg-component-tab.selected {
 .tg-component-panel .tomb-img-field.show + input {
     margin-top: 13px;
 }
-.tg-element-class,
 .tg-style-on-hover,
 .tg-component-back {
 	position: relative;
-	display: none;
+	display: inline-block;
 	height: 50px;
+	width: 340px;
     margin: 0;
 	padding: 12px 18px;
-	line-height: 30px;
+	line-height: 26px;
     box-sizing: border-box;
 	border-bottom: 1px solid rgba(0,0,0,0.065);
 	background: #f5f6fa;
 	cursor: pointer;
 }
+.tg-panel-item .tg-container-content > .tg-component-back {
+    position: relative;
+    float: left;
+}
+.tg-component-panel .tg-component-back {
+	position: absolute;
+    left: 340px;
+    top: 0;
+}
 .tg-element-class {
-	display: block;
+	position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: 30px;
+    text-align: left;
 }
 .tg-element-class .tomb-select-fake {
-	background-color: #ffffff;
-	font-weight: 600;
+    background-color: #ffffff;
+    font-weight: 600;
+    border: 1px solid rgb(221, 221, 221);
+    height: 30px;
+}
+.tg-element-class .tomb-select-value {
+    line-height: 28px;
 }
 .tg-style-on-hover .tomb-switch label:before {
 	background: #f5f6fa;
@@ -1194,12 +1596,12 @@ li.tg-component-tab.selected {
 .tg-style-on-hover .tomb-switch {
     position: absolute;
     right: 18px;
-    top: 8px;
+    top: 10px;
 }
 .tg-component-back span:first-of-type {
 	padding: 0 0 0 45px;
 }
-.tg-component-back i {
+.tg-component-back > i {
     position: absolute;
     height: 50px;
     width: 50px;
@@ -1208,20 +1610,33 @@ li.tg-component-tab.selected {
     top: 0;
     left: 0;
 }
-.tg-component-back i:before {
+.tg-panel-item .tg-container-content > .tg-component-back {
+    background: #667480;
+    color: #ffffff;
+}
+.tg-panel-item .tg-container-content > .tg-component-back > i {
+    background: rgb(75, 90, 105);
+	color: #ffffff;
+}
+.tg-panel-elements .tg-component-back span i,
+.tg-panel-item .tg-container-content > .tg-component-back span i {
+	line-height: 25px;
+	padding: 1px 4px 0 0;
+}
+.tg-component-back > i:before {
 	display: block;	
 }
-.tg-component-back i:hover {
+.tg-component-back > i:hover {
     opacity: 0.75;
 }
-.tg-component-back i:hover:before {
+.tg-component-back > i:hover:before {
 	-webkit-transform: translateX(-5px);
     -moz-transform: translateX(-5px);
     -ms-transform: translateX(-5px);
     transform: translateX(-5px);
 }
-.tg-component-back i,
-.tg-component-back i:before,
+.tg-component-back > i,
+.tg-component-back > i:before,
 .tg-component-style-properties ul li,
 .tg-component-style-properties ul li:after,
 .tg-panel-item .tg-container-content > ul li,
@@ -1232,10 +1647,10 @@ li.tg-component-tab.selected {
     -o-transition: all 0.2s ease-out;
     transition: all 0.2s ease-out;
 }
-.tg-component-back i:hover {
+.tg-component-back > i:hover {
     opacity: 0.75;
 }
-.tg-component-back i:hover:before {
+.tg-component-back > i:hover:before {
 	-webkit-transform: translateX(-5px);
     -moz-transform: translateX(-5px);
     -ms-transform: translateX(-5px);
@@ -1244,6 +1659,7 @@ li.tg-component-tab.selected {
 .tg-component-footer {
 	position: absolute;
     display: block;
+	z-index: 2;
     width: 100%;
     left: 0;
     bottom: 0;
@@ -1329,7 +1745,7 @@ li.tg-component-tab.selected {
 .tg-element-move:hover {
     background: #4B5A69;
 }
-.tg-element-move[data-move="up"] {
+.tg-element-move[data-move="prev"] {
 	right: 50px;
 }
 .tg-panel-item .tg-container-header,
@@ -1357,49 +1773,155 @@ li.tg-component-tab.selected {
     margin: 0;
 	box-sizing: border-box;
 }
-.tg-panel-item .tg-container-content > ul:after {
-	content: "";
-    position: absolute;
-    display: block;
-	left: 260px;
-	top: 0;
-	bottom: 0;
-    
+.tg-panel-item {
+    width: 340px;
+    min-width: 340px;
+    max-width: 340px;
+    min-height: 700px;
 }
-.tg-panel-item .tg-container-content > ul li.selected {
-	background: rgba(102,116,128,0.83);
-    color: #fff;
+.tg-panel-item .tg-container-content:after {
+    display: none;
 }
-.tg-panel-item .tg-container-content > ul li.selected  i {
-    color: #fff;
+.tg-panel-item .tg-container-content > ul {
+    width: 100%;
 }
-.tg-panel-item .tg-container-content > .tomb-tab-content {
+.tg-component-animation.tomb-tab-content,
+.tg-component-animation .tomb-metabox {
+	overflow: visible;
+}
+
+/* ============================================================
+   00. Animation panel
+/* ============================================================ */
+
+.tg-component-animation [class*="_animation_state"] .tg-filter-tooltip-holder {
+	position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+}
+.tg-component-animation [class*="_animation_state"] .tg-filter-tooltip {
+	bottom: auto;
+    top: 100%;
+	height: auto;
+    min-height: auto;
+    max-height: none;
+	margin: 5px 0 0 0;
+}
+.tg-component-animation [class*="_animation_state"] .tg-filter-tooltip:after {
+	top: -5px;
+    bottom: auto;
+	border-top: none;
+    border-bottom: 5px solid rgba(0,0,0,.7);
+}
+.tg-component-animation [class*="_animation_state"] .tg-filter-tooltip-holder:hover .tg-filter-tooltip {
+    -webkit-transform: translateY(0) translateX(-50%);
+    -moz-transform: translateY(0) translateX(-50%);
+    -ms-transform: translateY(0) translateX(-50%);
+    -o-transform: translateY(0) translateX(-50%);
+    transform: translateY(0) translateX(-50%);
+}
+.tg-transform-fields {
     position: relative;
     display: none;
-	min-height: 414px;
-	margin: 0 0 0 260px;
-    padding: 0;
-	box-sizing: border-box;
+    margin: 8px 0 0 18px;
+    width: 300px;
 }
-.tg-panel-item .tg-container-content > .tomb-tab-content {
-	position: relative;
-    display: block !important;
-    top: 0;
-    right: 0;
+.tg-transform-fields .tomb-label {
+    position: relative;
+    display: inline-block;
+    width: 70px !important;
+	font-style: italic;
+    font-size: 12px;
+    color: #888;
+}
+.tg-transform-fields .tg-number-fields {
+    position: relative;
+    display: block;
+}
+.tg-transform-fields .tomb-select-holder {
+	width: 56px !important;
+    margin: 1px 1px 1px 0 !important;
+}
+.tg-transform-fields .tomb-select-value,
+.tg-transform-fields .tomb-text {
+    font-size: 11.5px;
+}
+.tg-transform-fields .tg-transform-unit {
+    font-size: 11px;
+    color: #777;
+    padding: 0 2px;
+}
+.tg-toogle-transform {
+    position: absolute;
+    display: block;
+    right: 18px;
+    top: 34px;
+    background: #2c3e50;
+    color: #ffffff;
+    font-size: 9px;
+    padding: 4px 16px 4px 6px;
+    cursor: pointer;
+	opacity: 0.8;
+	-webkit-transition: opacity 0.2s ease-in-out;
+	-moz-transition: opacity 0.2s ease-in-out;
+	-ms-transition: opacity 0.2s ease-in-out;
+	-o-transition: opacity 0.2s ease-in-out;
+	transition: opacity 0.2s ease-in-out;
+}
+.tg-toogle-transform:after {
+    content: "";
+    position: absolute;
     width: 0;
-	height: 0;
-    min-height: 0;
-    opacity: 0 !important;
-    visibility: hidden;
-    box-sizing: border-box;
-    transition: opacity .5s ease-out, transform .5s ease-out  !important;
+    height: 0;
+    top: 11px;
+	right: 6px;
+    border-color: #ffffff transparent transparent transparent;
+    border-style: solid;
+    border-width: 4px 3px 0 3px;
 }
-.tg-panel-item .tg-container-content > .tomb-tab-content.tomb-tab-show {
-	opacity: 1 !important;
-    visibility: visible;
-    min-height: 414px;
-    width: 340px;
+.tg-toogle-transform:hover {
+	opacity: 1;
+}
+.tomb-row[class*="_animation_delay"],
+.tomb-row[class*="_animation_duration"] {
+	border-bottom: none;
+}
+.tomb-row[class*="_animation_delay"] .tomb-slider-label,
+.tomb-row[class*="_animation_duration"] .tomb-slider-label {
+    width: 54px;
+    max-width: 54px;
+    margin: 0 0 0 18px;
+    font-style: italic;
+	font-size: 12px;
+    color: #888;
+}
+.tomb-row[class*="_animation_duration"] .tomb-label {
+    padding: 0 0 4px 0;
+}
+.tomb-row[class*="_animation_delay"] {
+    border: none;
+    padding: 0 18px 18px 18px;
     height: auto;
+    min-height: auto;
+}
+.tomb-row[class*="_animation_delay"] .tomb-slider-range,
+.tomb-row[class*="_animation_duration"] .tomb-slider-range {
+    margin: 0 5px 0 2px !important;
+}
+.tomb-row[class*="_animation_delay"] .tomb-slider-controls,
+.tomb-row[class*="_animation_duration"] .tomb-slider-controls {
+	display: none;
+}
+.tomb-row[class*="_animation_delay"] input,
+.tomb-row[class*="_animation_duration"] input {
+    font-size: 12px;
+    top: 1px;
+    margin: 0;
+    padding: 0 0 0 4px !important;
+}
+[class*="_animation_state"] div:last-child {
+	float: right;
 }
 
 /* ============================================================
@@ -1407,28 +1929,97 @@ li.tg-component-tab.selected {
 /* ============================================================ */
 
 .tg-panel-elements .tg-element-holder {
-	position: relative;
-    display: inline-block;
+    position: relative;
+    display: block;
     overflow: hidden;
-    width: 140px;
-    max-width: 140px;
     height: 100px;
     max-height: 140px;
     padding: 10px 10px 34px 10px;
-    margin: 6px;
-    border: 2px dashed rgba(0,0,0,0.065);
-    background-image: url(../images/checker-bg.gif);
+    margin: 7px;
+    border: 2px solid rgb(245, 245, 245) !important;
+    background: rgb(245, 245, 245);
+    box-sizing: border-box;
 }
-.tg-panel-elements .tg-element-draggable {
+.tg-panel-elements .tg-custom-element-overlay {
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    bottom: 24px;
+    right: 0;
+    opacity: 0;
+	text-align: center;
+    background: rgba(255,255,255,0.9);
+    -webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    -ms-transition: opacity 0.2s ease-in-out;
+    -o-transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+}
+.tg-panel-elements .tg-element-holder:hover .tg-custom-element-overlay {
+	opacity: 1;
+}
+.tg-panel-elements .tg-element-holder .tg-add-element {
+    position: relative;
+    display: inline-block;
+    height: auto;
+    padding: 0 12px;
+    color: #ffffff;
+    line-height: 30px;
+    font-weight: 600;
+    margin: 20px 0 0 0;
+    background: #4ECDC4;
+    cursor: pointer;
+	-webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    -ms-transition: opacity 0.2s ease-in-out;
+    -o-transition: opacity 0.2s ease-in-out;
+    transition: opacity 0.2s ease-in-out;
+}
+.tg-panel-elements .tg-element-holder .tg-add-element:hover {
+	opacity: 0.8;
+}
+.tg-panel-elements .tg-element-custom {
 	position: relative;
-    max-width: 140px;
-    max-height: 140px;
+    max-width: 304px;
 	margin: 0 auto;
 	box-sizing: border-box;
 }
-.tg-element-draggable {
-	box-sizing: border-box;
-	z-index: 1;
+.tg-panel-elements .tg-element-custom > i {
+	line-height: inherit;
+}
+.tg-panel-elements .tg-component-style-properties > div > ul {
+	overflow-y: auto;
+	max-height: 434px;
+}
+.tg-panel-item .tg-container-content > ul,
+.tg-panel-item .tg-container-content > .tomb-tab-content,
+.tg-component-style-properties ul,
+.tg-component-style-properties .tomb-tab-content {
+	position: relative;
+	float: left;
+	width: 340px;
+}
+.tg-panel-item .tg-container-content > .tomb-tab-content,
+.tg-component-style-properties .tomb-tab-content {
+	float: left;
+}
+.tg-style-on-hover {
+    position: absolute;
+    display: block;
+    width: 340px;
+    left: 0;
+    top: 0;
+}
+.tg-component-style-properties .tomb-tab-content,
+[data-settings="hover_state"] ul {
+	margin-top: 50px !important;
+}
+.tg-panel-element .tg-component-style-properties .tomb-tab-content {
+    display: block;
+    max-height: 350px;
+    overflow: auto;
+    overflow-x: hidden;
 }
 
 /* ============================================================
@@ -1446,16 +2037,45 @@ li.tg-component-tab.selected {
 }
 
 /* ============================================================
+   00. Author avatar
+/* ============================================================ */
+
+.tg-item-author-avatar {
+    position: relative;
+    display: block;
+    border-radius: inherit;
+    width: 42px;
+    min-width: 100%;
+    max-width: 100%;
+    height: 42px;
+    min-height: 100%;
+    max-height: 100%; 
+	background-image: url(../images/avatar.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+/* ============================================================
+   00. Author name
+/* ============================================================ */
+
+.tg-item-author-prefix,
+.tg-item-author-name {
+	color: inherit !important;
+}
+
+/* ============================================================
    00. Rating star
 /* ============================================================ */
 
 .tg-item-rating {
-	position: relative;
-    display: inherit;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
 }
 .tg-item-rating .star-rating {
 	position: relative;
-	display: inherit;
+	display: block;
 	overflow: hidden;
 	margin: 0;
 }
@@ -1486,32 +2106,28 @@ li.tg-component-tab.selected {
 	font-variant: normal;
 	text-transform: none;
 }
-.ninou .tg-element-1.tg-item-rating .star-rating span:before {
-	color: inherit !important;
-}
 
 /* ============================================================
    00. Icon popup
 /* ============================================================ */
 
 .tg-icons-popup {
-    position: fixed;
+	position: fixed;
     display: block;
-	visibility: hidden;
-	opacity: 0;
+    visibility: hidden;
+    opacity: 0;
     z-index: 1000;
-    width: 232px;
-    height: 247px;
-    max-height: 247px;
+    width: 264px;
+    height: 296px;
+    max-height: 296px;
     padding: 0;
     margin: 0;
     background: #ffffff;
     box-sizing: border-box;
-	-webkit-box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
+    -webkit-box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
     -moz-box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
     box-shadow: 0 0 10px 4px rgba(0,0,0,0.07);
 }
-
 .tg-icons-popup-triangle {
     width: 10px;
     height: 10px;
@@ -1537,33 +2153,18 @@ li.tg-component-tab.selected {
 .tg-icons-list-holder {
 	position: relative;
     display: block;
-	height: 247px;
-    max-height: 247px;
+	height: 230px;
+    max-height: 230px;
 }
 .tg-icons-list {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 	overflow-y: scroll;
-    min-width: 100%;
+	min-width: 232px;
+	min-height: 215px;
 	max-height: 215px;
-    padding: 16px;
+	padding: 0 16px 0;
 	background: #ffffff;
-}
-.tg-icons-list-holder:before,
-.tg-icons-list-holder:after {
-	content: "";
-    position: absolute;
-    display: block;
-	z-index: 2;
-	left: 0;
-	right: 0;
-	top: 0;
-	height: 16px;
-	background: #ffffff;
-}
-.tg-icons-list-holder:after {
-	top: auto;
-	bottom: 0;
 }
 .tg-icon-holder i,
 .tg-icons-list i {
@@ -1603,6 +2204,31 @@ li.tg-component-tab.selected {
     -ms-transform: scale3d(1.8,1.8,1.8);
     transform: scale3d(1.8,1.8,1.8);
 }
+.tg-icons-search-holder {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;	
+}
+.tg-icons-search {
+    position: relative;
+    display: inline-block;
+    width: 214px;
+    height: 42px;
+    min-height: 42px;
+    max-height: 42px;
+    margin: 16px 16px 8px 16px;
+    padding: 0 13px;
+    background: #ffffff;
+    box-sizing: border-box;
+    box-shadow: none !important;
+    border: 1px solid rgba(0,0,0,0.065) !important;
+}
+
+/* ============================================================
+   00. The Grid icons
+/* ============================================================ */
 
 @font-face {
 	font-family: 'the_grid';
@@ -1627,156 +2253,788 @@ li.tg-component-tab.selected {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
-.tg-icon-chat-4:before {
-    content: "\e903";
+.tg-icon-like:before {
+  content: "\f088";
 }
-.tg-icon-eye:before {
-    content: "\e900";
+.tg-icon-dislike:before {
+  content: "\f089";
 }
-.tg-icon-chat-2:before {
-    content: "\e901";
+.tg-icon-reddit:before {
+  content: "\e914";
 }
-.tg-icon-play-2:before {
-    content: "\e902";
-}
-.tg-icon-google-plus:before {
-    content: "\e61b";
-}
-.tg-icon-settings:before {
-    content: "\e606";
-}
-.tg-icon-arrow-prev:before {
-    content: "\e603";
-}
-.tg-icon-arrow-next:before {
-    content: "\e601";
-}
-.tg-icon-arrow-down:before {
-    content: "\e600";
-}
-.tg-icon-arrow-up:before {
-    content: "\e608";
-}
-.tg-icon-arrow-prev-thin:before {
-    content: "\e604";
-}
-.tg-icon-arrow-next-thin:before {
-    content: "\e602";
-}
-.tg-icon-arrow-up-thin:before {
-    content: "\e609";
-}
-.tg-icon-arrrow-down-thin:before {
-    content: "\e60a";
-}
-.tg-icon-arrows-diagonal:before {
-    content: "\e605";
-}
-.tg-icon-arrows-out-2:before {
-    content: "\e607";
-}
-.tg-icon-cancel:before {
-    content: "\e60e";
-}
-.tg-icon-close:before {
-    content: "\e611";
-}
-.tg-icon-zoom-in:before {
-    content: "\e649";
-}
-.tg-icon-search2:before {
-    content: "\e62f";
-}
-.tg-icon-search3:before {
-    content: "\e62e";
-}
-.tg-icon-link:before {
-    content: "\e620";
-}
-.tg-icon-chain-broken:before {
-    content: "\e610";
-}
-.tg-icon-paperclip:before {
-    content: "\e627";
-}
-.tg-icon-chain:before {
-    content: "\e60f";
-}
-.tg-icon-play:before {
-    content: "\e62b";
-}
-.tg-icon-mail-forward:before {
-    content: "\e623";
-}
-.tg-icon-quote:before {
-    content: "\e62c";
-}
-.tg-icon-shop-bag:before {
-    content: "\e631";
-}
-.tg-icon-shop-bag-2:before {
-    content: "\e632";
-}
-.tg-icon-shop-basket:before {
-    content: "\e633";
-}
-.tg-icon-tag:before {
-    content: "\e638";
-}
-.tg-icon-star:before {
-    content: "\e636";
-}
-.tg-icon-star-o:before {
-    content: "\e637";
-}
-.tg-icon-heart:before {
-    content: "\e61c";
-}
-.tg-icon-heart-o:before {
-    content: "\e61d";
+.tg-icon-map-marker:before {
+  content: "\e90e";
 }
 .tg-icon-facebook:before {
-    content: "\e617";
+  content: "\e617";
 }
-.tg-icon-pinterest:before {
-    content: "\e62a";
-}
-.tg-icon-tumblr:before {
-    content: "\e63a";
+.tg-icon-vimeo:before {
+  content: "\e90a";
 }
 .tg-icon-twitter:before {
-    content: "\e63b";
+  content: "\e63b";
 }
-.tg-icon-youtube-play:before {
-    content: "\e648";
+.tg-icon-google-plus:before {
+  content: "\e61b";
 }
-.tg-icon-check:before {
-    content: "\e612";
+.tg-icon-pinterest:before {
+  content: "\e62a";
 }
-.tg-icon-add:before {
-    content: "\e60d";
+.tg-icon-instagram:before {
+  content: "\f16d";
 }
-.tg-icon-reply:before {
-    content: "\e60c";
+.tg-icon-vine:before {
+  content: "\f1ca";
 }
-.tg-icon-chat-3:before {
-    content: "\e613";
+.tg-icon-tumblr:before {
+  content: "\e63a";
 }
-.tg-icon-chat:before {
-    content: "\e614";
+.tg-icon-linkedin:before {
+  content: "\f0e1";
+}
+.tg-icon-flickr:before {
+  content: "\f16e";
+}
+.tg-icon-behance:before {
+  content: "\e90b";
+}
+.tg-icon-github:before {
+  content: "\f113";
+}
+.tg-icon-stack-overflow:before {
+  content: "\f16c";
+}
+.tg-icon-dropbox:before {
+  content: "\f16b";
+}
+.tg-icon-digg:before {
+  content: "\f1a6";
 }
 .tg-icon-soundcloud:before {
-    content: "\e616";
+  content: "\e909";
 }
-.tg-icon-comment-o:before {
-    content: "\e615";
+.tg-icon-skype:before {
+  content: "\f17e";
 }
-.tg-icon-search:before {
-    content: "\e64a";
+.tg-icon-thumbs-up:before {
+  content: "\f087";
+}
+.tg-icon-comment:before {
+  content: "\e615";
+}
+.tg-icon-comment-2:before {
+  content: "\e901";
+}
+.tg-icon-comment-3:before {
+  content: "\f086";
+}
+.tg-icon-comment-4:before {
+  content: "\e903";
+}
+.tg-icon-zoom:before {
+  content: "\f002";
+}
+.tg-icon-zoom-2:before {
+  content: "\e62f";
+}
+.tg-icon-zoom-3:before {
+  content: "\e62e";
+}
+.tg-icon-zoom-4:before {
+  content: "\f00e";
+}
+.tg-icon-zoom-5:before {
+  content: "\f010";
+}
+.tg-icon-zoom-6:before {
+  content: "\e649";
+}
+.tg-icon-shop-bag-4:before {
+  content: "\f291";
+}
+.tg-icon-shop-bag-5:before {
+  content: "\f290";
+}
+.tg-icon-shop-bag:before {
+  content: "\e631";
+}
+.tg-icon-shop-bag-2:before {
+  content: "\e632";
+}
+.tg-icon-shop-bag-3:before {
+  content: "\e633";
+}
+.tg-icon-shop-cart:before {
+  content: "\f07a";
+}
+.tg-icon-credit-card:before {
+  content: "\f09d";
+}
+.tg-icon-tag:before {
+  content: "\e638";
+}
+.tg-icon-tag-2:before {
+  content: "\f02b";
+}
+.tg-icon-bookmark:before {
+  content: "\f02e";
+}
+.tg-icon-download:before {
+  content: "\f019";
+}
+.tg-icon-refresh:before {
+  content: "\f021";
+}
+.tg-icon-circle:before {
+  content: "\f111";
+}
+.tg-icon-circle-o:before {
+  content: "\f10c";
+}
+.tg-icon-font:before {
+  content: "\f031";
+}
+.tg-icon-bold:before {
+  content: "\f032";
+}
+.tg-icon-italic:before {
+  content: "\f033";
+}
+.tg-icon-text-height:before {
+  content: "\f034";
+}
+.tg-icon-text-width:before {
+  content: "\f035";
+}
+.tg-icon-align-left:before {
+  content: "\f036";
+}
+.tg-icon-align-center:before {
+  content: "\f037";
+}
+.tg-icon-align-right:before {
+  content: "\f038";
+}
+.tg-icon-align-justify:before {
+  content: "\f039";
+}
+.tg-icon-list:before {
+  content: "\f03a";
+}
+.tg-icon-dedent:before {
+  content: "\f03b";
+}
+.tg-icon-indent:before {
+  content: "\f03c";
+}
+.tg-icon-calendar:before {
+  content: "\f073";
+}
+.tg-icon-random:before {
+  content: "\f074";
+}
+.tg-icon-phone:before {
+  content: "\f095";
+}
+.tg-icon-floppy:before {
+  content: "\f0c7";
+}
+.tg-icon-paw:before {
+  content: "\f1b0";
+}
+.tg-icon-envelope:before {
+  content: "\f0e0";
+}
+.tg-icon-rotate-left:before {
+  content: "\f0e2";
+}
+.tg-icon-legal:before {
+  content: "\f0e3";
+}
+.tg-icon-rocket:before {
+  content: "\f135";
+}
+.tg-icon-connect-develop:before {
+  content: "\f20e";
+}
+.tg-icon-diamond:before {
+  content: "\f219";
+}
+.tg-icon-umbrella:before {
+  content: "\f0e9";
+}
+.tg-icon-gamepad:before {
+  content: "\f11b";
+}
+.tg-icon-lightbulb:before {
+  content: "\f0eb";
+}
+.tg-icon-ambulance:before {
+  content: "\f0f9";
+}
+.tg-icon-fighter-jet:before {
+  content: "\f0fb";
+}
+.tg-icon-smile:before {
+  content: "\f118";
+}
+.tg-icon-frown:before {
+  content: "\f119";
+}
+.tg-icon-keyboard:before {
+  content: "\f11c";
+}
+.tg-icon-desktop:before {
+  content: "\f108";
+}
+.tg-icon-laptop:before {
+  content: "\f109";
+}
+.tg-icon-tablet:before {
+
+  content: "\f10a";
+}
+.tg-icon-mobile:before {
+  content: "\f10b";
+}
+.tg-icon-quote-left:before {
+  content: "\f10d";
+}
+.tg-icon-quote-right:before {
+  content: "\f10e";
+}
+.tg-icon-quote:before {
+  content: "\e62c";
+}
+.tg-icon-ellipsis-v:before {
+  content: "\f142";
+}
+.tg-icon-settings:before {
+  content: "\e606";
+}
+.tg-icon-eye:before {
+  content: "\e900";
+}
+.tg-icon-music:before {
+  content: "\f001";
+}
+.tg-icon-youtube-play:before {
+  content: "\e648";
+}
+.tg-icon-play:before {
+  content: "\e62b";
+}
+.tg-icon-play-2:before {
+  content: "\e902";
+}
+.tg-icon-pause:before {
+  content: "\e911";
+}
+.tg-icon-angle-double-left:before {
+  content: "\f100";
+}
+.tg-icon-angle-double-right:before {
+  content: "\f101";
+}
+.tg-icon-arrow-prev:before {
+  content: "\e603";
+}
+.tg-icon-arrow-next:before {
+  content: "\e601";
+}
+.tg-icon-arrow-down:before {
+  content: "\e600";
+}
+.tg-icon-arrow-up:before {
+  content: "\e608";
+}
+.tg-icon-angle-double-up:before {
+  content: "\f102";
+}
+.tg-icon-angle-double-down:before {
+  content: "\f103";
+}
+.tg-icon-arrow-prev-thin:before {
+  content: "\e604";
+}
+.tg-icon-arrow-next-thin:before {
+  content: "\e602";
+}
+.tg-icon-arrow-up-thin:before {
+  content: "\e609";
+}
+.tg-icon-arrow-down-thin:before {
+  content: "\e60a";
+}
+.tg-icon-close:before {
+  content: "\e611";
+}
+.tg-icon-cancel:before {
+  content: "\e60e";
+}
+.tg-icon-arrows-out:before {
+  content: "\e607";
+}
+.tg-icon-arrows-diagonal:before {
+  content: "\e605";
+}
+.tg-icon-link:before {
+  content: "\e620";
+}
+.tg-icon-chain-broken:before {
+  content: "\e610";
+}
+.tg-icon-paperclip:before {
+  content: "\e627";
+}
+.tg-icon-chain:before {
+  content: "\e60f";
+}
+.tg-icon-mail-forward:before {
+  content: "\e623";
+}
+.tg-icon-share:before {
+  content: "\f1e0";
+}
+.tg-icon-star:before {
+  content: "\e636";
+}
+.tg-icon-star-half:before {
+  content: "\f123";
+}
+.tg-icon-star-o:before {
+  content: "\e637";
+}
+.tg-icon-heart:before {
+  content: "\e61c";
+}
+.tg-icon-heart-o:before {
+  content: "\e61d";
+}
+.tg-icon-user:before {
+  content: "\e913";
+}
+.tg-icon-tools:before {
+  content: "\e905";
+}
+.tg-icon-play-3:before {
+  content: "\e904";
+}
+.tg-icon-pause-3:before {
+  content: "\e90c";
+}
+.tg-icon-add-3:before {
+  content: "\e90f";
+}
+.tg-icon-chat:before {
+  content: "\e614";
+}
+.tg-icon-chat-2:before {
+  content: "\e613";
+}
+.tg-icon-shop-cart-add:before {
+  content: "\e906";
+}
+.tg-icon-play-4:before {
+  content: "\e912";
+}
+.tg-icon-pause-4:before {
+  content: "\e910";
+}
+.tg-icon-add:before {
+  content: "\e60d";
+}
+.tg-icon-add-2:before {
+  content: "\e90d";
+}
+.tg-icon-check:before {
+  content: "\e612";
+}
+.tg-icon-reply:before {
+  content: "\e60c";
+}
+.tg-icon-shop-cart-2:before {
+  content: "\e908";
+}
+.tg-icon-video:before {
+  content: "\e907";
 }
 
+.tg-element-draggable > i {
+	line-height: inherit;	
+}
 
+/* ============================================================
+   00. Editor Rulers
+/* ============================================================ */
 
+#tg-ruler-grid {
+    position: absolute;
+    top: 40px;
+	right: 40px;
+	bottom: 40px;
+	left: 40px;
+    display: none;
+    z-index: 3;
+    opacity: 0.3;
+    pointer-events: none;
+    background-position: 0;
+    background-image: linear-gradient(rgba(0,0,0,.3) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(0,0,0,.3) 1px, transparent 1px),
+		linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px);
+    background-color: transparent;
+    box-sizing: border-box;
+}
+#tg-ruler-grid.tg-grid-100 {
+	display: block;
+	background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+}
+#tg-ruler-grid.tg-grid-50 {
+	display: block;
+	background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+}
+#tg-ruler-grid.tg-grid-25 {
+	display: block;
+	top: 41px;
+	left: 41px;
+	opacity: 0.25;
+	background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 25px),
+		repeating-linear-gradient(-90deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 25px);
+	background-size: 25px 25px;
+}
+#tg-ruler-grid.tg-grid-10 {
+	display: block;
+	top: 41px;
+	left: 41px;
+	opacity: 0.25;
+	background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 10px),
+		repeating-linear-gradient(-90deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 10px);
+	background-size: 10px 10px;
+}
+#tg-ruler-grid.tg-grid-5 {
+	display: block;
+	top: 41px;
+	left: 41px;
+	opacity: 0.2;
+	background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 5px),
+		repeating-linear-gradient(-90deg, rgba(0,0,0,.3), rgba(0,0,0,.3) 1px, transparent 1px, transparent 5px);
+	background-size: 5px 5px;
+}
+/* ruler styles */
+#tg-ruler-holder {
+	position: absolute;
+	display: block;
+	overflow: hidden;
+	top: 51px;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	padding: 40px;
+}
+#tg-ruler-corner-top-left,
+#tg-ruler-corner-top-right,
+#tg-ruler-corner-bottom-left {
+	position: absolute;
+	display: block;
+	overflow: hidden;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	width: 40px;
+	height: 40px;
+	background:#333435;
+	box-sizing: border-box;
+}
+#tg-ruler-corner-top-right {
+	background: rgba(51,51,51,0);
+    background: -moz-linear-gradient(left,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -webkit-gradient(left top,right top,color-stop(0%,rgba(51,51,51,0)),color-stop(100%,rgba(51,51,51,1)));
+    background: -webkit-linear-gradient(left,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -o-linear-gradient(left,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -ms-linear-gradient(left,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: linear-gradient(to right,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+}
+#tg-ruler-corner-bottom-left {
+	background: rgba(51,51,51,0);
+    background: -moz-linear-gradient(top,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -webkit-gradient(left top,left bottom,color-stop(0%,rgba(51,51,51,0)),color-stop(100%,rgba(51,51,51,1)));
+    background: -webkit-linear-gradient(top,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -o-linear-gradient(top,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: -ms-linear-gradient(top,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+    background: linear-gradient(to bottom,rgba(51,51,51,0) 0%,rgba(51,51,51,1) 100%);
+}
+#tg-ruler-corner-top-right {
+	right: 0;
+	left: auto;
+}
+#tg-ruler-corner-bottom-left {
+	top: auto;
+	bottom: 0;
+}
+.tg-ruler {
+	position:absolute;
+	background:#333435;
+	background-size: 100px 100px;
+	background-position: 0 0;
+	font-size: 10px;
+	color: #999;
+}
+.tg-ruler:after {
+	content: '';
+	position: absolute;
+	display: block;
+	background-size: 50px 50px;
+	background-position: -1px -1px;
+}
+.tg-ruler:before {
+	content: '';
+	position: absolute;
+	display: block;
+	background-size: 5px 5px;
+	background-position: 0 0;
+}
+#tg-horizontalRuler.tg-ruler:before,
+#tg-horizontalRuler.tg-ruler:after {
+	background-position: 1px 1px;
+}
+#tg-rightRuler-overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 40px;
+	width: 40px;
+	background: #333435;
+}
+#tg-horizontalRuler-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 40px;
+	background: #333435;
+}
+#tg-horizontalRuler {
+	z-index: 0;
+	height: 40px;
+	width: 300px;
+	top: 0;
+	left: 40px;
+}
+#tg-horizontalRuler:after {
+	top: 50%;
+	left: -100%;
+	width: 200%;
+	height: 50%;
+	background-image: linear-gradient(90deg, #888888 1px, transparent 1px);
+	
+}
+#tg-horizontalRuler:before {
+	top: 70%;
+	left: -100%;
+	width: 200%;
+	height: 30%;
+	background-image: repeating-linear-gradient(
+	  to right,
+	  #5B5C5D,
+	  #5B5C5D 1px,
+	  #333435 1px,
+	  #333435 5px
+	);
+}
+#tg-verticalRuler-overlay {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 40px;
+	background: #333435;
+}
+#tg-verticalRuler {
+	z-index: 0;
+	height: 200px;
+	width: 40px;
+	top: 40px;
+	left: 0;
+}
+#tg-verticalRuler:after {
+	top: -100%;
+	left: 50%;
+	width: 50%;
+	height: 200%;
+	background-image: linear-gradient(#888888 1px, transparent 1px);
+}
+#tg-verticalRuler:before {
+	top: -100%;
+	left: 70%;
+	width: 30%;
+	height: 200%;
+	background-image: repeating-linear-gradient(
+	  to top,
+	  #5B5C5D,
+	  #5B5C5D 1px,
+	  #333435 1px,
+	  #333435 5px
+	);
+}
+.tg-ruler li {
+	position: absolute;
+	color: #B5B5B5;
+}
+#tg-horizontalRuler li {
+	top: -1px;
+	padding: 0 3px;
+	margin: 0 0 0 1px;
+	border-left: 1px solid #888888;
+    height: 100%;
+}
+#tg-verticalRuler li { 
+    right: 0;
+    margin: -1px 0 0 0;
+    width: 100%;
+	border-top: 1px solid #888888;
+    text-align: left;
+	padding: 2px;
+	box-sizing: border-box;
+}
+.tg-rule-line-first {
+	z-index: 1;
+	border-color: #FF0010 !important;
+}
+.tg-ruler .tg-marker {
+	position: absolute;
+	display: block;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	background:rgba(0,255,255,.8);
+}
+#tg-hMarker {
+	width: 1px;
+	height: 100%;
+	left: 1px;
+}
+#tg-vMarker {
+	width: 100%;
+	height: 1px;
+	top: -1px;
+}
+#tg-hMarker span,
+#tg-vMarker span {
+	position: absolute;
+	color: rgba(0,255,255,.8);
+	background: #333435;
+}
+#tg-hMarker span {
+    top: 0;
+    left: 1px;
+    line-height: 16px;
+    padding: 0 2px;
+}
+#tg-vMarker span {
+    left: 0;
+	top: 1px;
+    line-height: 15px;
+    padding: 0 2px;
+	text-align: left;
+}
+/*** ruler toolbar ***/
+#tg-ruler-grid-toolbar {
+    position: absolute;
+    display: block;
+    z-index: 99;
+    height: 40px;
+    bottom: 0;
+    left: 40px;
+    right: 0;
+	line-height: 40px;
+    padding: 0 20px 0 5px;
+    text-align: right;
+    background: #333435;
+}
+#tg-ruler-grid-toolbar label {
+	padding: 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #ffffff;
+	vertical-align: top;
+}
+#tg-ruler-grid-toolbar label:before,
+#tg-ruler-grid-toolbar label:after {
+    left: -14px;
+    top: -1px;
+    width: 12px;
+    height: 12px;
+	line-height: 16px;
+    font-size: 12px;
+	background: #5B5C5D;
+    border-color: #5B5C5D !important;
+}
+#tg-ruler-grid-toolbar label:after {
+    width: 16px;
+    height: 16px;
+}
+div.tg-ruler-grid-tool {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 10px;
+}
+div.tg-ruler-grid-tool .tomb-select-holder {
+    margin: 6px 0 0 0;
+	text-align: left;
+}
+div.tg-ruler-grid-tool .tomb-select-holder * {
+    background: #5B5C5D;
+	color: #f5f5f5;
+}
+div.tg-ruler-grid-tool .tomb-select-arrow i {
+    border-color: #f5f5f5 transparent transparent transparent;
+}
+div.tg-ruler-grid-tool .tomb-select-arrow {
+    border-left: none;
+}
 
+/* ============================================================
+   00. ToolBar
+/* ============================================================ */
 
+#tg-toolbar {
+    position: absolute;
+	display: block;
+	z-index: 3;
+    top: 91px;
+    left: 40px;
+    right: 40px;
+    height: 40px;
+    padding: 10px 0 0 0;
+    text-align: center;
+	box-shadow: inset 0 50px 50px rgba(245, 245, 245,0.85);
+}
+#tg-add-element {
+	position: relative;
+	display: inline-block;
+	height: auto;
+	padding: 0 12px;
+	margin: 0 12px 0 0;
+	color: #ffffff;
+    line-height: 30px;
+	font-weight: 600;
+	background: #4ECDC4;
+	cursor: pointer;
+}
+#tg-add-element i {
+    position: relative;
+    display: inline-block;
+    padding: 0 4px 0 0;
+    font-size: 16px;
+    line-height: 30px;
+    height: 30px;
+}
 
+@media screen and (max-width: 782px) {
+#tg-banner-holder #tg_download_skin {
+	display: none;
+}
+}

@@ -1,6 +1,4 @@
 .praia a,
-.praia a:hover,
-.praia .tg-media-button,
 .praia a:active,
 .praia a:focus,
 .praia .tg-share-icons i {
@@ -18,15 +16,15 @@
 .praia a:not(.mejs-volume-slider):hover {
 	opacity: 0.85 !important;
 }
-.praia * {
+.praia *:not(.mejs-controls) {
 	-webkit-transition: -webkit-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -moz-transition: -moz-transforms 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -ms-transition: -ms-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     -o-transition: -o-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
     transition: transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0s step-end, opacity 0.4s ease !important;
 }
-.praia.tg-force-play *,
-.praia.tg-is-playing * {
+.praia.tg-force-play *:not(.mejs-controls),
+.praia.tg-is-playing *:not(.mejs-controls) {
 	-webkit-transition: -webkit-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;
     -moz-transition: -moz-transforms 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;
     -ms-transition: -ms-transform 0.8s cubic-bezier(.17,.73,.66,.99) 0s, z-index 0.4s step-end, opacity 0.4s ease !important;

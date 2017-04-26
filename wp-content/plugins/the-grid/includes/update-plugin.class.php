@@ -28,12 +28,24 @@ if (!class_exists('TG_update_plugin')) {
 		/**
 		* A dummy constructor to prevent this class from being loaded more than once.
 		* @since 1.0.0
+		* @modified 2.1.0
 		*/
 		public function __construct() {
 			
-			$this->get_plugin();
-			$this->init_actions();
+			// retrieve main data to check if auto update is allowed
+			$force_register   = get_option('the_grid_force_registration', '');
+			$plugin_info      = get_option('the_grid_plugin_info', '');
+			$purchase_code    = (isset($plugin_info['purchase_code'])) ? $plugin_info['purchase_code'] : null;
+			$unregister_panel = apply_filters('tg_grid_unregister', false);
 			
+			// if The Grid is register (valid purchase code), or forced to be registered (globall settings), or not unregistered from a theme
+			if ($purchase_code || $force_register || !$unregister_panel ) {
+			
+				$this->get_plugin();
+				$this->init_actions();
+			
+			}
+
 		}
 
 		/**
@@ -86,14 +98,15 @@ if (!class_exists('TG_update_plugin')) {
 			// Inject plugin information into the API calls.
 			add_filter( 'plugins_api', array( $this, 'plugins_api' ), 10, 3 );
 			
-			// Add message in plugin page to dowload on CodeCanyon
+			// Add message in plugin page to dowload on CodeCanyon 
 			add_action( 'in_plugin_update_message-the-grid/the-grid.php', array( &$this, 'add_plugin_message' ) );
 			
 		}
 		
 		/**
-		* Add natification bubble(s) in menu item(s)
+		* Add notification bubble in menu item
 		* @since 1.1.0
+		* @modified 2.1.0
 		*/
 		public function add_notification_bubble() {
 			
@@ -108,7 +121,7 @@ if (!class_exists('TG_update_plugin')) {
 				
 				$menu_name = $this->menu_name;
 				
-				if (!empty($menu_name) && isset($plugin) && version_compare($plugin['version'], TG_VERSION) >  0) {
+				if (!empty($menu_name) && isset($plugin) && isset($plugin['version']) && version_compare($plugin['version'], TG_VERSION) >  0) {
 					
 					foreach ($menu as $key => $item) {
 						
@@ -130,18 +143,27 @@ if (!class_exists('TG_update_plugin')) {
 		* @since 1.0.0
 		*/
 		public function maybe_deferred_download( $options ) {
+						
 			$package = $options['package'];
+			
 			if (false !== strrpos($package, 'deferred_download') && false !== strrpos($package, 'item_id')) {
+				
 				parse_str( parse_url( $package, PHP_URL_QUERY ), $vars );
+				
 				if ( $vars['item_id'] ) {
+					
 					$token = get_option('the_grid_envato_api_token', '');
 					$API = new TG_Envato_API();
 					$API->init_globals($token);
 					$download_link = $API->download($vars['item_id']);
 					$options['package'] = $download_link;
+					
 				}
+				
 			}
+			
 			return $options;
+			
 		}
 		
 		/**
@@ -159,8 +181,9 @@ if (!class_exists('TG_update_plugin')) {
 		}
 		
 		/**
-		* Inject update data for premium plugins.
+		* Inject update data for premium plugins
 		* @since 1.0.0
+		* @modified 2.1.0
 		*/
 		public function update_plugins( $transient ) {
 			
@@ -172,7 +195,7 @@ if (!class_exists('TG_update_plugin')) {
 			// get plugin info.
 			$plugin = $this->plugin_info();
 
-			if (isset($plugin) && !empty($plugin) && version_compare($plugin['version'], TG_VERSION) >  0) {
+			if (isset($plugin) && !empty($plugin) && isset($plugin['version']) && version_compare($plugin['version'], TG_VERSION) >  0) {
 				
 				$API = new TG_Envato_API();
 
@@ -192,14 +215,15 @@ if (!class_exists('TG_update_plugin')) {
 		}
 		
 		/**
-		* Inject update data for premium plugins.
+		* Inject update data for premium plugins
 		* @since 1.0.0
+		* @modified 2.1.0
 		*/
 		public function update_state( $transient ) {
 			
 			$plugin = $this->plugin;
 
-			if (isset($plugin) && !empty($plugin) && version_compare($plugin['version'], TG_VERSION) >  0) {
+			if (isset($plugin) && !empty($plugin) && isset($plugin['version']) && version_compare($plugin['version'], TG_VERSION) >  0) {
 				
 				$API = new TG_Envato_API();
 				
@@ -226,7 +250,7 @@ if (!class_exists('TG_update_plugin')) {
 		}
 
 		/**
-		* Inject API data for premium plugins.
+		* Inject API data for premium plugins
 		* @since 1.0.0
 		*/
 		public function plugins_api( $response, $action, $args ) {
@@ -268,7 +292,7 @@ if (!class_exists('TG_update_plugin')) {
 		*/
 		public function plugin_info() {
 			
-			$plugin_info  =  null;
+			$plugin_info  = null;
 			$envato_token = get_option('the_grid_envato_api_token', '');
 			
 			if ($envato_token) {
@@ -279,7 +303,7 @@ if (!class_exists('TG_update_plugin')) {
 				
 				foreach ($plugins as $key) {
 					
-					$id     = $key['id'];
+					$id = isset($key['id']) ? $key['id'] : null;
 					if ($id == 13306812) {
 						
 						$plugin_info = array(
@@ -320,10 +344,14 @@ if (!class_exists('TG_update_plugin')) {
 		/**
 		* Shows message on WP Plugins page
 		* @since 1.0.0
+		* @modified 2.1.0
 		*/
 		public function add_plugin_message() {
 			
-			echo ' '. __( 'or', 'tg-text-domain' ) .' '. '<a target="_blank" href="http://codecanyon.net/item/the-grid-responsive-grid-builder-for-wordpress/13306812?ref=Theme-one">' . __( 'Download new version from CodeCanyon.', 'js_composer' ) . '</a>';
+			echo '&nbsp;'. __( 'or', 'tg-text-domain' );
+			echo '&nbsp;<a target="_blank" href="http://codecanyon.net/item/the-grid-responsive-grid-builder-for-wordpress/13306812?ref=Theme-one">';
+				echo __( 'download new version from CodeCanyon.', 'tg-text-domain' );
+			echo '</a>';
 
 		}
 		

@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 
 $ajax_method  = $tg_grid_data['ajax_method'];
 $source_type  = $tg_grid_data['source_type'];
-
+	
 if ($ajax_method != 'on_scroll' && $source_type == 'post_type') {
 
 	$big   = 999999999;
@@ -26,15 +26,15 @@ if ($ajax_method != 'on_scroll' && $source_type == 'post_type') {
 	$ajax = $tg_grid_data['ajax_pagination'];
 	$type = $tg_grid_data['pagination_type'];
 	$type = ($ajax) ? 'ajax' : $type;
-			
+		
 	switch ($type) {
 		case 'number':
-				
+
 			$show_all  = $tg_grid_data['pagination_show_all'];
 			$end_size  = $tg_grid_data['pagination_end_size'];
 			$mid_size  = $tg_grid_data['pagination_mid_size'];
 			$prev_next = $tg_grid_data['pagination_prev_next'];
-				
+
 			$pages = paginate_links(array(
 				'base'      => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
 				'format'    => '?paged=%#%',
@@ -48,6 +48,7 @@ if ($ajax_method != 'on_scroll' && $source_type == 'post_type') {
 				'prev_text' => $prev_text,
 				'next_text' => $next_text,
 			));
+
 			if(is_array($pages)) {
 				$pagination .= '<div class="tg-pagination-holder">';
 					$pagination .= '<ul class="tg-pagination-number">';

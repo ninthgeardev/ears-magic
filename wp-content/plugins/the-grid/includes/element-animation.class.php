@@ -39,202 +39,467 @@ new The_Grid_Element_Animation();
 add_filter('tg_add_element_animation', 'tg_built_in_element_animation');
 function tg_built_in_element_animation($animation) {
 	
-
-	$animation['none'] = array(
-		'name'    => __('None', 'tg-text-domain'),
-		'visible' => '',
-		'hidden ' => ''
+	$animation['custom'] = array(
+		'name'    => __('Custom', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
 	$animation['fade_in'] = array(
-		'name'    => __('Fade in', 'tg-text-domain'),
-		'visible' => '',
-		'hidden'  => ''
+		'name'    => __('Fade', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
 	$animation['zoom_in'] = array(
-		'name'    => __('Zoom in', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(0.001,0,0,0,0,0.001,0,0,0,0,1,0,0,0,0,1)'
+		'name' => __('Zoom in', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => 0.5,
+			'scaley'     => 0.5,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> 500
+		)
 	);
 	
 	$animation['zoom_out'] = array(
-		'name'    => __('Zoom out', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(1.2,0,0,0,0,1.2,0,0,0,0,1,0,0,0,0,1)'
+		'name' => __('Zoom Out', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => 1.5,
+			'scaley'     => 1.5,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> 500
+		)
 	);
 	
-	$animation['from_bottom'] = array(
-		'name' => __('From Bottom', 'tg-text-domain'),
-		'visible' => 'translateY(0)',
-		'hidden' => 'translateY(100px)'
-	);
-	$animation['from_top'] = array(
-		'name'    => __('From Top', 'tg-text-domain'),
-		'visible' => 'translateY(0)',
-		'hidden'  => 'translateY(-100px)'
-	);
-	
-	$animation['from_left'] = array(
-		'name'    => __('From Left', 'tg-text-domain'),
-		'visible' => 'translateX(0)',
-		'hidden'  => 'translateX(-100px)'
-	);
-	
-	$animation['from_right'] = array(
-		'name'    => __('From Right', 'tg-text-domain'),
-		'visible' => 'translateX(0)',
-		'hidden'  => 'translateX(100px)'
+	$animation['top'] = array(
+		'name' => __('Top', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => -100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_top_left'] = array(
-		'name'    => __('From Top Left', 'tg-text-domain'),
-		'visible' => 'translateY(0) translateX(0)',
-		'hidden'  => 'translateY(-100px) translateX(-100px)'
+	$animation['bottom'] = array(
+		'name' => __('Bottom', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => 100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_top_right'] = array(
-		'name'    => __('From Top Right', 'tg-text-domain'),
-		'visible' => 'translateY(0) translateX(0)',
-		'hidden'  => 'translateY(-100px) translateX(100px)'
+	$animation['left'] = array(
+		'name' => __('Left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => -100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_bottom_left'] = array(
-		'name'    => __('From Bottom left', 'tg-text-domain'),
-		'visible' => 'translateY(0) translateX(0)',
-		'hidden'  => 'translateY(100px) translateX(-100px)'
+	$animation['right'] = array(
+		'name' => __('Right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => 100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_bottom_right'] = array(
-		'name'    => __('From Bottom Right', 'tg-text-domain'),
-		'visible' => 'translateY(0) translateX(0)',
-		'hidden'  => 'translateY(100px) translateX(100px)'
+	$animation['top_left'] = array(
+		'name' => __('Top/Left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => -100,
+			'translatey' => -100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
+	$animation['top_right'] = array(
+		'name' => __('Top/Right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => 100,
+			'translatey' => -100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
+	);
+	
+	$animation['bottom_left'] = array(
+		'name' => __('Bottom/Left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => -100,
+			'translatey' => 100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
+	);
+	
+	$animation['Bottom_right'] = array(
+		'name' => __('Bottom/Right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => 100,
+			'translatey' => 100,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
+	);
+
 	$animation['flip_x'] = array(
-		'name'    => __('Flip X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) rotate3d(1,0,0,0deg) scale(1)',
-		'hidden'  => 'rotate3d(1,0,0,90deg) scale(0.8)'
+		'name' => __('Flip X', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => 90,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
 	);
+	
+	$animation['flip_x_top'] = array(
+		'name' => __('Flip X from top', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => 60,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => 50,
+			'originy'    => 0,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
+	);
+	
+	$animation['flip_x_bottom'] = array(
+		'name' => __('Flip X from bottom', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => -60,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => 50,
+			'originy'    => 100,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
+	);
+
 	
 	$animation['flip_y'] = array(
-		'name'    => __('Flip Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) rotate3d(0,1,0,0deg) scale(1)',
-		'hidden'  => 'rotate3d(0,1,0,90deg) scale(0.8)'
+		'name' => __('Flip Y', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => 90,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
 	);
 	
-	$animation['flip_z'] = array(
-		'name'    => __('Flip Z', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) rotate3d(0,0,1,0deg) scale(1)',
-		'hidden'  => 'perspective(2000px) rotate3d(0,0,1,45deg) scale(0.2)'
+	$animation['flip_y_left'] = array(
+		'name' => __('Flip Y from left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => -60,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => 0,
+			'originy'    => 50,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
 	);
 	
-	$animation['from_bottom_flip_x'] = array(
-		'name'    => __('From Bottom Flip X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(1,0,0,0deg) scale(1)',
-		'hidden'  => 'translateY(100px) rotate3d(1,0,0,90deg) scale(0.8)'
+	$animation['flip_y_right'] = array(
+		'name' => __('Flip Y from right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => null,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => 60,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => null,
+			'skewy'      => null,
+			'originx'    => 100,
+			'originy'    => 50,
+			'originz'    => null,
+			'perspective'=> 1600
+		)
 	);
 	
-	$animation['from_bottom_flip_y'] = array(
-		'name'    => __('From Bottom Flip Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,1,0,0deg) scale(1)',
-		'hidden'  => 'translateY(100px) rotate3d(0,1,0,90deg) scale(0.8)'
+	$animation['roll_left'] = array(
+		'name' => __('Roll left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => -100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => 100,
+			'rotatey'    => -100,
+			'rotatez'    => 100,
+			'scalex'     => 0.8,
+			'scaley'     => 0.8,
+			'scalez'     => null,
+			'skewx'      => 20,
+			'skewy'      => -20,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_bottom_flip_z'] = array(
-		'name'    => __('From Bottom Flip Z', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,0,1,0deg) scale(1)',
-		'hidden'  => 'perspective(2000px) translateY(100px) rotate3d(0,0,1,45deg) scale(0.2)'
+	$animation['roll_right'] = array(
+		'name' => __('Roll right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => 100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => 100,
+			'rotatey'    => 100,
+			'rotatez'    => 100,
+			'scalex'     => 0.8,
+			'scaley'     => 0.8,
+			'scalez'     => null,
+			'skewx'      => 20,
+			'skewy'      => 20,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_top_flip_x'] = array(
-		'name'    => __('From Top Flip X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(1,0,0,0deg) scale(1)',
-		'hidden'  => 'translateY(-100px) rotate3d(1,0,0,90deg) scale(0.8)'
+	$animation['skew_left'] = array(
+		'name' => __('Skew left', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => -100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => 20,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 	
-	$animation['from_top_flip_y'] = array(
-		'name'    => __('From Top Flip Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,1,0,0deg) scale(1)',
-		'hidden'  => 'translateY(-100px) rotate3d(0,1,0,90deg) scale(0.8)'
-	);
-	
-	$animation['from_top_flip_z'] = array(
-		'name'    => __('From Top Flip Z', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,0,1,0deg) scale(1)',
-		'hidden'  => 'perspective(2000px) translateY(-100px) rotate3d(0,0,1,45deg) scale(0.2)'
-	);
-	
-	$animation['from_left_flip_x'] = array(
-		'name'    => __('From Left Flip X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateX(0) rotate3d(1,0,0,0deg) scale(1)',
-		'hidden'  => 'translateX(-100px) rotate3d(1,0,0,90deg) scale(0.8)'
-	);
-	
-	$animation['from_left_flip_y'] = array(
-		'name'    => __('From Left Flip Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateX(0) rotate3d(0,1,0,0deg) scale(1)',
-		'hidden'  => 'translateX(-100px) rotate3d(0,1,0,90deg) scale(0.8)'
-	);
-	
-	$animation['from_left_flip_z'] = array(
-		'name'    => __('From Left Flip Z', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateX(0) rotate3d(0,0,1,0deg) scale(1)',
-		'hidden'  => 'perspective(2000px) translateX(-100px) rotate3d(0,0,1,45deg) scale(0.2)'
-	);
-	
-	$animation['from_right_flip_x'] = array(
-		'name'    => __('From Right Flip X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(1,0,0,0deg) scale(1)',
-		'hidden'  => 'translateX(100px) rotate3d(1,0,0,90deg) scale(0.8)'
-	);
-	
-	$animation['from_right_flip_y'] = array(
-		'name'    => __('From Right Flip Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,1,0,0deg) scale(1)',
-		'hidden'  => 'translateX(100px) rotate3d(0,1,0,90deg) scale(0.8)'
-	);
-	
-	$animation['from_right_flip_z'] = array(
-		'name'    => __('From Right Flip Z', 'tg-text-domain'),
-		'visible' => 'perspective(2000px) translateY(0) rotate3d(0,0,1,0deg) scale(1)',
-		'hidden'  => 'perspective(2000px) translateX(100px) rotate3d(0,0,1,45deg) scale(0.2)'
-	);
-	
-	$animation['roll_from_right'] = array(
-		'name'    => __('Roll From Right', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(0,-1,0.00,0,1.00,0,0.00,0,0,0,1,0,100,0,0,1)'
-	);
-	
-	$animation['roll_from_left'] = array(
-		'name'    => __('Roll From Left', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(0,1,0.00,0,-1.00,0,0.00,0,0,0,1,0,-100,0,0,1)'
-	);
-	
-	$animation['perspective_x'] = array(
-		'name'    => __('Perspective X', 'tg-text-domain'),
-		'visible' => 'perspective(2000px)',
-		'hidden'  => 'perspective(2000px) rotateX(45deg)'
-	);
-	
-	$animation['perspective_y'] = array(
-		'name'    => __('Perspective Y', 'tg-text-domain'),
-		'visible' => 'perspective(2000px)',
-		'hidden'  => 'perspective(2000px) rotateY(45deg)'
-	);
-	
-	$animation['perspective_z'] = array(
-		'name'    => __('Perspective Z', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(0.70592,0.02465,0.37557,-0.00062,-0.06052,0.79532,0.06156,-0.0001,-0.46435,-0.10342,0.87958,-0.00146,-21.42566,4.13698,4.81749,0.99197085)'
-	);
-	
-	$animation['falling_rotate'] = array(
-		'name'    => __('Falling Rotate', 'tg-text-domain'),
-		'visible' => 'matrix3d(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1)',
-		'hidden'  => 'matrix3d(0.71,0.71,0.00,0,-0.71,0.71,0.00,0,0,0,1,0,-50,-250,0,1)'
+	$animation['skew_right'] = array(
+		'name' => __('Skew right', 'tg-text-domain'),
+		'transform' => array(
+			'translatex' => 100,
+			'translatey' => null,
+			'translatez' => null,
+			'rotatex'    => null,
+			'rotatey'    => null,
+			'rotatez'    => null,
+			'scalex'     => null,
+			'scaley'     => null,
+			'scalez'     => null,
+			'skewx'      => -20,
+			'skewy'      => null,
+			'originx'    => null,
+			'originy'    => null,
+			'originz'    => null,
+			'perspective'=> null
+		)
 	);
 		
 	return $animation;

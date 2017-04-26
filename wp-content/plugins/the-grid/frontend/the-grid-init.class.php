@@ -57,6 +57,7 @@ class The_Grid_Init {
 		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-loop.class.php');
 		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-style.class.php');
 		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-layout.class.php');
+		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-item.class.php');
 		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-element.class.php');
 		require_once(TG_PLUGIN_PATH . '/frontend/the-grid-ajax.class.php');
 		
@@ -65,6 +66,15 @@ class The_Grid_Init {
 		require_once(TG_PLUGIN_PATH . '/includes/source-type/instagram.class.php');
 		require_once(TG_PLUGIN_PATH . '/includes/source-type/youtube.class.php');
 		require_once(TG_PLUGIN_PATH . '/includes/source-type/vimeo.class.php');
+		require_once(TG_PLUGIN_PATH . '/includes/source-type/facebook.class.php');
+		require_once(TG_PLUGIN_PATH . '/includes/source-type/twitter.class.php');
+		require_once(TG_PLUGIN_PATH . '/includes/source-type/flickr.class.php');
+		require_once(TG_PLUGIN_PATH . '/includes/source-type/rss.class.php');
+		
+		// if NextGen plugin activated
+		/*if (class_exists('nggdb')) {
+			require_once(TG_PLUGIN_PATH . '/includes/source-type/nextgen.class.php');
+		}*/
 		
 	}
 	
@@ -139,7 +149,7 @@ class The_Grid_Init {
 		global $post;
 		$global_library = get_option('the_grid_global_library', true);
 		
-    	if($global_library || has_shortcode($post->post_content, 'the_grid')) {
+    	if($global_library || ($post && has_shortcode($post->post_content, 'the_grid'))) {
 			$this->global_scripts();
 			$this->global_styles();
 		}
@@ -166,7 +176,7 @@ class The_Grid_Init {
 	* @since 1.0.0
 	*/
 	public function global_styles() {
-		
+
 		if ($this->debug_mode) {
 			wp_enqueue_style('the-grid', TG_PLUGIN_URL . 'frontend/assets/css/the-grid.css', array(), TG_VERSION);
 		} else {

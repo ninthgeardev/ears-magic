@@ -11,61 +11,61 @@ jQuery.noConflict();
 	// ======================================================
 	// Retrieve all taxonomy per category and atuo sort filters
 	// ======================================================
-
-		var $category = $('.the_grid_categories option'),
+	
+		var terms         = $('[data-tg-taxonomy-terms]').data('tg-taxonomy-terms'),
+			$category     = $('.the_grid_categories option'),
 			$filter_sort1 = $('#tg-filter-sort1'),
 			post_type_arr = [],
-			filter_arr = [],
-			information,
-			post_type,
-			taxonomy,
-			disabled,
-			value,
-			parent,
-			id,
-			i;
+			filter_arr    = [],
+			post_type;
 
-		if ($category.length) {
-			for (i = 0; i < $category.length; i++) { 
-				disabled    = '';
-				value       = $category[i].text;
-				information = $category[i].value;
-				information = information.split(',');
-				post_type   = information[0].split(':');
-				post_type   = post_type[1];
-				taxonomy    = information[1].split(':');
-				taxonomy    = taxonomy[1];
-				id          = information[2].split(':');
-				id          = id[1];
-				parent      = (information[3]) ? information[3].split(':') : '';
-				parent      = (parent[1]) ? parent[1] : '';
-				if (id.indexOf('option_disabled') > -1){
-					disabled = 'disabled="disabled"';
-				}
-				if (post_type) {
-					if (!post_type_arr.hasOwnProperty(post_type)) {
-						post_type_arr[post_type] = [];
-						filter_arr[post_type] = [];
+		if (terms) {
+			
+			$.each(terms, function(post_type, data) {		
+				filter_arr[post_type]    = [];
+				post_type_arr[post_type] = [];	
+				$.each(data['taxonomies'], function(taxonomy, data) {
+					if (data.hasOwnProperty('terms')) {
+						post_type_arr[post_type].push(build_terms_options(data['name'], data['name'], data['title'], data['count']));
+						filter_arr[post_type].push(build_terms_list(data['name'], data['name'], data['title'], data['title'], data['count']));
+						$.each(data['terms'], function(term, data) {
+							post_type_arr[post_type].push(build_terms_options(data['id'], data['taxonomy'], data['title'], data['count']));
+							filter_arr[post_type].push(build_terms_list(data['id'], data['taxonomy'], data['name'], data['title'], data['count']));
+						});
 					}
-					post_type_arr[post_type].push('<option value="'+taxonomy+':'+id+'" '+disabled+'>'+value+'</option>');
-					if (!disabled) {
-						var name   = $.trim(value.replace(/\(.*?\)/, ''));
-						var regExp = /\(([^)]+)\)/;
-						var number = regExp.exec(value);
-						number = number[1];
-						filter_arr[post_type].push('<li class="tg-state-default" data-parent="'+parent+'" value="'+id+'" data-taxonomy="'+taxonomy+'" data-name="'+name+'" data-number="'+number+'"><span class="tg-filte-icon dashicons"></span>'+value+'</li>');
-					}
-				}
-			}
+				});
+			});
+		
 		}
+
+		function build_terms_options(id, taxonomy, title, count) {
+			
+			return '<option value="'+taxonomy+':'+id+'"'+(taxonomy == id ? ' disabled="disabled"' : '')+'>'+title+'</option>';
+			
+		}
+		
+		function build_terms_list(id, taxonomy, name, title, count) {
+   
+			return '<li class="tg-filter-item'+(taxonomy == id ? ' tg_is_taxonomy' : '')+'" data-id="'+id+'" data-name="'+escape(name)+'" data-taxonomy="'+taxonomy+'" data-number="'+count+'">'+
+						'<span class="tg-filte-icon dashicons"></span>'+
+						title+
+						'<span class="tg-remove-filter dashicons dashicons-no-alt"></div>'+
+				   '</li>';
+				   
+		}
+		
+		$('.the_grid_categories_input.tomb-row').remove();
 		
 		$('[name="the_grid_filters_order_1"]').addClass('tg_sort_filter_list');
 		$('.tg-add-filters').on('click',function() {
 			appendFilters();
 		});
+		
 		// rebuilt filter holder
 		$('.tg-filter-holder-number > div').each(function() {
+			
 			appendFilters();
+			
 			$(this).find('input').each(function() {
 				var input = $(this).data('input');
 				var value = $(this).val();
@@ -74,14 +74,17 @@ jQuery.noConflict();
 				}
 				$('[name="'+input+'"]').val(value).trigger('change');
 			});
+			
 			$(this).find('ul').trigger('change');
+			
 		});
+		
+		var meta_value   = ($('#tg-cat-val').data('meta')) ? $('#tg-cat-val').data('meta').split(',') : '',
+			meta_value2  = ($('#tg-filter-load').data('meta')) ? $('#tg-filter-load').data('meta').split(',') : '';
 
-		if (post_type_arr[post_type]) {
+		if (post_type_arr) {
 			
 			var $eventSelect = $('.the_grid_post_type select'),
-				meta_value   = ($('#tg-cat-val').data('meta')) ? $('#tg-cat-val').data('meta').split(',') : '',
-				meta_value2  = ($('#tg-filter-load').data('meta')) ? $('#tg-filter-load').data('meta').split(',') : '',
 				selected     = $('.the_grid_post_type select').val();
 				selected     = (selected) ? selected : [$('.the_grid_post_type select option:first').val()];
 			
@@ -90,33 +93,31 @@ jQuery.noConflict();
 			$('.the_grid_filter_onload select').find('option').remove();
 			
 			$eventSelect.on('change', function () {
-				$filter_sort1.find('li').remove();
-				$('.tg-filter-sort2').find('li').remove();
-				$('.the_grid_categories select').find('option').remove();
-				$('.the_grid_filter_onload select').find('option').remove();
+
+				$filter_sort1.html('');
+				$('.tg-filter-sort2').html('');
+				$('.the_grid_categories select').html('');
+				$('.the_grid_filter_onload select').html('');
+				
 				var selected = $(this).val();
+				
 				if (selected) {
+					
 					autoFillOptions(selected);
-					autoFillFilters();
 					checkFilterList();
+					
 					$('.the_grid_filters_holder').each(function(i) {
-						sortFilterList($(this),$(this).find('.tg_sort_filter_list').val());
+						sortFilterList($(this), $(this).find('.tg_sort_filter_list').val());
 					});
-					updateFilterList();
+	
 				}
+				
+				updateFilterList();
+				
 				$('.the_grid_categories select').trigger('change');
 				$('.the_grid_filter_onload select').trigger('change');
+				
 			});
-			
-			$('.the_grid_categories select').on('change', function () {
-				var selected = $(this).val();
-				$('.the_grid_filters_holder').each(function() {
-					$(this).find('ul li').remove();
-				});
-				autoFillFilters(selected);
-				checkFilterList();
-				updateFilterList();
-			});	
 			
 			$('.the_grid_post_type select').val(selected).trigger('change');
 			$('.the_grid_categories select').val(meta_value).trigger('change');	
@@ -152,6 +153,7 @@ jQuery.noConflict();
 				checkFiltersNb(i+1);
 			});
 			update_area_items();
+			TOMB_RequiredField.fetch();
 		});
 
 		function appendFilters() {
@@ -164,6 +166,7 @@ jQuery.noConflict();
 			filters_holder.find('input').val('');
 			var paste = filters_holder.insertAfter(last_holder);
 			checkFiltersNb(filters_number+1);
+			TOMB_RequiredField.fetch();
 			paste.find('select').each(function() {
 				var $this = $(this);
 				$this.val('');
@@ -172,8 +175,7 @@ jQuery.noConflict();
 				}
 				$this.trigger('change');
             });	
-			addFiltersLayout(filters_number+1);
-			sortFilters();
+			addFiltersLayout(filters_number+1);			
 		}
 		
 		function addFiltersLayout(ID) {
@@ -189,11 +191,14 @@ jQuery.noConflict();
 				$tg_filters.data('func','the_grid_get_filters_'+ID);
 				$tg_filters.attr('data-func','the_grid_get_filters_'+ID);
 			}
+			sortFilters();
 		}	
 		
 		function checkFiltersNb(ID) {
+			
 			var $this = $('.the_grid_filters_holder').eq(ID-1);
 			$this.find('.tg-filter-name-area').html(ID);
+			
 			$this.find('input, select').each(function() {
 				var name = $(this).attr('name');
 				if (name) {
@@ -204,82 +209,165 @@ jQuery.noConflict();
 					name = name+'_'+ID;
 					$(this).attr('name',name);
 					$(this).closest('.tomb-row').addClass(name);
-					var requiered = $('.'+name).data('required');
-					if(requiered) {
-						requiered = requiered.split(',');
-						var field = requiered[0];
+					var required = $('.'+name).data('tomb-required');
+					if(required) {
+						required = required.split(',');
+						var field = required[0];
 						field = $.isNumeric(field.substr(field.length-1)) ? field.slice(0,-2) : field;
 						field = field+'_'+ID;
-						$('.'+name).data('required',field+','+requiered[1]+','+requiered[2]);
-						$('.'+name).attr('data-required',field+','+requiered[1]+','+requiered[2]);
+						$('.'+name).data('tomb-required',field+','+required[1]+','+required[2]);
+						$('.'+name).attr('data-tomb-required',field+','+required[1]+','+required[2]);
 					}
 				}
 			});
+			
 			$('[name="the_grid_filters_number"]').val($('.the_grid_filters_holder').length);
-			sortFilters();
+			
 		}
 		
 		function sortFilters() {
-			$filter_sort1.sortable({
-				connectWith: '.connectedSortable',
-			}).disableSelection();
 			
 			$('.tg-filter-sort2').sortable({
-				connectWith: '.connectedSortable',
-				update: function() {
+				axis: 'y',
+				scroll: true,
+				containment: 'parent',
+				revert: 150,
+				tolerance: 'intersect',
+				forcePlaceholderSize: true,
+				forceHelperSize: true,
+				start: function(e, ui) {
+					$(ui.helper).css({
+						'max-width': $(ui.helper).closest('ul')[0]['clientWidth']-10,
+						'left': 5
+					});
+				},
+				stop: function(e, ui) {
+					$(ui.item).removeAttr('style');
+				},
+				update: function(e, ui) {
 					updateFilterList();
 					$(this).closest('.the_grid_filters_holder').find('.tg_sort_filter_list').val('').trigger('change');
+				},
+				sort: function(e, ui) {
+					$(ui.helper).css('max-width', $(ui.helper).closest('ul')[0]['clientWidth']-10);
+				},
+				over: function(e, ui) {
+					$(ui.helper).css('max-width', $(ui.helper).closest('ul')[0]['clientWidth']-10);
+				},
+				out: function(e, ui) {
+					$(ui.helper).css('max-width', $filter_sort1[0]['clientWidth']-10);
 				}
 			}).disableSelection();
+			
 		}
 		sortFilters();
 		
-		
 		$(document).on('click', '.tg-filter-button-add', function() {
-			var $this = $(this);
-			$('#tg-filter-sort1 li').each(function() {
-				var current_filter = $(this);
-				var active_filter  = current_filter.clone();
-				current_filter.remove();
-				$this.prevAll('.tg-filter-sort2 ').append(active_filter);
-				updateFilterList();
-			});
+			$(this).prevAll('.tg-filter-sort2').html($('#tg-filter-sort1').html());
+			updateFilterList();
 		});
+		
 		$(document).on('click', '.tg-filter-button-remove', function() {
-			var $this = $(this).prevAll('.tg-filter-sort2 ').find('li');
-			$this.each(function() {
-				var current_filter = $(this);
-				var active_filter  = current_filter.clone();
-				current_filter.remove();
-				$filter_sort1.append(active_filter);
-				updateFilterList();
-			});
+			$(this).prevAll('.tg-filter-sort2').html('');
+			updateFilterList();
 		});
 		
 		$(document).on('change','.tg_sort_filter_list',function() {
 			var sort_val = $(this).val();
 			var $this    = $(this).closest('.the_grid_filters_holder');
-			sortFilterList($this,sort_val);
+			sortFilterList($this, sort_val);
 			updateFilterList();
 		});
 		
+		$(document).on('click', '.tg-remove-filter', function(){
+			$(this).closest('li').remove();
+			updateFilterList();	
+		});
+		
 		function autoFillOptions(selected) {
+			
+			var options = [];
+			var filters = [];
+			
 			$.each(selected, function(a, $s) {
-				if (post_type_arr[$s]) {
-					$.each(post_type_arr[$s], function(b, $v) {
-						$('.the_grid_categories select').append($v);
-						$('.the_grid_filter_onload select').append($v);
-					});
+				if (post_type_arr[$s] && filter_arr[$s]) {
+					$.merge(options, post_type_arr[$s]);
+					$.merge(filters, filter_arr[$s]);
 				}
-			});	
+			});
+			
+			options = jQuery.unique(options);
+			filters = jQuery.unique(filters);
+			
+			$('.the_grid_categories select, .the_grid_filter_onload select').html(options);
+			
+			$filter_sort1.html(filters).find('li').draggable({
+				connectToSortable: '.connectedSortable',
+				appendTo: '#tg-available-filters',
+				zIndex: 9,
+				helper: 'clone',
+				revert: 'invalid',
+				revertDuration: 0,
+				start: function(e, ui) {
+					$(ui.helper).css('max-width', $filter_sort1[0]['clientWidth']-10);
+				}
+			}).disableSelection();
+			
+		}
+
+		function checkFilterList() {
+			
+			$('.the_grid_filters_holder').each(function(index, element) {
+				
+             	var active_filters = $.parseJSON($(this).find('ul').closest('.tomb-row').find('input').val());
+				
+				if (active_filters) {
+					
+					var filters = [];
+					
+					for (i = 0; i < active_filters.length; i++) {
+						var current_filter = $('#tg-filter-sort1 li[data-id="'+active_filters[i].id+'"]').first();
+						var active_filter  = current_filter.clone();
+						filters.push(active_filter);
+					}
+					
+					$(this).find('ul').html(filters);
+					
+				} 
+				  
+            });
+			
+		}
+		
+		function updateFilterList() {
+			
+			$('.the_grid_filters_holder').each(function(i) {
+				
+				var $this  = $(this).find('.tg-filter-sort2');
+				var $input = $this.closest('.tomb-row').find('input');
+				var filter_active = [];
+				
+				$this.find('li').each(function(i) {
+					filter_active[i] = {};
+					filter_active[i].id = $(this).data('id');
+					filter_active[i].taxonomy = $(this).data('taxonomy');
+				});
+
+				$input.val(JSON.stringify(filter_active)); 
+				
+			});
+			 
 		}
 		
 		function sortFilterList($this,sort_val) {
+			
 			switch(sort_val) {
 				case 'number_asc':
+					$this.find('ul').append($this.find('ul li').sort(sort_alpha_asc));
 					$this.find('ul').append($this.find('ul li').sort(sort_nb_asc));
 					break;
 				case 'number_desc':
+					$this.find('ul').append($this.find('ul li').sort(sort_alpha_asc));
 					$this.find('ul').append($this.find('ul li').sort(sort_nb_desc));
 					break;
 				case 'alphabetical_asc':
@@ -289,82 +377,27 @@ jQuery.noConflict();
 					$this.find('ul').append($this.find('ul li').sort(sort_alpha_desc));
 					break;
 			}
+			
 		}
-		
-		function checkFilterList() {
-			$('.the_grid_filters_holder').each(function(index, element) {
-             	var active_filters = $.parseJSON($(this).find('ul').closest('.tomb-row').find('input').val());
-				if (active_filters) {
-					for (i = 0; i < active_filters.length; i++) {
-						var current_filter = $('#tg-filter-sort1 li[value="'+active_filters[i].id+'"]');
-						var active_filter  = current_filter.clone();
-						current_filter.remove();
-						$(this).find('ul').append(active_filter);
-					}
-				}   
-            });	
-		}
-		
-		function autoFillFilters() {
-			$filter_sort1.find('li').remove();
-			var selected    = $('.the_grid_post_type select').val();
-			var category    = $('.the_grid_categories select').val();
-			var allow_child = $('input[type="checkbox"]#the_grid_categories_child').is(':checked');
-			if (selected) {
-				$.each(selected, function(a, $s) {
-					if (filter_arr[$s]) {
-						if (category && category.length > 0) {
-							$.each(filter_arr[$s], function(b, $v) {
-								var data  = $('<div/>').html($v).contents().data('taxonomy')+':'+$('<div/>').html($v).contents().val(),
-									child = (allow_child) ? $('<div/>').html($v).contents().data('taxonomy')+':'+$('<div/>').html($v).contents().data('parent') : '';
-								if ($.inArray(data, category) > -1 || $.inArray(child, category) > -1) {
-									$filter_sort1.append($v);
-								}
-							});
-						} else {
-							$.each(filter_arr[$s], function(b, $v) {
-								$filter_sort1.append($v);
-							});
-						}
-					}
-				});
-			}
-		}
-		
-		$('input[type="checkbox"]#the_grid_categories_child').on('change', function() {
-			$('.the_grid_filters_holder').each(function() {
-				$(this).find('ul li').remove();
-			});
-			autoFillFilters();
-			checkFilterList();
-			updateFilterList();
-		});
-		
-		function updateFilterList() {
-			$('.the_grid_filters_holder').each(function(i) {
-				var $this  = $(this).find('.tg-filter-sort2');
-				var $input = $this.closest('.tomb-row').find('input');
-				var filter_active = [];
-				$this.find('li').each(function(i) {
-					filter_active[i] = {};
-					filter_active[i].id = $(this).val();
-					filter_active[i].taxonomy = $(this).data('taxonomy');
-				});
-				$input.val(JSON.stringify(filter_active)); 
-			});  
-		}
-		
+
 		function sort_nb_asc(a, b){
-			return ($(b).data('number')) < ($(a).data('number')) ? 1 : -1;    
+			return (parseInt($(b).data('number')) < parseInt($(a).data('number'))) ? 1 : -1;    
 		}
+		
 		function sort_nb_desc(a, b){
-			return ($(b).data('number')) < ($(a).data('number')) ? -1 : 1;    
+			return (parseInt($(b).data('number')) < parseInt($(a).data('number'))) ? -1 : 1;    
 		}
+		
 		function sort_alpha_asc(a, b){
-			return ($(b).data('name').toString().toLowerCase()) < ($(a).data('name').toString().toLowerCase()) ? 1 : -1;    
+			var vala = $(a).data('name') ? $(a).data('name') : '',
+				valb = $(b).data('name') ? $(b).data('name') : '';
+			return (valb.toString().toLowerCase().replace(/-/g, '')) < (vala.toString().toLowerCase().replace(/-/g, '')) ? 1 : -1;   
 		}
+		
 		function sort_alpha_desc(a, b){
-			return ($(b).data('name').toString().toLowerCase()) < ($(a).data('name').toString().toLowerCase()) ? -1 : 1;    
+			var vala = $(a).data('name') ? $(a).data('name') : '',
+				valb = $(b).data('name') ? $(b).data('name') : '';
+			return (valb.toString().toLowerCase().replace(/-/g, '')) < (vala.toString().toLowerCase().replace(/-/g, '')) ? -1 : 1;    
 		}
 
 		// ======================================================
@@ -766,9 +799,7 @@ jQuery.noConflict();
 		$('.the_grid_style input').on('change', function() {
 			var $img_size = $('.the_grid_image_size');
 			if ($(this).val() === 'justified') {
-				$img_size.removeClass('required').show();
-			} else {
-				$img_size.addClass('required');
+				$('[name="the_grid_aqua_resizer"]').prop('checked', '')
 			}
 		});
 
@@ -825,7 +856,7 @@ jQuery.noConflict();
 				if (url.indexOf("?") < 0) {
 					url += "?" + paramName + "=" + paramValue;
 				} else {
-				 url += "&" + paramName + "=" + paramValue;
+					url += "&" + paramName + "=" + paramValue;
 				}
 			}
 			window.location.href = url;

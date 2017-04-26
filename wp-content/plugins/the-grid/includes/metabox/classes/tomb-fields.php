@@ -97,8 +97,8 @@ if (!class_exists('TOMB_Fields')) {
 			// retrieve meta value
 			$meta = get_post_meta($post_id, $field['id'], true);
 			// Use $field['std'] only when the meta box hasn't been saved (i.e. the first time we run)
-			$meta = (!$saved && '' === $meta || array() === $meta) ? $field['std'] : $meta;
-			$meta = is_array($meta) ? $meta  :  $meta;
+			$meta = (!$saved && '' === $meta/* || array() === $meta*/) ? $field['std'] : $meta;
+			//$meta = is_array($meta) ? $meta  :  $meta;
 			
 			return $meta;
 			
@@ -147,7 +147,6 @@ if (!class_exists('TOMB_Fields')) {
 		static function before_field($field) {
 			
 			$output          = null;
-			$required        = null;
 			$required_fields = null;
 			
 			// Retrieve current class name
@@ -155,16 +154,15 @@ if (!class_exists('TOMB_Fields')) {
 			
 			// add requiere attribute if needed
 			if (isset($field['required'])) {
-				$required = ' required';
 				foreach ($field['required'] as $requireds) {
 					$required_fields .= $requireds[0].','.$requireds[1].','.$requireds[2].';';
 				}
 				$required_fields = rtrim($required_fields, ";");
-				$required_fields = ' data-required="'.$required_fields.'"';
+				$required_fields = ' data-tomb-required="'.$required_fields.'"';
 			}
 			
 			if(call_user_func(array($field_class, 'display_wrapper'))) {
-				$output .= '<div class="'.$field['id'].' '.$field['classes'].' tomb-type-'.$field['type'].''.$required.' tomb-row"'.$required_fields.'>';
+				$output .= '<div class="'.$field['id'].' '.$field['classes'].' tomb-type-'.$field['type'].' tomb-row"'.$required_fields.'>';
 				if ($field['name']) {
 					$output .= '<label class="tomb-label">'.$field['name'].'</label>';
 				}

@@ -1,5 +1,4 @@
 .panama a,
-.panama a:not(.tg-link-button):hover,
 .panama a:active,
 .panama a:focus,
 .panama .tg-share-icons i {
@@ -16,8 +15,8 @@
 .panama a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.panama .tg-center-inner {
-	position: absolute;
+.panama .tg-center-holder {
+	text-align: center;
 }
 .panama .tg-item-content-holder {
 	position: relative;
@@ -89,24 +88,24 @@
     line-height: 22px;
     text-transform: uppercase;
 }
-.panama .dark .tg-share-icons i,
-.panama .dark .tg-media-button,
-.panama .dark .tg-link-button {
+.panama .tg-dark .tg-share-icons i,
+.panama .tg-dark .tg-media-button,
+.panama .tg-dark .tg-link-button {
 	background: rgba(255,255,255,0.5);
 }
-.panama .dark .tg-share-icons i:hover,
-.panama .dark .tg-media-button:hover,
-.panama .dark .tg-link-button:hover {
+.panama .tg-dark .tg-share-icons i:hover,
+.panama .tg-dark .tg-media-button:hover,
+.panama .tg-dark .tg-link-button:hover {
 	background: rgba(255,255,255,0.85);
 }
-.panama .light .tg-share-icons i,
-.panama .light .tg-media-button,
-.panama .light .tg-link-button {
+.panama .tg-light .tg-share-icons i,
+.panama .tg-light .tg-media-button,
+.panama .tg-light .tg-link-button {
 	background: rgba(0,0,0,0.15);
 }
-.panama .light .tg-share-icons i:hover,
-.panama .light .tg-media-button:hover,
-.panama .light .tg-link-button:hover {
+.panama .tg-light .tg-share-icons i:hover,
+.panama .tg-light .tg-media-button:hover,
+.panama .tg-light .tg-link-button:hover {
 	background: rgba(0,0,0,0.35);
 }
 .panama .tg-media-button i,

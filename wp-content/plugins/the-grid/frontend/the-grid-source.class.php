@@ -49,13 +49,21 @@ class The_Grid_Source {
 	public function get_items() {
 				
 		$source_class = 'The_Grid_'.$this->grid_data['source_type'];
+		
+		if ($this->grid_data['source_type'] == 'nextgen' && !class_exists('nggdb')) {
+			
+			 // If nextgen source but NexGen Gallery plugin not activated
+			$error_msg  = __( 'You must intall and activate NextGen Gallery Plugin in order to use it as source.', 'tg-text-domain' );
+			throw new Exception($error_msg);
+			
+		}
 
 		// check if class exist
 		if (class_exists($source_class)) {
 			
 			try {
 				
-				// Retrive items from corresponding source
+				// Retrieve items from corresponding source
 				$source = new $source_class($this->grid_data);
 				$this->grid_items = $source->get_grid_items();
 				$this->grid_data  = $source->get_grid_data();
@@ -72,9 +80,9 @@ class The_Grid_Source {
 			
 			// If no content and no errors then trigger unknown error
 			$error_msg  = __( 'Sorry, an error occurs...', 'tg-text-domain' );
-			$error_msg .= '&#xa;';
+			$error_msg .= '<br>';
 			$error_msg .= __( 'Class name', 'tg-text-domain' );
-			$error_msg .= ' "'.$source_class.'()"';
+			$error_msg .= ' "'.$source_class.'()" ';
 			$error_msg .= __( 'does not exist.', 'tg-text-domain' );
 			throw new Exception($error_msg);
 				

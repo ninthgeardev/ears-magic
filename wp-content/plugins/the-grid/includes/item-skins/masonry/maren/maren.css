@@ -1,5 +1,4 @@
 .maren a,
-.maren a:not(.tg-link-button):hover,
 .maren a:active,
 .maren a:focus,
 .maren .tg-share-icons i {
@@ -16,8 +15,8 @@
 .maren a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.maren .tg-center-inner {
-	position: absolute;
+.maren .tg-center-holder {
+	text-align: center;
 }
 .maren .tg-item-content-holder {
 	position: relative;

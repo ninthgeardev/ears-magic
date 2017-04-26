@@ -20,9 +20,6 @@
 	-o-transition: opacity 0.5s ease, color 0.35s ease, -o-transform 0.5s cubic-bezier(.37,1.02,.44,1.38);
 	transition: opacity 0.5s ease, color 0.35s ease, transform 0.5s cubic-bezier(.37,1.02,.44,1.38);
 }
-.suva .tg-center-outer {
-	overflow: hidden;
-}
 .suva .tg-item-link {
 	position: absolute;
     display: block;
@@ -35,11 +32,13 @@
 .suva .tg-item-media-holder,
 .suva .tg-item-overlay {
 	position: absolute;
+	overflow: hidden;
 	display: block;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	right: 0;
+	text-align: center;
 }
 .suva .tg-item-content-inner {
 	opacity: 0;
@@ -326,7 +325,7 @@
 .suva .tg-item-on-sale span {
 	margin: 0;
 	padding: 16px 10px;
-	color: #ffffff;
+	color: #ffffff !important;
 	background: #FF4F57;
 	font-size: 12px;
 	text-transform: uppercase;

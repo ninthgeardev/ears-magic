@@ -77,7 +77,9 @@ if ( ! class_exists( 'TOMB_Slider_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
-			return $new;
+			
+			return esc_attr( $new );
+			
 		}
 
 	}

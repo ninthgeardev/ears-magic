@@ -12,23 +12,15 @@ if (!defined('ABSPATH')) {
 
 
 $prefix = 'the_grid_item_'; 
-
-$base = new The_Grid_Base();
 $custom_fields = new The_Grid_Custom_Fields();
 
 $post_types = array();
-$post_types_arr = $base->get_post_types_and_categories();
-if(!empty($post_types_arr)){
-	foreach($post_types_arr as $post_type => $ID) {
-		$post_type_info   = get_post_type_object($post_type);
-		$post_type_single = $post_type_info->name;
-		array_push($post_types,$post_type_single);
-	}
-}
+$post_types_arr = The_Grid_Base::get_all_post_types();
 
-// unregister attachment from post types
-if(($key = array_search('attachment', $post_types)) !== false) {
-    unset($post_types[$key]);
+foreach ($post_types_arr as $key => $val) {
+	if($key != 'attachment') {
+		$post_types[] = $key;
+	}
 }
 
 $the_grid_item_format = array(
@@ -653,7 +645,7 @@ new TOMB_Metabox($the_grid_attachment_format);
 
 $taxonomies = get_taxonomies(); 
 
-foreach ( $taxonomies as $taxonomy ) {
+foreach ($taxonomies as $taxonomy) {
 
 	$the_grid_item_format = array(
 		'id'    => $prefix . 'term_color',

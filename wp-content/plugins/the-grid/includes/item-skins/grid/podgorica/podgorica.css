@@ -1,6 +1,4 @@
 .podgorica a,
-.podgorica a:hover,
-.podgorica .tg-media-button,
 .podgorica a:active,
 .podgorica a:focus,
 .podgorica .tg-share-icons i {
@@ -14,9 +12,14 @@
 	-o-transition: opacity 0.25s ease, color 0.25s ease;
 	transition: opacity 0.25s ease, color 0.25s ease;
 }
-.podgorica .tg-media-button:hover,
-.podgorica a:not(.mejs-volume-slider):hover {
+.podgorica:not(.tg-force-play):not(.tg-is-playing) .tg-media-button:hover,
+.podgorica a:not(.mejs-volume-slider):not(.tg-media-button):hover {
 	opacity: 0.85;
+}
+.podgorica.tg-force-play .tg-media-button,
+.podgorica.tg-is-playing .tg-media-button {
+	opacity: 0;
+	visibility: hidden;
 }
 .podgorica .tg-item-content-holder {
 	position: relative;

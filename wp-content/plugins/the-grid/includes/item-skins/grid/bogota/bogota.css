@@ -1,6 +1,4 @@
 .bogota a,
-.bogota a:hover,
-.bogota .tg-media-button,
 .bogota a:active,
 .bogota a:focus,
 .bogota .tg-share-icons i {
@@ -17,30 +15,11 @@
 .bogota a:not(.mejs-volume-slider):hover {
 	opacity: 0.85;
 }
-.bogota .tg-item-content-holder {
-	position: relative;
-	display: block;
-	padding: 16px 15px 20px;
-	text-align: center;
-}
 .bogota .tg-item-media-holder {
 	overflow: hidden;
 }
-.bogota .tg-item-title,
-.bogota .tg-item-title a {
-	position: relative;
-    display: block;
-    font-size: 19px;
-	font-style: italic;
-    line-height: 28px;
-    letter-spacing: 1px;
-    font-weight: normal;
-	margin: 0 !important;
-	padding: 0 20px !important;
+.bogota .tg-center-holder {
 	text-align: center;
-}
-.bogota .tg-item-title a {
-	padding: 0 !important;
 }
 .bogota .tg-item-overlay,
 .bogota .tg-media-button {
@@ -69,13 +48,12 @@
 	transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 .bogota .tg-item-comment i {
-	float: left;
     margin: 4px 6px 0 0;
 	font-size: 16px;
 	font-weight: 900;
 }
 .bogota .tg-item-comment span {
-	float: right;
+	color: inherit !important;
 }
 .bogota .tg-icon-play,
 .bogota .tg-item-media-holder:hover .tg-item-overlay,
@@ -112,6 +90,13 @@
 .bogota.tg-force-play .tg-icon-play {
 	pointer-events: none;
 	opacity: 0 !important;
+}
+.bogota.tg-force-play .tg-item-overlay,
+.bogota.tg-is-playing .tg-item-overlay,
+.bogota.tg-force-play .tg-media-button,
+.bogota.tg-is-playing .tg-media-button {
+	opacity: 0;
+	visibility: hidden;
 }
 .bogota .to-post-like .to-heart-icon:hover path {
     stroke: inherit !important;

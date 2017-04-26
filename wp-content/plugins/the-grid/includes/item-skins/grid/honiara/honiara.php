@@ -33,10 +33,12 @@ $output .= $tg_el->get_content_wrapper_end();
 $output .= $tg_el->get_media_wrapper_start();
 	$output .= $tg_el->get_media();
 	$output .= ($permalink && !in_array($format, array('audio', 'video'))) ? '<a class="tg-item-link" href="'.$permalink .'" target="'.$target.'"></a>' : null;
-	$output .= ($format != 'standard') ? '<div class="tg-button-holder">' : null;
-		$output .= ($format != 'standard') ? $tg_el->get_overlay() : null;	
-		$output .= ($format != 'standard') ? $tg_el->get_media_button() : null;
-	$output .= ($format != 'standard') ? '</div>' : null;
+	if ($format != 'standard') {
+		$output .= '<div class="tg-button-holder">';
+			$output .= $tg_el->get_overlay();	
+			$output .= $tg_el->get_media_button();
+		$output .= '</div>';
+	}
 $output .= $tg_el->get_media_wrapper_end();
 		
 return $output;

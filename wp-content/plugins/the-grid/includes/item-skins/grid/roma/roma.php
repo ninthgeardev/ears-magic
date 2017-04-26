@@ -23,14 +23,14 @@ $excerpt_args = array(
 
 $media_args = array(
 	'icons' => array(
-		'image' => '<i class="tg-icon-search2"></i>'
+		'image' => '<i class="tg-icon-zoom-2"></i>'
 	)
 );
 
 $output = $tg_el->get_media_wrapper_start();
 	$output .= $tg_el->get_media();
 	$output .= '<div class="tg-media-icon">';
-		$output .= (in_array($format, array('video', 'audio'))) ? '<i class="tg-icon-play"></i>' : '<i class="tg-icon-search2"></i>';
+		$output .= (in_array($format, array('video', 'audio'))) ? '<i class="tg-icon-play"></i>' : '<i class="tg-icon-zoom-2"></i>';
 	$output .= '</div>';
 	$output .= '<div class="tg-item-content">';
 		$output .= $tg_el->get_overlay();

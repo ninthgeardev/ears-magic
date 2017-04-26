@@ -13,7 +13,7 @@ if ( ! class_exists( 'TOMB_Upload_Field' ) ) {
 		 */
 		static function admin_enqueue_scripts() {
 			
-			// This function loads in the required media files for the media manager.
+			// Enqueue media manager.
 	        wp_enqueue_media();
 
 		}
@@ -51,7 +51,7 @@ if ( ! class_exists( 'TOMB_Upload_Field' ) ) {
 
 			$field = wp_parse_args( $field, array(
 				'button_label' => __('Upload', 'tomb-text-domain'),
-				'frame_title' => __('Select or upload an image', 'tomb-text-domain'),
+				'frame_title'  => __('Select or upload an image', 'tomb-text-domain'),
 				'frame_button' => __('Insert image', 'tomb-text-domain')
 			) );
 
@@ -70,9 +70,9 @@ if ( ! class_exists( 'TOMB_Upload_Field' ) ) {
 		 * @return string
 		 */
 		static function value( $new, $old, $post_id, $field ){
-			//$prefix = 'tomb-';
-			$the_field_id = $field['id'];
-			return esc_url( $_POST[$the_field_id] );
+			
+			return esc_url( $new );
+			
 		}
 
 	}
