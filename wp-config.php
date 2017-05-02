@@ -65,19 +65,36 @@ else:
     define('NONCE_SALT',       $_ENV['NONCE_SALT']);
     /**#@-*/
 
-    /** A couple extra tweaks to help things run well on Pantheon. **/
-    if (isset($_SERVER['HTTP_HOST'])) {
-        // HTTP is still the default scheme for now. 
-        $scheme = 'http';
-        // If we have detected that the end use is HTTPS, make sure we pass that
-        // through here, so <img> tags and the like don't generate mixed-mode
-        // content warnings.
-        if (isset($_SERVER['HTTP_USER_AGENT_HTTPS']) && $_SERVER['HTTP_USER_AGENT_HTTPS'] == 'ON') {
-            $scheme = 'https';
-        }
-        define('WP_HOME', $scheme . '://' . $_SERVER['HTTP_HOST']);
-        define('WP_SITEURL', $scheme . '://' . $_SERVER['HTTP_HOST']);
-    }
+  /** A couple extra tweaks to help things run well on Pantheon. **/
+    if (isset($_ENV['PANTHEON_ENVIRONMENT'])) {
+      if ($_ENV['PANTHEON_ENVIRONMENT'] === 'dev'):
+        $domain = 'dev-ears-magic.pantheonsite.io';
+      elseif ($_ENV['PANTHEON_ENVIRONMENT'] === 'test'):
+        $domain = 'test-ears-magic.pantheonsite.io';
+      elseif ($_ENV['PANTHEON_ENVIRONMENT'] === 'live'):
+        $domain = 'earsmagic.com';
+    else:
+    # Fallback value for multidev or other environments.
+    # This covers environment-sitename.pantheonsite.io domains
+    # that are generated per environment.
+    $domain = $_SERVER['HTTP_HOST'];
+  endif;
+
+  # Define constants for WordPress on Pantheon.
+  define('WP_HOME', 'https://' . $domain);
+  define('WP_SITEURL', 'https://' . $domain);
+
+  if (isset($_SERVER['PANTHEON_ENVIRONMENT']) && (php_sapi_name() != "cli")) {
+   if ($_SERVER['HTTP_HOST'] != $domain ||
+   !isset($_SERVER['HTTP_X_SSL']) || $_SERVER['HTTP_X_SSL'] != 'ON' ) {
+     header('HTTP/1.0 301 Moved Permanently');
+     header('Location: https://' . $domain . $_SERVER['REQUEST_URI']);
+     header('Cache-Control: public, max-age=3600');
+     exit();
+   }
+ }
+
+}
     // Don't show deprecations; useful under PHP 5.5
     error_reporting(E_ALL ^ E_DEPRECATED);
     // Force the use of a safe temp directory when in a container
