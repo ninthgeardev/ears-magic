@@ -84,15 +84,7 @@ else:
   define('WP_HOME', 'https://' . $domain);
   define('WP_SITEURL', 'https://' . $domain);
 
-  if (isset($_SERVER['PANTHEON_ENVIRONMENT']) && (php_sapi_name() != "cli")) {
-   if ($_SERVER['HTTP_HOST'] != $domain ||
-   !isset($_SERVER['HTTP_X_SSL']) || $_SERVER['HTTP_X_SSL'] != 'ON' ) {
-     header('HTTP/1.0 301 Moved Permanently');
-     header('Location: https://' . $domain . $_SERVER['REQUEST_URI']);
-     header('Cache-Control: public, max-age=3600');
-     exit();
-   }
- }
+  
 
 }
 
@@ -104,7 +96,7 @@ foreach( $server_opts as $option => $value ) {
   break;
  }
 }
-//END Really Simple SSL 
+//END Really Simple SSL
     // Don't show deprecations; useful under PHP 5.5
     error_reporting(E_ALL ^ E_DEPRECATED);
     // Force the use of a safe temp directory when in a container
