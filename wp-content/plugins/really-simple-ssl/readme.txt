@@ -4,7 +4,7 @@ Tags: SSL, https, force SSL, mixed content, insecure content, secure website, we
 Requires at least: 4.2
 License: GPL2
 Tested up to: 4.7.4
-Stable tag: 2.5.13
+Stable tag: 2.5.16
 
 No setup required! You only need an SSL certificate, and this plugin will do the rest.
 
@@ -74,9 +74,14 @@ For detailed instructions on how to find mixed content read this [article](https
 If you are experiencing redirect loops on your site, try these [instructions](https://really-simple-ssl.com/knowledge-base/my-website-is-in-a-redirect-loop/).
 
 = Is the plugin multisite compatible? =
-Yes. There is a dedicated network settings page where you can switch between network activated SSL and per page SSL. In the dedicated pro for multisite plugin, you can override all site settings for SSL on the network level, and can activate and deactivate SSL in the network menu for each site. 
+Yes. There is a dedicated network settings page where you can switch between network activated SSL and per page SSL. In the dedicated pro for multisite plugin, you can override all site settings for SSL on the network level, and can activate and deactivate SSL in the network menu for each site.
 
 == Changelog ==
+= 2.5.14 =
+* Fix: fixed issue in the mixed content fixer where on optimized html the match would match across elements.
+* replaced wp_redirect with wp_safe_redirect
+* Added force SSL on wp_rest_api
+
 = 2.5.13 =
 * Tweak: configuration more function
 
