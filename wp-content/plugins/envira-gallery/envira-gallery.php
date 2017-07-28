@@ -5,7 +5,7 @@
  * Description: Envira Gallery is best responsive WordPress gallery plugin.
  * Author:      Envira Gallery Team
  * Author URI:  http://enviragallery.com
- * Version:     1.5.9
+ * Version:     1.6.1.3
  * Text Domain: envira-gallery
  * Domain Path: languages
  *
@@ -23,6 +23,7 @@
  * along with Envira Gallery. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package Envira
+
  */
 
 // Exit if accessed directly.
@@ -56,7 +57,7 @@ class Envira_Gallery {
 	 *
 	 * @var string
 	 */
-	public $version = '1.5.9';
+	public $version = '1.6.1.3';
 
 	/**
 	 * The name of the plugin.
@@ -190,6 +191,22 @@ class Envira_Gallery {
 		// Add hook for when Envira has loaded.
 		do_action( 'envira_gallery_loaded' );
 
+		if ( is_admin() ) {
+            // Retrieve the license key. If it is not set, return early.
+            $key = $this->get_license_key();
+            if ( ! $key ) {
+                return;
+            }
+
+            // If there are any errors with the key itself, return early.
+            if ( $this->get_license_key_errors() ) {
+                return;
+            }
+
+            // Fire a hook for Addons to register their updater since we know the key is present.
+            do_action( 'envira_gallery_updater', $key );
+        }
+
 	}
 
 	/**
@@ -311,6 +328,7 @@ class Envira_Gallery {
 
 		require plugin_dir_path( __FILE__ ) . 'includes/admin/ajax.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/admin/capabilities.php';
+		require plugin_dir_path( __FILE__ ) . 'includes/admin/importers.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/admin/common.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/admin/editor.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/admin/export.php';
@@ -385,9 +403,6 @@ class Envira_Gallery {
 
 		$updater = new Envira_Gallery_Updater( $args );
 
-		// Fire a hook for Addons to register their updater since we know the key is present.
-		do_action( 'envira_gallery_updater', $key );
-
 	}
 
 	/**
@@ -397,6 +412,7 @@ class Envira_Gallery {
 	 */
 	public function require_global() {
 
+		require plugin_dir_path( __FILE__ ) . 'includes/global/class-envira-bp.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/global/common.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/global/posttype.php';
 		require plugin_dir_path( __FILE__ ) . 'includes/global/shortcode.php';
@@ -1065,6 +1081,9 @@ function envira_gallery_activation_hook( $network_wide ) {
 		}
 	}
 
+	// Make sure Envira Lite, if activated is deactivated
+	deactivate_plugins( 'envira-gallery-lite/envira-gallery-lite.php' );
+
 }
 
 register_deactivation_hook( __FILE__, 'envira_gallery_deactivation_hook' );
@@ -1189,4 +1208,46 @@ if ( ! function_exists( 'array_replace' ) ) {
 		return $arrays[0];
 	}
 
+}
+
+/**
+ * This is a deprecated function since standalone is built into core now.
+ * This prevents errors for users with old album addons but updated core.
+ * This should be removed at some point.
+ *
+ * @since 1.0.1
+ *
+ * @param string $type Type (gallery|albums)
+ * @return string $slug Slug.
+ */
+if ( class_exists('Envira_Albums') && ! function_exists('envira_standalone_get_slug') ) {
+	function envira_standalone_get_slug( $type ) {
+
+		// Get slug
+		switch ($type) {
+			case 'gallery':
+				$slug = get_option( 'envira-gallery-slug');
+				if ( !$slug OR empty( $slug ) ) {
+					// Fallback to check for previous version option name.
+					$slug = get_option( 'envira_standalone_slug' );
+					if ( ! $slug || empty( $slug ) ) {
+						$slug = 'envira';
+					}
+				}
+				break;
+
+			case 'albums':
+				$slug = get_option( 'envira-albums-slug');
+				if ( !$slug OR empty( $slug ) ) {
+					$slug = 'envira_album';
+				}
+				break;
+
+			default:
+				$slug = 'envira'; // Fallback
+				break;
+		}
+
+		return $slug;
+	}
 }

@@ -46,6 +46,7 @@
   border-radius: 3px;
   background-color: #000;
   color: #fff;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
   content: attr(data-envira-tooltip);
   text-align: center;
   font-size: 12px;
@@ -170,6 +171,15 @@ form#post.envira-gallery {
       border-color: #7cc048; }
     form#post.envira-gallery #poststuff input[type=checkbox]:checked:before {
       color: #ffffff !important; }
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box input[type="checkbox"],
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box-automatic input[type="checkbox"] {
+      margin-right: 0; }
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box label,
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box-automatic label {
+      margin-right: 15px; }
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box label.label-for-checkbox,
+    form#post.envira-gallery #poststuff tr#envira-config-additional-copy-box-automatic label.label-for-checkbox {
+      display: inline-block; }
     form#post.envira-gallery #poststuff div.envira-video-help {
       position: relative;
       z-index: 1;
@@ -658,6 +668,19 @@ form#post.envira-gallery {
               form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .done,
               form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .done {
                 display: none; }
+              form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .uploading_zip,
+              form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .uploading_zip {
+                display: none; }
+              form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .opening_zip,
+              form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .opening_zip {
+                display: none; }
+                form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .opening_zip .spinner,
+                form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .opening_zip .spinner {
+                  visibility: visible;
+                  margin-top: 0; }
+              form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .done_zip,
+              form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui .envira-progress-bar .envira-progress-bar-status .done_zip {
+                display: none; }
           form#post.envira-gallery #poststuff #envira-gallery .inside #envira-gallery-native #plupload-upload-ui p.upload-flash-bypass,
           form#post.envira-gallery #poststuff #envira-albums .inside #envira-gallery-native #plupload-upload-ui p.upload-flash-bypass {
             display: none; }
@@ -986,6 +1009,10 @@ form#post.envira-gallery {
           form#post.envira-gallery #poststuff #envira-gallery-settings ul#envira-tabs-nav li.envira-pinterest a,
           form#post.envira-gallery #poststuff #envira-albums-settings ul#envira-tabs-nav li.envira-pinterest a {
             background-image: url(images/icons/pinterest.svg);
+            background-size: 16px 16px; }
+          form#post.envira-gallery #poststuff #envira-gallery-settings ul#envira-tabs-nav li.envira-schedule a,
+          form#post.envira-gallery #poststuff #envira-albums-settings ul#envira-tabs-nav li.envira-schedule a {
+            background-image: url(images/icons/schedule.svg);
             background-size: 16px 16px; }
           form#post.envira-gallery #poststuff #envira-gallery-settings ul#envira-tabs-nav li.envira-proofing a,
           form#post.envira-gallery #poststuff #envira-albums-settings ul#envira-tabs-nav li.envira-proofing a {
@@ -1325,6 +1352,8 @@ form#post.envira-gallery {
         */ }
     .media-modal .uploader-inline a.envira-media-library.button {
       display: none; }
+  .media-modal .envira-progress-bar .envira-progress-bar-status {
+    display: none; }
   .media-modal .attachment.details {
     -webkit-box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 7px #7cc048;
     box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 7px #7cc048; }

@@ -468,8 +468,10 @@ $form .= '<div class="tomb-tab-content lightbox">';
 	$prettyphoto_no = (is_plugin_active( 'prettyphoto/prettyphoto.php')) ? null : __( '(not available)', 'tg-text-domain' );
 	$fancybox       = (is_plugin_active( 'fancybox-for-wordpress/fancybox.php')) ?  null : 'disabled';
 	$fancybox_no    = (is_plugin_active( 'fancybox-for-wordpress/fancybox.php')) ? null : __( '(not available)', 'tg-text-domain' );
-	$foobox         = (is_plugin_active( 'fooboxV2/foobox.php')) ?  null : 'disabled';
-	$foobox_no      = (is_plugin_active( 'fooboxV2/foobox.php')) ? null : __( '(not available)', 'tg-text-domain' );
+	$foobox         = (is_plugin_active( 'fooboxV2/foobox.php') || is_plugin_active( 'foobox-image-lightbox-premium/foobox-free.php' ) || is_plugin_active( 'foobox-image-lightbox/foobox-free.php' ) ) ?  null : 'disabled';
+	$foobox_no      = (is_plugin_active( 'fooboxV2/foobox.php') || is_plugin_active( 'foobox-image-lightbox-premium/foobox-free.php' ) || is_plugin_active( 'foobox-image-lightbox/foobox-free.php' ) ) ? null : __( '(not available)', 'tg-text-domain' );
+	$modulobox      = (is_plugin_active( 'modulobox/modulobox.php')) ? null : 'disabled';
+	$modulobox_no   = (is_plugin_active( 'modulobox/modulobox.php')) ? null : __( '(not available)', 'tg-text-domain' );
 
 	// Lightbox type
 	$form .= '<div class="tg-box-side">';
@@ -489,15 +491,18 @@ $form .= '<div class="tomb-tab-content lightbox">';
 			$form .= '</div>';
 			$form .= '<select class="tomb-select" name="the_grid_lightbox" data-default="the_grid" data-value="'.$lightbox.'" data-clear="">';
 				$form .= '<option value="the_grid" '.selected('the_grid', $lightbox, false ).'>'.__( 'The Grid Lightbox', 'tg-text-domain' ).'</option>';
+				$form .= '<option value="modulobox" '.selected('modulobox', $lightbox, false ).' '.$modulobox.'>'.__( 'ModuloBox (Premium)', 'tg-text-domain' ).' '.$modulobox_no.'</option>';
 				$form .= '<option value="prettyphoto" '.selected('prettyphoto', $lightbox, false ).' '.$prettyphoto.'>'.__( 'PrettyPhoto', 'tg-text-domain' ).' '.$prettyphoto_no.'</option>';
 				$form .= '<option value="fancybox" '.selected('fancybox', $lightbox, false ).' '.$fancybox.'>'.__( 'FancyBox', 'tg-text-domain' ).' '.$fancybox_no.'</option>';
 				$form .= '<option value="foobox" '.selected('foobox', $lightbox, false ).' '.$foobox.'>'.__( 'Foobox (v2)', 'tg-text-domain' ).' '.$foobox_no.'</option>';
 			$form .= '</select>';
 		$form .= '</div>';
 		$form .= '<p class="sub-desc">'. __( 'To use FancyBox or Prettyphoto you must install/activate them.', 'tg-text-domain' ).'<br>';
-			$form .= '<em>- '. __( 'FancyBox WordPress plugin:', 'tg-text-domain' ).' <a target="_blank" href="https://wordpress.org/plugins/fancybox-for-wordpress/">'. __( 'Link', 'tg-text-domain' ).'</a><br>';
+			$form .= '<em>- ' .__( 'ModuloBox WordPress plugin:', 'tg-text-domain' ).' <a target="_blank" href="https://theme-one.com/modulobox/">'. __( 'Link', 'tg-text-domain' ).'</a><br>';
+			$form .= '- '.__( 'FancyBox WordPress plugin:', 'tg-text-domain' ).' <a target="_blank" href="https://wordpress.org/plugins/fancybox-for-wordpress/">'. __( 'Link', 'tg-text-domain' ).'</a><br>';
 			$form .= '- '.__( 'PrettyPhoto WordPress plugin:', 'tg-text-domain' ).' <a target="_blank" href="https://wordpress.org/plugins/prettyphoto/">'. __( 'Link', 'tg-text-domain' ).'</a><br>';
 			$form .= '- '.__( 'FooBoxV2 WordPress plugin:', 'tg-text-domain' ).' <a target="_blank" href="http://fooplugins.com/foobox-wordpress-lightbox-version-2-0-released/">'. __( 'Link', 'tg-text-domain' ).'</a></em>';
+			
 		$form .= '<p>';
 	$form .= '</div>';
 	

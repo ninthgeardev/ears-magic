@@ -204,20 +204,15 @@ if (class_exists('WPBakeryVisualComposerAbstract')) {
 	
 }
 
-// Register The Grid for Cornerstone
-if (class_exists('Cornerstone_Plugin')) {
-	
-	// Register The Grid in Cornerstone element
-	add_action( 'cornerstone_register_elements', 'the_grid_register_element' );
-	function the_grid_register_element() {
-		cornerstone_register_element( 'The_Grid_Element', 'the-grid', TG_PLUGIN_PATH . '/includes/cornerstone' );
-	}
-	
-	// map Cornerstone icon
-	add_filter( 'cornerstone_icon_map', 'the_grid_cornerstone_icon' );
-	function the_grid_cornerstone_icon( $icon_map ) {
-		$icon_map['the-grid'] = TG_PLUGIN_URL . 'includes/cornerstone/icon.svg';
-		return $icon_map;
-	}
-	
+// Register The Grid in Cornerstone element
+add_action( 'cornerstone_register_elements', 'the_grid_register_element' );
+function the_grid_register_element() {
+	cornerstone_register_element( 'The_Grid_Element', 'the-grid', TG_PLUGIN_PATH . '/includes/cornerstone' );
+}
+
+// map Cornerstone icon
+add_filter( 'cornerstone_icon_map', 'the_grid_cornerstone_icon' );
+function the_grid_cornerstone_icon( $icon_map ) {
+	$icon_map['the-grid'] = TG_PLUGIN_URL . 'includes/cornerstone/icon.svg';
+	return $icon_map;
 }

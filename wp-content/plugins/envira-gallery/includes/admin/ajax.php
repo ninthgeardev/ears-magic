@@ -593,8 +593,11 @@ function envira_gallery_ajax_save_bulk_meta() {
 		wp_send_json_error();
 	}
 
+	$image_tags = array();
+
 	// Iterate through gallery images, updating the metadata.
 	foreach ( $image_ids as $image_id ) {
+
 		// If the image isn't in the gallery, something went wrong - so skip this image.
 		if ( ! isset( $gallery_data['gallery'][ $image_id ] ) ) {
 			continue;
@@ -605,29 +608,34 @@ function envira_gallery_ajax_save_bulk_meta() {
 			   $gallery_data['gallery'][$image_id]['status'] = trim( esc_html( $meta['status'] ) );
 
 		}
+
 		// Update image metadata.
-		if ( isset( $meta['title'] ) && ! empty( $meta['title'] ) ) {
+		if ( isset( $meta['title'] ) && $meta['title'] != '' ) {
 			$gallery_data['gallery'][ $image_id ]['title'] = trim( $meta['title'] );
 		}
 
-		if ( isset( $meta['alt'] ) && ! empty( $meta['alt'] )  ) {
+		if ( isset( $meta['alt'] ) &&  $meta['alt'] != '' ) {
 			$gallery_data['gallery'][ $image_id ]['alt'] = trim( esc_html( $meta['alt'] ) );
 		}
 
-		if ( isset( $meta['link'] ) && ! empty( $meta['link'] )	 ) {
+		if ( isset( $meta['link'] ) && $meta['link'] != '' ) {
 			$gallery_data['gallery'][ $image_id ]['link'] = esc_url( $meta['link'] );
 		}
 
-		if ( isset( $meta['link_new_window'] ) && ! empty( $meta['link_new_window'] )  ) {
+		if ( isset( $meta['link_new_window'] ) && $meta['link_new_window'] != '' ) {
 			$gallery_data['gallery'][ $image_id ]['link_new_window'] = trim( $meta['link_new_window'] );
 		}
 
-		if ( isset( $meta['caption'] ) && ! empty( $meta['caption'] )  ) {
+		if ( isset( $meta['caption'] ) && $meta['caption'] != '' ) {
 			$gallery_data['gallery'][ $image_id ]['caption'] = trim( $meta['caption'] );
 		}
 
 		// Allow filtering of meta before saving.
 		$gallery_data = apply_filters( 'envira_gallery_ajax_save_bulk_meta', $gallery_data, $meta, $image_id, $post_id );
+
+		// Add all image tags to array so we can send them back via ajax
+		$image_tags[$image_id] = wp_get_object_terms( $image_id, 'envira-tag', array('fields' => 'names') );
+
 	}
 
 	// Update the gallery data.
@@ -637,7 +645,7 @@ function envira_gallery_ajax_save_bulk_meta() {
 	Envira_Gallery_Common::get_instance()->flush_gallery_caches( $post_id );
 
 	// Done
-	wp_send_json_success();
+	wp_send_json_success( $image_tags );
 	die;
 
 }
@@ -981,7 +989,7 @@ function envira_gallery_editor_get_galleries() {
 
 		$temp_title = false;
 		if ( isset( $gallery_post->post_title ) ) {
-			$temp_title =  trim( $gallery_post->post_title );	
+			$temp_title =  trim( $gallery_post->post_title );
 		}
 
 		if ( ! empty( $temp_title ) ) {
@@ -1079,8 +1087,8 @@ function envira_gallery_move_media() {
 	}
 
 	// Get from and to Galleries
-	$from_gallery	= Envira_Gallery::get_instance()->get_gallery( $from_gallery_id );
-	$to_gallery		= Envira_Gallery::get_instance()->get_gallery( $to_gallery_id );
+	$from_gallery	= Envira_Gallery::get_instance()->_get_gallery( $from_gallery_id );
+	$to_gallery		= Envira_Gallery::get_instance()->_get_gallery( $to_gallery_id );
 
 	// Iterate through each image ID, adding the image to $to_gallery, then removing from $from_gallery
 	foreach ( $image_ids as $image_id ) {
@@ -1091,7 +1099,27 @@ function envira_gallery_move_media() {
 		}
 
 		// Copy the image to $to_gallery
-		$to_gallery['gallery'][ $image_id ] = $from_gallery['gallery'][ $image_id ];
+		// Add this image to the start or end of the gallery, depending on the setting
+		$instance = Envira_Gallery_Settings::get_instance();
+		$media_position = $instance->get_setting( 'media_position' );
+
+		switch ( $media_position ) {
+			case 'before':
+				// Add image to start of images array
+				// Store copy of images, reset gallery array and rebuild
+				$images = $to_gallery['gallery'];
+				$to_gallery['gallery'] = array();
+				$to_gallery['gallery'][ $image_id ] = $from_gallery['gallery'][ $image_id ];
+				foreach ( $images as $old_image_id => $old_image ) {
+					$to_gallery['gallery'][ $old_image_id ] = $old_image;
+				}
+				break;
+			case 'after':
+			default:
+				// Add image, this will default to the end of the array
+				$to_gallery['gallery'][ $image_id ] = $from_gallery['gallery'][ $image_id ];
+				break;
+		}
 
 		// Remove the image from $from_gallery
 		unset( $from_gallery['gallery'][ $image_id ] );

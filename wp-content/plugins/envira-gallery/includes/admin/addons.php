@@ -73,10 +73,17 @@ class Envira_Gallery_Addons {
      */
     public function admin_menu() {
 
+        // Check and see if whitelabeling is active... by default this screen shouldn't be accessible when whitelabeling is on
+        if ( apply_filters('envira_whitelabel', false )  ) {
+            if ( !apply_filters('envira_whitelabel_addon_screen', false )  ) {
+                return;
+            }
+        }
+
         // Register the submenu.
         $this->hook = add_submenu_page(
             'edit.php?post_type=envira',
-            __( 'Envira Gallery Addons', 'envira-gallery' ),
+            __( ( apply_filters('envira_whitelabel', false ) ? '' : 'Envira Gallery ' ) . 'Addons', 'envira-gallery' ),
             '<span style="color:#7cc048"> ' . __( 'Addons', 'envira-gallery' ) . '</span>',
             apply_filters( 'envira_gallery_menu_cap', 'manage_options' ),
             $this->base->plugin_slug . '-addons',
@@ -190,10 +197,10 @@ class Envira_Gallery_Addons {
         ?>
 
         <div id="addon-heading" class="subheading clearfix">
-            <h2><?php _e( 'Envira Gallery Addons', 'envira-gallery' ); ?></h2>
+            <h2><?php _e( ( apply_filters('envira_whitelabel', false ) ? '' : 'Envira Gallery ' ) . 'Addons', 'envira-gallery' ); ?></h2>
             <form id="add-on-search">
                 <span class="spinner"></span>
-                <input id="add-on-searchbox" name="envira-addon-search" value="" placeholder="<?php _e( 'Search Envira Addons', 'envira-gallery' ); ?>" />
+                <input id="add-on-searchbox" name="envira-addon-search" value="" placeholder="<?php _e( 'Search ' . (apply_filters('envira_whitelabel', false ) ? '' : 'Envira ') . 'Addons', 'envira-gallery' ); ?>" />
                 <select id="envira-filter-select">
                     <option value="asc"><?php _e( 'Sort Ascending (A-Z)', 'envira-gallery' ); ?></option>
                     <option value="desc"><?php _e( 'Sort Descending (Z-A)', 'envira-gallery' ); ?></option>
@@ -281,7 +288,7 @@ class Envira_Gallery_Addons {
                 ?>
                 <div class="envira-addons-area unlicensed" class="envira-clear">
                     <h3><?php _e( 'Unlock More Addons', 'envira-gallery' ); ?></h3>
-                    <p><?php echo sprintf( __( '<strong>Want even more addons?</strong> <a href="%s">Upgrade your Envira Gallery account</a> and unlock the following addons.', 'envira-gallery' ), $upgrade_url ); ?></p>
+                    <p><?php echo sprintf( __( '<strong>Want even more addons?</strong> <a href="%s">Upgrade your ' . (apply_filters('envira_whitelabel', false ) ? '' : 'Envira Gallery ') . 'account</a> and unlock the following addons.', 'envira-gallery' ), $upgrade_url ); ?></p>
 
                     <div id="envira-addons-unlicensed" class="envira-addons">
                         <!-- list container class required for list.js -->
@@ -316,9 +323,9 @@ class Envira_Gallery_Addons {
         $type = $this->base->get_license_key_type();
 
         // Get addons data from transient or perform API query if no transient.
-        //if ( false === ( $addons = get_transient( '_eg_addons' ) ) ) {
+        if ( false === ( $addons = get_transient( '_eg_addons' ) ) ) {
             $addons = $this->get_addons_data( $key );
-        //}
+        }
 
         // If no Addons exist, return false
         if ( ! $addons ) {
@@ -332,6 +339,7 @@ class Envira_Gallery_Addons {
             'licensed'  => array(),
             'unlicensed'=> array(),
         );
+        
         foreach ( (array) $addons as $i => $addon ) {
 			
 			//Skip over addons that have been rolled into the core.
@@ -342,8 +350,8 @@ class Envira_Gallery_Addons {
             // Determine whether the user is licensed to use this Addon or not.
             if (
                 empty( $type ) ||
-                ( in_array( 'advanced', $addon->categories ) && $type != 'gold' && $type != 'platinum' ) ||
-                ( in_array( 'basic', $addon->categories ) && ( $type != 'silver' && $type != 'gold' && $type != 'platinum' ) )
+                ( in_array( 'advanced', $addon->categories ) && $type != 'gold' && $type != 'platinum' &&  $type != 'pro' && $type != 'ultimate' ) ||
+                ( in_array( 'basic', $addon->categories ) && ( $type != 'silver' && $type != 'gold' && $type != 'platinum' && $type != 'plus' && $type != 'pro' && $type != 'ultimate'  ) )
             ) {
                 // Unlicensed
                 $results['unlicensed'][] = $addon;

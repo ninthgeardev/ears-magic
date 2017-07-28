@@ -12,7 +12,12 @@
 <h2 id="envira-types-nav" class="nav-tab-wrapper envira-tabs-nav" data-container="#envira-types" data-update-hashbang="0">
 	<label class="nav-tab nav-tab-native-envira-gallery<?php echo ( ( $data['instance']->get_config( 'type', $data['instance']->get_config_default( 'type' ) ) == 'default' ) ? ' envira-active' : '' ); ?>" for="envira-gallery-type-default" data-tab="#envira-gallery-native">
 		<input id="envira-gallery-type-default" type="radio" name="_envira_gallery[type]" value="default" <?php checked( $data['instance']->get_config( 'type', $data['instance']->get_config_default( 'type' ) ), 'default' ); ?> /> 
-		<span><?php _e( 'Native Envira Gallery', 'envira-gallery' ); ?></span>
+		<?php if ( apply_filters('envira_whitelabel', false )  ) { ?>
+			<span><?php _e( 'Native Gallery', 'envira-gallery' ); ?></span>
+		<?php } else { ?>
+			<span><?php _e( 'Native Envira Gallery', 'envira-gallery' ); ?></span>
+		<?php } ?>
+		
 	</label>
 	
 	<a href="#envira-gallery-external" title="<?php _e( 'External Gallery', 'envira-gallery' ); ?>" class="nav-tab nav-tab-external-gallery<?php echo ( ( $data['instance']->get_config( 'type', $data['instance']->get_config_default( 'type' ) ) != 'default' ) ? ' envira-active' : '' ); ?>">

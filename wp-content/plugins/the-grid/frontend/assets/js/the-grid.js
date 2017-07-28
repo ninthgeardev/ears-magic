@@ -1983,7 +1983,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		$('body').append($(TO_LB_Markup));
 	
 	};
-	
+
 	// auto click lightbox (prevent duplicate content)
 	$(document).on('click', '[data-tolb-id]', function(e) {
 		e.preventDefault();
@@ -2119,7 +2119,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		var href = $(this)[0].href,
 			left = Math.round(window.screenX + (window.outerWidth - 626) / 2),
 			top  = Math.round(window.screenY + (window.outerHeight - 436) / 2);
-console.log(href);
+
 		if (href) {
 			window.open(href, 'tg_share', 'status=0,resizable=1,location=1,toolbar=0,width=626,height=436,top='+top+',left='+left);
 		}

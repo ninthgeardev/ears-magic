@@ -154,7 +154,7 @@
 
   /** @returns {jQuery} the caption in the given entry */
   JustifiedGallery.prototype.captionFromEntry = function ($entry) {
-    var $caption = $entry.find('> .caption');
+    var $caption = $entry.find('.caption');
     return $caption.length === 0 ? null : $caption;
   };
 
@@ -262,10 +262,14 @@
   JustifiedGallery.prototype.onEntryMouseEnterForCaption = function (eventObject) {
     var $caption = this.captionFromEntry($(eventObject.currentTarget));
     if (this.settings.cssAnimation) {
-      $caption.addClass('caption-visible').removeClass('caption-hidden');
+      if (typeof $caption !== 'undefined' && $caption != null ) {
+        $caption.addClass('caption-visible').removeClass('caption-hidden');
+      }
     } else {
-      $caption.stop().fadeTo(this.settings.captionSettings.animationDuration,
-          this.settings.captionSettings.visibleOpacity);
+      if (typeof $caption !== 'undefined' && $caption != null ) {
+        $caption.stop().fadeTo(this.settings.captionSettings.animationDuration,
+            this.settings.captionSettings.visibleOpacity);
+      }
     }
   };
 
@@ -278,10 +282,14 @@
   JustifiedGallery.prototype.onEntryMouseLeaveForCaption = function (eventObject) {
     var $caption = this.captionFromEntry($(eventObject.currentTarget));
     if (this.settings.cssAnimation) {
-      $caption.removeClass('caption-visible').removeClass('caption-hidden');
+      if (typeof $caption !== 'undefined' && $caption != null ) {
+        $caption.removeClass('caption-visible').removeClass('caption-hidden');
+      }
     } else {
-      $caption.stop().fadeTo(this.settings.captionSettings.animationDuration,
-          this.settings.captionSettings.nonVisibleOpacity);
+      if (typeof $caption !== 'undefined' && $caption != null ) {
+        $caption.stop().fadeTo(this.settings.captionSettings.animationDuration,
+            this.settings.captionSettings.nonVisibleOpacity);
+      }
     }
   };
 
@@ -638,6 +646,9 @@
       });
     } else if ($.isFunction(settings.filter)) {
       // Filter using the passed function
+      console.log('test');
+      console.log(settings);
+      console.log(a.filter(settings.filter));
       return a.filter(settings.filter);
     }
   };
@@ -851,9 +862,12 @@
           if (!that.isSpinnerActive()) that.startLoadingSpinnerAnimation();
 
           that.onImageEvent(imageSrc, function (loadImg) { // image loaded
-            $entry.data('jg.width', loadImg.width);
-            $entry.data('jg.height', loadImg.height);
+            $entry.data('jg.width', $entry.find('.envira-gallery-image').data('envira-width') );
+            $entry.data('jg.height', $entry.find('.envira-gallery-image').data('envira-height') );
+
             $entry.data('jg.loaded', true);
+
+            
             that.startImgAnalyzer(false);
           }, function () { // image load error
             $entry.data('jg.loaded', 'error');

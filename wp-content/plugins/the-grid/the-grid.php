@@ -9,7 +9,7 @@
  * Plugin Name:  The Grid
  * Plugin URI:   http://www.theme-one.com/the-grid/
  * Description:  The Grid - Create advanced grids for any post type with endless possibilities (no programming knowledge required)
- * Version:      2.3.5
+ * Version:      2.4.0
  * Author:       Themeone
  * Author URI:   http://www.theme-one.com/
  * Text Domain:  tg-text-domain
@@ -34,7 +34,7 @@ if (!class_exists('The_Grid_Plugin')) {
 		*
 		* @var string
 		*/
-		public $plugin_version = '2.3.5';
+		public $plugin_version = '2.4.0';
 		
 		/**
 		* Plugin Slug
@@ -152,7 +152,7 @@ if (!class_exists('The_Grid_Plugin')) {
 			
 			// Register shortcode & add Tinymce button/popup & add Visual Composer element
 			require_once(TG_PLUGIN_PATH . '/backend/admin-shortcode.php');
-	
+
 		}
 		
 		/**
@@ -263,7 +263,7 @@ if (!class_exists('The_Grid_Plugin')) {
 				// Retireve all post types
 				$post_types = The_Grid_Base::get_all_post_types();
 				
-				// Remove post format for attacment post type
+				// Remove post format for attachment post type
 				unset($post_types['attachment']);
 				
 				foreach ($post_types as $slug => $name) {
@@ -345,10 +345,9 @@ if (!class_exists('The_Grid_Plugin')) {
 		* @modified 1.7.0
 		*/
 		public function plugin_activated() {
-			
+
 			// Delete The Grid cache to prevent any issues due to changes
 			The_Grid_Base::delete_transient('tg_grid');
-			
 			// Create custom table for skin builder
 			The_Grid_Custom_Table::create_tables(false, true);
 
@@ -360,10 +359,10 @@ if (!class_exists('The_Grid_Plugin')) {
 		* @modified 1.7.0
 		*/
 		public function plugin_deactivated() {
-			
+
 			// Delete The Grid cache to prevent any issues due to changes
 			The_Grid_Base::delete_transient('tg_grid');
-			
+
 		}
 
 	}

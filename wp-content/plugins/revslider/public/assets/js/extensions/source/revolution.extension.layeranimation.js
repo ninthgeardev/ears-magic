@@ -1,6 +1,6 @@
 /************************************************
  * REVOLUTION 5.4.2 EXTENSION - LAYER ANIMATION
- * @version: 3.6.2 (06.04.2017)
+ * @version: 3.6.3 (17.05.2017)
  * @requires jquery.themepunch.revolution.js
  * @author ThemePunch
 ************************************************/
@@ -12,8 +12,8 @@ var _R = jQuery.fn.revolution,
 	_ANDROID = _R.is_android(),
 	extension = {	alias:"LayerAnimation Min JS",
 					name:"revolution.extensions.layeranimation.min.js",
-					min_core: "5.4.0",
-					version:"3.6.2"
+					min_core: "5.4.5",
+					version:"3.6.3"
 			  };
 	
 
@@ -1210,10 +1210,12 @@ jQuery.extend(true,_R, {
 				break;
 			}
 			$sfx_ft[0].background = _.frames[frame_index].sfxcolor;
-			
+
 			timeline.add(tweens.mask.fromTo(_._bmask,$sfx_speed, $sfx_ft[0], $sfx_ft[1],$elemdelay),label);
 			timeline.add(tweens.mask.to(_._bmask,$sfx_speed,$sfx_t,$sfx_blockdelay),label);			
 		} 
+
+
 	 	
 		if ($splitnow)
 			var ri = getSplitTextDirs(animobject.length-1, $splitdir);
@@ -1234,9 +1236,29 @@ jQuery.extend(true,_R, {
 							cycles.from[k].index = cycles.from[k].index < cycles.from[k].len ?  cycles.from[k].index+1 : 0;
 						}
 						$tanim.ease = $fanim.ease;
+						if (_.frames[frame_index].color!==undefined) {					
+							$fanim.color = _.frames[frame_index].color;
+							$tanim.color = _.cssobj.styleProps.color;						
+						}
+
+						if (_.frames[frame_index].bgcolor!==undefined) {					
+							$fanim.backgroundColor = _.frames[frame_index].bgcolor;
+							$tanim.backgroundColor = _.cssobj.styleProps["background-color"];
+											
+						}
 						timeline.add(tweens.content.fromTo(animobject[ri[si]],$from.speed/1000,$fanim,$tanim,$elemdelay*si),label);								
 					}
 				} else {
+					if (_.frames[frame_index].color!==undefined) {					
+						$from.anim.color = _.frames[frame_index].color;
+						$to.anim.color = _.cssobj.styleProps.color;						
+					}
+
+					if (_.frames[frame_index].bgcolor!==undefined) {					
+						$from.anim.backgroundColor = _.frames[frame_index].bgcolor;
+						$to.anim.backgroundColor = _.cssobj.styleProps["background-color"];
+										
+					}
 					timeline.add(tweens.content.staggerFromTo(animobject,$from.speed/1000,$from.anim,$to.anim,$elemdelay),label);
 				}
 				
@@ -1257,10 +1279,21 @@ jQuery.extend(true,_R, {
 							$tanim[k] = parseInt(cycles.to[k].values[cycles.to[k].index],0);														
 							cycles.to[k].index = cycles.to[k].index < cycles.to[k].len ?  cycles.to[k].index+1 : 0;
 						}
+						if (_.frames[frame_index].color!==undefined) 					
+							$tanim.color = _.frames[frame_index].color;						
+					
+						if (_.frames[frame_index].bgcolor!==undefined)										
+							$tanim.backgroundColor = _.frames[frame_index].bgcolor;						
 						
 						timeline.add(tweens.content.to(animobject[ri[si]],$to.speed/1000,$tanim,$elemdelay*si),label);								
 					}
 				} else {
+					if (_.frames[frame_index].color!==undefined) 					
+						$to.anim.color = _.frames[frame_index].color;						
+					
+					if (_.frames[frame_index].bgcolor!==undefined)										
+						$to.anim.backgroundColor = _.frames[frame_index].bgcolor;						
+					
 					timeline.add(tweens.content.staggerTo(animobject,$to.speed/1000,$to.anim,$elemdelay),label);
 				}
 		}
@@ -1668,8 +1701,8 @@ var newAnimObject = function(a) {
 	a.anim.visibility = a.anim.visibility===undefined ? "visible" : a.anim.visibility;
 	a.anim.overwrite = a.anim.overwrite===undefined ? "auto"  : a.anim.overwrite;
 	a.speed = a.speed===undefined ? 0.3 : a.speed;
-	a.filter = a.filter===undefined ? "blur(0px) grayscale(0px)" : a.filter;
-	a["-webkit-filter"] = a["-webkit-filter"]===undefined ? "blur(0px) grayscale(0px)" : a["-webkit-filter"];
+	a.filter = a.filter===undefined ? "blur(0px) grayscale(0%) brightness(100%)" : a.filter;
+	a["-webkit-filter"] = a["-webkit-filter"]===undefined ? "blur(0px) grayscale(0%) brightness(100%)" : a["-webkit-filter"];
 
 
 	return a;
@@ -1817,6 +1850,7 @@ var getAnimDatas = function(frm,data,reversed,$split,$splitamount) {
 				//if (w=="letterspacing" || w=="ls") o.anim.letterSpacing = animDataTranslator(v,o.anim.letterSpacing);
 				if (w=="fb") tmpf = tmpf==="" ? 'blur('+parseInt(v,0)+'px)' : tmpf+" "+'blur('+parseInt(v,0)+'px)';
 				if (w=="fg") tmpf = tmpf==="" ? 'grayscale('+parseInt(v,0)+'%)' : tmpf+" "+'grayscale('+parseInt(v,0)+'%)';
+				if (w=="fbr") tmpf = tmpf==="" ? 'brightness('+parseInt(v,0)+'%)' : tmpf+" "+'brightness('+parseInt(v,0)+'%)';
 								
 				if (o.anim.opacity===0) o.anim.autoAlpha = 0;
 
@@ -1832,8 +1866,7 @@ var getAnimDatas = function(frm,data,reversed,$split,$splitamount) {
 				if (w=="speed" || w=="s") o.speed = parseFloat(v);	
 				
 				//if (w=="ease" || w=="e") o.anim.ease = v;				
-			}
-
+			}			
 		})	
 	if (tmpf!=="") {
 		o.anim['-webkit-filter'] = tmpf;

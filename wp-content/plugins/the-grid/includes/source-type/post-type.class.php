@@ -350,12 +350,14 @@ class The_Grid_Post_Type {
 			$main_query['offset'] = $main_query['posts_per_page']+$ajax_item_nb*($_POST['grid_page']-1);
 			$main_query['posts_per_page'] = $ajax_item_nb;
 			$main_query['nopaging'] = '';
+			$status = ! is_user_logged_in() ? array( 'publish' ) : array( 'publish', 'private' );
+			$main_query['post_status'] = ! isset( $main_query['post_status'] ) ? $status : $main_query['post_status'];
 			$this->grid_data['offset'] = $main_query['offset'];
 			$this->grid_query_args = $main_query;		
-			$this->grid_query = new WP_Query($main_query);	
-			
+			$this->grid_query = new WP_Query($main_query);
+
 		} else if (is_main_query() && !is_admin()) {
-			
+
 			$this->grid_data['item_number']   = $wp_query->query_vars['posts_per_page'];
 			$this->grid_data['item_total']    = $wp_query->found_posts;
 			$this->grid_data['max_num_pages'] = $wp_query->max_num_pages;

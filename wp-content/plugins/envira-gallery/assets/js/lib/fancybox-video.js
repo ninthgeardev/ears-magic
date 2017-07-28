@@ -100,7 +100,7 @@
 					features.push('volume');
 				}
 
-				F.coming.scrolling = 'no';
+				F.coming.scrolling = 'yes';
 			}
 		},
 

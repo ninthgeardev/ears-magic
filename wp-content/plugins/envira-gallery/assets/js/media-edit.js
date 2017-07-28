@@ -221,7 +221,11 @@ var EnviraGalleryEditView = wp.Backbone.View.extend( {
     /**
     * Load the previous model in the collection
     */
-    loadPreviousItem: function() {
+    loadPreviousItem: function( event ) {
+
+        // Save and Update So User Doesn't Have To Press Update Button?
+        this.saveItem( event );
+        this.updateItem( event );       
 
         // Decrement the index
         this.attachment_index--;
@@ -240,7 +244,11 @@ var EnviraGalleryEditView = wp.Backbone.View.extend( {
     /**
     * Load the next model in the collection
     */
-    loadNextItem: function() {
+    loadNextItem: function( event ) {
+
+        // Save and Update So User Doesn't Have To Press Update Button?
+        this.saveItem( event );
+        this.updateItem( event );       
 
         // Increment the index
         this.attachment_index++;

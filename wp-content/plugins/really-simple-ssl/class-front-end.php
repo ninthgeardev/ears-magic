@@ -7,6 +7,7 @@ if ( ! class_exists( 'rsssl_front_end' ) ) {
     public $javascript_redirect             = TRUE;
     public $wp_redirect                     = TRUE;
     public $autoreplace_insecure_links      = TRUE;
+    public $switch_mixed_content_fixer_hook   = FALSE;
     //public $ssl_enabled_networkwide         = FALSE;
 
   function __construct() {
@@ -71,7 +72,7 @@ if ( ! class_exists( 'rsssl_front_end' ) ) {
       //check for Command Line
       if (php_sapi_name() === 'cli') return;
 
-    	if ($this->ssl_enabled && !is_ssl() && !(defined("rsssl_no_wp_redirect") && rsssl_no_wp_redirect)) {
+    	if ($this->ssl_enabled && !is_ssl() && !(defined("rsssl_no_rest_api_redirect") && rsssl_no_rest_api_redirect)) {
     		$redirect_url = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     		wp_redirect( $redirect_url, 301 );
     		exit;
@@ -87,7 +88,6 @@ if ( ! class_exists( 'rsssl_front_end' ) ) {
     * @access public
     *
     */
-
 
    public function wp_redirect_to_ssl() {
 
@@ -113,10 +113,11 @@ if ( ! class_exists( 'rsssl_front_end' ) ) {
   public function get_options(){
     $options = get_option('rlrsssl_options');
     if (isset($options)) {
-      $this->autoreplace_insecure_links   = isset($options['autoreplace_insecure_links']) ? $options['autoreplace_insecure_links'] : TRUE;
-      $this->ssl_enabled                  = isset($options['ssl_enabled']) ? $options['ssl_enabled'] : false;
-      $this->javascript_redirect          = isset($options['javascript_redirect']) ? $options['javascript_redirect'] : TRUE;
-      $this->wp_redirect                  = isset($options['wp_redirect']) ? $options['wp_redirect'] : FALSE;
+      $this->autoreplace_insecure_links       = isset($options['autoreplace_insecure_links']) ? $options['autoreplace_insecure_links'] : TRUE;
+      $this->ssl_enabled                      = isset($options['ssl_enabled']) ? $options['ssl_enabled'] : false;
+      $this->javascript_redirect              = isset($options['javascript_redirect']) ? $options['javascript_redirect'] : TRUE;
+      $this->wp_redirect                      = isset($options['wp_redirect']) ? $options['wp_redirect'] : FALSE;
+      $this->switch_mixed_content_fixer_hook  = isset($options['switch_mixed_content_fixer_hook']) ? $options['switch_mixed_content_fixer_hook'] : FALSE;
 
       //overrides from multisite
       if  (is_multisite()) {

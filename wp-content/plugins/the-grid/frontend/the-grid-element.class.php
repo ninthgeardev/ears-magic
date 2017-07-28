@@ -767,6 +767,7 @@ class The_Grid_Elements {
 	/**
 	* Get the excerpt
 	* @since: 1.0.0
+	* @modified: 2.4.0
 	*/
 	public function get_the_excerpt($args = '', $class ='') {
 		
@@ -780,37 +781,36 @@ class The_Grid_Elements {
 
 			$length++;
 		
-			if (mb_strlen($excerpt) > $length) {
-				
-				$excerpt  = mb_substr($excerpt, 0, $length - 5);
-				$spacepos = mb_strrpos($excerpt, ' ');
-				
-				// search the last occurance of a space
-				if ($spacepos) {
-					$excerpt = mb_substr($excerpt, 0, $spacepos);
-				}
+			if ( mb_strlen( $excerpt ) > $length ) {
 
-			}
-			
-			$excerpt = rtrim($excerpt).$suffix;
+				// for multibyte install
+				if ( function_exists( 'mb_strrpos' ) ) {
 
-			/*$length++;
-			
-			if (mb_strlen($excerpt) > $length) {
-				
-				$subex   = mb_substr($excerpt, 0, $length - 5);
-				$exwords = explode( ' ', $subex );
-				$excut = - (mb_strlen($exwords[count($exwords) - 1]));
+					$excerpt  = mb_substr( $excerpt, 0, $length - 5 );
+					$spacepos = mb_strrpos( $excerpt, ' ' );
 
-				if ($excut < 0) {
-					$excerpt = mb_substr($subex, 0, $excut);
+					// search the last occurance of a space
+					if ($spacepos) {
+						$excerpt = mb_substr( $excerpt, 0, $spacepos );
+					}
+
 				} else {
-					$excerpt = $subex;
+
+					$subex   = mb_substr( $excerpt, 0, $length - 5);
+					$exwords = explode( ' ', $subex );
+					$excut   = - mb_strlen( $exwords[ count( $exwords ) - 1 ] );
+
+					if ($excut < 0) {
+						$excerpt = mb_substr( $subex, 0, $excut );
+					} else {
+						$excerpt = $subex;
+					}
+
 				}
-	
+
 			}
-			
-			$excerpt = rtrim($excerpt) . $suffix;*/
+
+			$excerpt = rtrim( $excerpt ) . $suffix;
 		
 		} else if ($length > 0 && $excerpt) {
 
@@ -2157,6 +2157,11 @@ class The_Grid_Elements {
 				case 'the_grid':
 					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-tolb-src="'.esc_attr($YT_ID).'" data-tolb-type="youtube" data-tolb-alt="">'.$icon.'</a>';
 					break;
+				case 'modulobox':
+					$image = $this->base->getVar($this->grid_item['image'], 'lb_url');
+					$image = (!$image) ? $this->base->getVar($this->grid_item['image'], 'url') : $image;
+					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-thumb="'.esc_url($this->grid_item['image']['url']).'" data-poster="'.esc_url($image).'" href="https://youtu.be/'.esc_attr($YT_ID).'" data-rel="'.esc_attr($this->grid_data['ID']).'">'.$icon.'</a>';
+					break;
 			}
 		
 		}
@@ -2192,6 +2197,11 @@ class The_Grid_Elements {
 					break;
 				case 'the_grid':
 					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-tolb-src="'.esc_attr($VM_ID).'" data-tolb-type="vimeo" data-tolb-alt="">'.$icon.'</a>';
+					break;
+				case 'modulobox':
+					$image = $this->base->getVar($this->grid_item['image'], 'lb_url');
+					$image = (!$image) ? $this->base->getVar($this->grid_item['image'], 'url') : $image;
+					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-thumb="'.esc_url($this->grid_item['image']['url']).'" data-poster="'.esc_url($image).'" href="//vimeo.com/'.esc_attr($VM_ID).'" data-rel="'.esc_attr($this->grid_data['ID']).'">'.$icon.'</a>';
 					break;
 			}
 		
@@ -2233,6 +2243,11 @@ class The_Grid_Elements {
 					break;
 				case 'the_grid':
 					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-tolb-src="'.esc_attr($WT_ID).'" data-tolb-type="wistia" data-tolb-alt="">'.$icon.'</a>';
+					break;
+				case 'modulobox':
+					$image = $this->base->getVar($this->grid_item['image'], 'lb_url');
+					$image = (!$image) ? $this->base->getVar($this->grid_item['image'], 'url') : $image;
+					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-thumb="'.esc_url($this->grid_item['image']['url']).'" data-poster="'.esc_url($image).'" href="//fast.wistia.net/embed/iframe/'.esc_attr($WT_ID).'" data-rel="'.esc_attr($this->grid_data['ID']).'">'.$icon.'</a>';
 					break;
 			}
 			
@@ -2292,6 +2307,14 @@ class The_Grid_Elements {
 					$poster_url = $this->base->getVar($this->grid_item['image'], 'url');
 					$poster = ($poster_url) ? ' data-tolb-poster="'.esc_url($poster_url).'"' : null;
 					return ($source) ? '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-tolb-src=\'['.$source.']\' data-tolb-type="'.esc_attr($this->grid_item['format']).'" data-tolb-alt=""'.$poster.'>'.$icon.'</a>' : null;
+					break;
+				case 'modulobox':
+					$video = ($mp4) ? esc_url($mp4) : null;
+					$video = ($video && $ogv) ? $video.','.esc_url($ogv) : $video.esc_url($ogv);
+					$video = ($video && $webm) ? $video.','.esc_url($webm) : $video.esc_url($webm);
+					$poster_url = $this->base->getVar($this->grid_item['image'], 'url');
+					$poster = ($poster_url) ? ' data-poster="'.esc_url($poster_url).'"' : null;
+					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-thumb="'.esc_url($this->grid_item['image']['url']).'" data-src="'.$video.'" data-rel="'.esc_attr($this->grid_data['ID']).'"'.$poster.'>'.$icon.'</a>';
 					break;
 			}
 
@@ -2367,6 +2390,20 @@ class The_Grid_Elements {
 						}
 					}
 					break;
+				case 'modulobox':
+					for ($i = 0; $i < count($gallery); $i++) {
+						$image = $gallery[$i]['lb_url'];
+						$thumb = $gallery[$i]['url'];
+						$title = $gallery[$i]['title'];
+						$alt   = $gallery[$i]['alt'];
+						$alt   = (!empty($alt)) ? ucfirst($alt) : ucfirst($title);
+						if ($i == 0) {
+							$output .= '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-src="'.esc_url($image).'" data-thumb="'.esc_url($thumb).'" data-type="image" data-title="'.esc_attr($alt).'" data-rel="'.esc_attr($this->grid_data['ID']).'">'.$icon.'</a>';
+						} else {
+							$output .= '<a class="tg-media-button tg-hidden-tag" data-src="'.esc_url($image).'" data-type="image" data-thumb="'.esc_url($thumb).'" data-title="'.esc_attr($alt).'" data-rel="'.esc_attr($this->grid_data['ID']).'"></a>';
+						}
+					}
+					break;
 			}
 			
 			return $output;
@@ -2408,6 +2445,9 @@ class The_Grid_Elements {
 					break;
 				case 'the_grid':
 					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-tolb-src="'.esc_url($image).'" data-tolb-type="image" data-tolb-alt="'.esc_attr($alt).'">'.$icon.'</a>';
+					break;
+				case 'modulobox':
+					return '<a id="'.$ID.'" class="tg-media-button'.esc_attr($class).'" data-src="'.esc_url($image).'" data-type="image" data-thumb="'.esc_url($this->grid_item['image']['url']).'" data-title="'.esc_attr($alt).'" data-rel="'.esc_attr($this->grid_data['ID']).'">'.$icon.'</a>';
 					break;
 			}
 		

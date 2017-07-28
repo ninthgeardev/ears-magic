@@ -191,22 +191,44 @@ jQuery( document ).ready( function( $ ) {
 				actions: {
 					if: [
 						{
-							element: '#envira-config-standard-settings-box',
+							element: '#envira-config-standard-settings-box, #envira-config-additional-copy-box',
 							action: 'hide'
 						},
 						{
-							element: '#envira-config-justified-settings-box, #envira-config-mobile-justified-row-height',
+							element: '#envira-config-justified-settings-box, #envira-config-mobile-justified-row-height, #envira-config-additional-copy-box-automatic',
 							action: 'show'
 						}
 					],
 					else: [
 						{
-							element: '#envira-config-standard-settings-box',
+							element: '#envira-config-standard-settings-box, #envira-config-additional-copy-box',
 							action: 'show'
 						},
 						{
-							element: '#envira-config-justified-settings-box, #envira-config-mobile-justified-row-height',
+							element: '#envira-config-justified-settings-box, #envira-config-mobile-justified-row-height, #envira-config-additional-copy-box-automatic',
 							action: 'hide'
+						}
+					]
+				}
+			},
+			{	
+				conditions: {
+					element: '[name="_envira_gallery[justified_gallery_theme]"]',
+					type: 'value',
+					operator: 'array',
+					condition: [ 'normal' ]
+				},
+				actions: {
+					if: [
+						{
+							element: '#envira-config-gallery-justified-theme-hover',
+							action: 'hide'
+						}
+					],
+					else: [
+						{
+							element: '#envira-config-gallery-justified-theme-hover',
+							action: 'show'
 						}
 					]
 				}
@@ -340,22 +362,50 @@ jQuery( document ).ready( function( $ ) {
 					]
 				}
 			},
+			{	// Gallery Mobile Crop
+				conditions: [
+					{
+						element: '[name="_envira_gallery[mobile_thumbnails]"]',
+						type: 'checked',
+						operator: 'is'
+					},
+					{
+						element: '[name="_envira_gallery[mobile_lightbox]"]',
+						type: 'checked',
+						operator: 'is'
+					}
+				],
+				actions: {
+					if: [
+						{
+							element: '#envira-config-mobile-thumbnails-width-box, #envira-config-mobile-thumbnails-height-box',
+							action: 'show'
+						}
+					],
+					else: [
+						{
+							element: '#envira-config-mobile-thumbnails-width-box, #envira-config-mobile-thumbnails-height-box',
+							action: 'hide'
+						}
+					]
+				}
+			},
 			{	// Album Mobile Touchwipe
 				conditions: {
-					element: '[name="_envira_gallery[mobile_touchwipe]"]',
+					element: '[name="_envira_gallery[lazy_loading]"]',
 					type: 'checked',
 					operator: 'is'
 				},
 				actions: {
 					if: [
 						{
-							element: '#envira-config-mobile-touchwipe-close-box',
+							element: '#envira-config-lazy-loading-delay',
 							action: 'show'
 						}
 					],
 					else: [
 						{
-							element: '#envira-config-mobile-touchwipe-close-box',
+							element: '#envira-config-lazy-loading-delay',
 							action: 'hide'
 						}
 					]

@@ -24,6 +24,7 @@
 			& .envirabox-position-overlay {
 				bottom: 15px;
 				width: auto;
+				display: table; /* table, otherwise the overlap - like in pinterest addon - will not allow the nav arrows to be clicked because the div height will extend */
 			}
 
 
@@ -308,13 +309,23 @@
 		/** 
 		 * Social icons
 		 */
-		.envirabox-inner .envirabox-position-overlay {
+		.envirabox-inner .envirabox-position-overlay,
+		.envirabox-inner {
 			width: 100%;
 			text-align: center;
 			bottom: -38px;
 			top: inherit;
 
+			.envira-social-buttons-exterior {
+				bottom: 15px;
+				width: 100%;
+				position: absolute;
+				z-index: 99;
+				pointer-events: none;
+			}
+
 			.envira-social-buttons {
+				pointer-events: initial;
 				display: inline-block;
 				float: none;
 				padding: 5px;
@@ -413,6 +424,10 @@
 			}
 
 		}
+
+		.envirabox-inner {
+			bottom: inherit;
+		}
 		
 	}
 }
@@ -445,7 +460,7 @@
 	& .envirabox-inner {
 
 		& .envirabox-position-overlay {
-			pointer-events: none;
+			/* pointer-events: none; */
 			.envira-social-buttons {
 				pointer-events: auto;
 			}

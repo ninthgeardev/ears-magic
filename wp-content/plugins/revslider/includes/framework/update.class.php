@@ -178,7 +178,8 @@ class RevSliderUpdate {
 					'item' => urlencode('revslider'),
 					'version' => urlencode(RevSliderGlobals::SLIDER_REVISION),
 					'code' => urlencode($purchase)
-				)
+				),
+				'timeout' => 45
 			));
 			
 			$response_code = wp_remote_retrieve_response_code( $response );
@@ -247,7 +248,8 @@ class RevSliderUpdate {
 					'item' => urlencode('revslider'),
 					'version' => urlencode(RevSliderGlobals::SLIDER_REVISION),
 					'code' => urlencode(get_option('revslider-code', ''))
-				)
+				),
+				'timeout' => 45
 			));
 			
 			$response_code = wp_remote_retrieve_response_code( $response );

@@ -130,7 +130,7 @@ class The_Grid_Base {
 	* @modified 2.1.2
 	*/
 	public static function get_all_terms() {
-		
+
 		// store all terms (from all taxonomies and post types)
 		$terms_list = array();
 		// store each taxonomy terms list
@@ -221,7 +221,7 @@ class The_Grid_Base {
 				
 			}
 			
-		}		
+		}
 		
 		// prepare array to json (with escape)
 		return htmlspecialchars(json_encode($terms_list), ENT_QUOTES, 'UTF-8');

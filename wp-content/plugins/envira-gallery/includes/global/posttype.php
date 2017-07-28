@@ -47,20 +47,22 @@ class Envira_Gallery_Posttype {
         $this->base = ( class_exists( 'Envira_Gallery' ) ? Envira_Gallery::get_instance() : Envira_Gallery_Lite::get_instance() );
 		$common = Envira_Gallery_Common::get_instance();
 
+        $whitelabel = apply_filters('envira_whitelabel', false );
+
         // Build the labels for the post type.
         $labels =  array(
-            'name'               => __( 'Envira Galleries', 'envira-gallery' ),
-            'singular_name'      => __( 'Envira Gallery', 'envira-gallery' ),
+            'name'               => $whitelabel ? apply_filters('envira_whitelabel_name_plural', false ) : __( 'Envira Galleries', 'envira-gallery' ),
+            'singular_name'      => $whitelabel ? apply_filters('envira_whitelabel_name', false ) : __( 'Envira Gallery', 'envira-gallery' ),
             'add_new'            => __( 'Add New', 'envira-gallery' ),
-            'add_new_item'       => __( 'Add New Envira Gallery', 'envira-gallery' ),
-            'edit_item'          => __( 'Edit Envira Gallery', 'envira-gallery' ),
-            'new_item'           => __( 'New Envira Gallery', 'envira-gallery' ),
-            'view_item'          => __( 'View Envira Gallery', 'envira-gallery' ),
-            'search_items'       => __( 'Search Envira Galleries', 'envira-gallery' ),
-            'not_found'          => __( 'No Envira galleries found.', 'envira-gallery' ),
-            'not_found_in_trash' => __( 'No Envira galleries found in trash.', 'envira-gallery' ),
+            'add_new_item'       => $whitelabel ? __( 'Add New Gallery', 'envira-gallery' ) : __( 'Add New Envira Gallery', 'envira-gallery' ),
+            'edit_item'          => $whitelabel ? __( 'Edit Gallery', 'envira-gallery' ) : __( 'Edit Envira Gallery', 'envira-gallery' ),
+            'new_item'           => $whitelabel ? __( 'New Gallery', 'envira-gallery' ) : __( 'New Envira Gallery', 'envira-gallery' ),
+            'view_item'          => $whitelabel ? __( 'View Gallery', 'envira-gallery' ) : __( 'View Envira Gallery', 'envira-gallery' ),
+            'search_items'       => $whitelabel ? __( 'Search Galleries', 'envira-gallery' ) : __( 'Search Envira Galleries', 'envira-gallery' ),
+            'not_found'          => $whitelabel ? __( 'No galleries found', 'envira-gallery' ) : __( 'No Envira galleries found.', 'envira-gallery' ),
+            'not_found_in_trash' => $whitelabel ? __( 'No galleries found in trash.', 'envira-gallery' ) : __( 'No Envira galleries found in trash.', 'envira-gallery' ),
             'parent_item_colon'  => '',
-            'menu_name'          => __( 'Envira Gallery', 'envira-gallery' ),
+            'menu_name'          => $whitelabel ? apply_filters('envira_whitelabel_name', false ) : __( 'Envira Gallery', 'envira-gallery' ),
         );
         $labels = apply_filters( 'envira_gallery_post_type_labels', $labels );
 
@@ -77,6 +79,8 @@ class Envira_Gallery_Posttype {
             'menu_position'       => apply_filters( 'envira_gallery_post_type_menu_position', 247 ),
             'menu_icon'           => plugins_url( 'assets/css/images/menu-icon@2x.png', $this->base->file ),
             'supports'            => array( 'title' ),
+            'map_meta_cap' 		  => true,
+
         );
 
         if ( get_option( 'envira_gallery_standalone_enabled' ) ) {

@@ -93,6 +93,23 @@ form#post.envira-gallery {
 		input[type=checkbox]:checked:before{
 		    color: $white !important;
 		}	
+
+
+        tr#envira-config-additional-copy-box,
+        tr#envira-config-additional-copy-box-automatic {
+          input[type="checkbox"] {
+            margin-right: 0;
+          }
+          label {
+            margin-right: 15px;
+          }
+          label.label-for-checkbox {
+            display: inline-block;
+          }
+        }
+
+
+
         /**
         * Help Video
         * - Can be placed inside p.envira-intro by JS, or outside p.envira-intro when
@@ -706,6 +723,19 @@ form#post.envira-gallery {
                                 .done {
                                     display: none;
                                 }
+                                .uploading_zip {
+                                    display: none;
+                                }
+                                .opening_zip {
+                                    display: none;
+                                    .spinner {
+                                        visibility: visible;
+                                        margin-top: 0;
+                                    }
+                                }
+                                .done_zip {
+                                    display: none;
+                                }
                             }
 
 
@@ -1108,6 +1138,12 @@ form#post.envira-gallery {
                             background-size: 16px 16px;
                         }
                     }
+                    &.envira-schedule {
+                        a {
+                            background-image: url(images/icons/schedule.svg);
+                            background-size: 16px 16px;
+                        }
+                    }
                     &.envira-proofing {
                         a {
                             background-image: url(images/icons/proofing.svg);
@@ -1497,6 +1533,12 @@ form#post.envira-gallery {
         * when we're in a modal.
         */
         a.envira-media-library.button {
+            display: none;
+        }
+    }
+
+    .envira-progress-bar {
+        .envira-progress-bar-status {
             display: none;
         }
     }

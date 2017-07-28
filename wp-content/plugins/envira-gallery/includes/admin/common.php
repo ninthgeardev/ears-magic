@@ -35,7 +35,7 @@ class Envira_Gallery_Common_Admin {
      * @var object
      */
     public $base;
-    
+
     /**
      * Holds the metabox class object.
      *
@@ -57,11 +57,11 @@ class Envira_Gallery_Common_Admin {
 
         // Handle any necessary DB upgrades.
         add_action( 'admin_init', array( $this, 'db_upgrade' ) );
-        
+
         // Load admin assets.
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_styles' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
-        
+
         // Delete any gallery association on attachment deletion. Also delete any extra cropped images.
         add_action( 'delete_attachment', array( $this, 'delete_gallery_association' ) );
         add_action( 'delete_attachment', array( $this, 'delete_cropped_image' ) );
@@ -104,7 +104,7 @@ class Envira_Gallery_Common_Admin {
         if ( ! $cptGalleries ) {
             // Get Post Types, excluding our own
             // We don't use post_status => 'any', as this doesn't include CPTs where exclude_from_search = true.
-            $postTypes = get_post_types( array( 
+            $postTypes = get_post_types( array(
                 'public' => true,
             ) );
             $excludedPostTypes = array( 'envira', 'envira_album', 'attachment' );
@@ -113,7 +113,7 @@ class Envira_Gallery_Common_Admin {
                     unset( $postTypes[ $key ] );
                 }
             }
-            
+
             // Get all Posts that have _eg_gallery_data set
             $inPostGalleries = new WP_Query( array(
                 'post_type'     => $postTypes,
@@ -126,7 +126,7 @@ class Envira_Gallery_Common_Admin {
                     ),
                 )
             ) );
-            
+
             // Check if any Posts with galleries exist
             if ( count( $inPostGalleries->posts ) > 0 ) {
                 $migrated_galleries = 0;
@@ -138,7 +138,7 @@ class Envira_Gallery_Common_Admin {
                     if ( $post->post_type == 'envira' || $post->post_type == 'envira_album' ) {
                         continue;
                     }
-                    
+
                     // Get metadata
                     $data = get_post_meta( $post->ID, '_eg_gallery_data', true);
                     $in = get_post_meta( $post->ID, '_eg_in_gallery', true);
@@ -239,7 +239,7 @@ class Envira_Gallery_Common_Admin {
         <?php
 
     }
-    
+
     /**
      * Loads styles for all Envira-based Administration Screens.
      *
@@ -251,15 +251,15 @@ class Envira_Gallery_Common_Admin {
 
         // Get current screen.
         $screen = get_current_screen();
-        
+
         // If we're not on the Envira Post Type screen, only load the modal css then bail
         if ( 'envira' !== $screen->post_type && 'envira_album' !== $screen->post_type ) {
-        
+
             // Load necessary admin styles.
             wp_register_style( $this->base->plugin_slug . '-admin-modal-style', plugins_url( 'assets/css/admin-modal.css', $this->base->file ), array(), $this->base->version );
             wp_enqueue_style( $this->base->plugin_slug . '-admin-modal-style' );
             return;
-        
+
         } else {
 
         // Proceed loading remaining admin CSS necessary admin styles.
@@ -267,7 +267,7 @@ class Envira_Gallery_Common_Admin {
         wp_enqueue_style( $this->base->plugin_slug . '-admin-style' );
         wp_register_style( $this->base->plugin_slug . '-admin-modal-style', plugins_url( 'assets/css/admin-modal.css', $this->base->file ), array(), $this->base->version );
         wp_enqueue_style( $this->base->plugin_slug . '-admin-modal-style' );
-        
+
         }
 
         // Fire a hook to load in custom admin styles.
@@ -286,7 +286,7 @@ class Envira_Gallery_Common_Admin {
 
         // Get current screen.
         $screen = get_current_screen();
-        
+
         // Bail if we're not on the Envira Post Type screen.
         if ( 'envira' !== $screen->post_type && 'envira_album' !== $screen->post_type ) {
             return;
@@ -308,7 +308,7 @@ class Envira_Gallery_Common_Admin {
         do_action( 'envira_gallery_admin_scripts' );
 
     }
- 
+
     /**
      * Deletes the Envira gallery association for the image being deleted.
      *
@@ -479,8 +479,8 @@ class Envira_Gallery_Common_Admin {
         $media_delete = Envira_Gallery_Settings::get_instance()->get_setting( 'media_delete' );
         if ( $media_delete != '1' ) {
             return;
-        } 
-        
+        }
+
         // Get post
         $gallery = get_post( $id );
 
@@ -510,7 +510,7 @@ class Envira_Gallery_Common_Admin {
             }
         }
 
-        /* 
+        /*
         // Get attached media
         $media = get_attached_media( 'image', $id );
         if ( ! is_array( $media ) ) {
@@ -564,7 +564,7 @@ class Envira_Gallery_Common_Admin {
 
         // Whether we have an ID or not, filter the ID.
         $shareasale_id = apply_filters( 'envira_gallery_shareasale_id', $shareasale_id );
-        
+
         // If at this point we still don't have an ID, we really don't have one!
         // Just return the standard upgrade URL.
         if ( empty( $shareasale_id ) ) {
@@ -576,7 +576,33 @@ class Envira_Gallery_Common_Admin {
         return 'http://www.shareasale.com/r.cfm?u=' . $shareasale_id . '&b=566240&m=51693&afftrack=&urllink=enviragallery%2Ecom%2Flite%2F';
 
     }
+	/**
+	 * get_publishers function.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	function get_publishers(){
 
+		$publishers = array();
+
+		return apply_filters( 'envira_publishers', $publishers );
+
+	}
+
+	/**
+	 * get_importers function.
+	 *
+	 * @access public
+	 * @return void
+	 */
+	function get_importers(){
+
+		$importers = array();
+
+		return apply_filters( 'envira_importers', $importers );
+
+	}
     /**
      * Returns the singleton instance of the class.
      *

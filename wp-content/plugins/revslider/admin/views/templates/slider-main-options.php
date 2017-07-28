@@ -2517,8 +2517,15 @@ if(!isset($linksEditSlides)) $linksEditSlides = '';
 										<div class="clear"></div>
 
 										<!-- Progress Bar Color -->
-										<span class="label" id="label_progressbar_color" origmedia="show" origtitle="<?php _e("Color of the progress bar.", 'revslider');?>"><?php _e("Progress Bar Color", 'revslider');?> </span>
+										<span class="label" id="label_progressbar_color" origmedia="show" origtitle="<?php _e("Color of the progress bar.", 'revslider');?>"><?php _e("Progress Bar Color", 'revslider');?> </span>										
 										<input type="text" class="my-color-field rs-layer-input-field tipsy_enabled_top withlabel"  id="progressbar_color" data-editing="Progress Bar Color" name="progressbar_color" value="<?php echo TPColorpicker::convert(RevSliderFunctions::getVal($arrFieldsParams, 'progressbar_color', 'rgba(0,0,0,0.15)'), RevSliderFunctions::getVal($arrFieldsParams, 'progress_opa', 'false'));?>" />
+										<script>
+											jQuery(document).ready(function() {	
+												var v = jQuery('#progressbar_color').val();
+												if (v.indexOf("false")>=0 && v.indexOf("rgba")>=0)									
+													jQuery('#progressbar_color').val(window.RevColor.get(jQuery('#progressbar_color').val()));
+											});
+										</script>
 										<div class="clear"></div>
 									</div>
 								</div><!-- END OF GENERAL PROGRESSBAR -->
@@ -4078,7 +4085,7 @@ if(!isset($linksEditSlides)) $linksEditSlides = '';
 										<div class="withsublabels">
 											<div class="hide_on_ddd_parallax">
 												<span id="label_parallax_type" class="label" origtitle="<?php _e("Defines on what event type the parallax should react to", 'revslider');?>"><?php _e("Event", 'revslider');?></span>
-												<select id="parallax_type" name="parallax_type"  class="withlabel">
+												<select id="parallax_type" name="parallax_type"  class="withlabel" style="width:140px">
 													<option value="mouse" <?php selected(RevSliderFunctions::getVal($arrFieldsParams, "parallax_type", "mouse"), "mouse");?>><?php _e("Mouse Move", 'revslider');?></option>
 													<option value="scroll" <?php selected(RevSliderFunctions::getVal($arrFieldsParams, "parallax_type", "mouse"), "scroll");?>><?php _e("Scroll Position", 'revslider');?></option>
 													<option value="mouse+scroll" <?php selected(RevSliderFunctions::getVal($arrFieldsParams, "parallax_type", "mouse"), "mouse+scroll");?>><?php _e("Move and Scroll", 'revslider');?></option>
@@ -4086,17 +4093,31 @@ if(!isset($linksEditSlides)) $linksEditSlides = '';
 												<div class="clear"></div>
 
 												<span id="label_parallax_origo" class="label" origtitle="<?php _e("Mouse Based parallax calculation Origo", 'revslider');?>"><?php _e("Parallax Origo", 'revslider');?></span>
-												<select id="parallax_origo" name="parallax_origo"  class="withlabel">
+												<select id="parallax_origo" name="parallax_origo"  class="withlabel" style="width:140px">
 													<option value="enterpoint" <?php selected(RevSliderFunctions::getVal($arrFieldsParams, "parallax_origo", "enterpoint"), "enterpoint");?>><?php _e("Mouse Enter Point", 'revslider');?></option>
 													<option value="slidercenter" <?php selected(RevSliderFunctions::getVal($arrFieldsParams, "parallax_origo", "enterpoint"), "slidercenter");?>><?php _e("Slider Center", 'revslider');?></option>										
 												</select>
 												<div class="clear"></div>
 											</div>
 
-											<span class="label" id="label_parallax_speed" origtitle="<?php _e("Parallax Speed for Mouse movents.", 'revslider');?>"><?php _e("Animation Speed", 'revslider');?> </span>
-											<input type="text" class="text-sidebar withlabel" id="parallax_speed" name="parallax_speed" value="<?php echo RevSliderFunctions::getVal($arrFieldsParams, "parallax_speed", "400");?>">									
-											<span ><?php _e("ms", 'revslider');?></span>
-											<div class="clear"></div>		
+											<div id="px_m_b_speed" style="display:none">
+												<span class="label" id="label_parallax_speed" origtitle="<?php _e("Parallax Speed for Mouse movements.", 'revslider');?>"><?php _e("Mouse based Speed", 'revslider');?> </span>
+												<input type="text" class="text-sidebar withlabel" id="parallax_speed" name="parallax_speed" value="<?php echo RevSliderFunctions::getVal($arrFieldsParams, "parallax_speed", "400");?>">									
+												<span ><?php _e("ms", 'revslider');?></span>
+												<div class="clear"></div>	
+											</div>
+
+											<div id="px_s_b_speed" style="display:none">
+												<span class="label" id="label_parallax_bg_speed" origtitle="<?php _e("Parallax Speed for Background movements.", 'revslider');?>"><?php _e("Background Speed", 'revslider');?> </span>
+												<input type="text" class="text-sidebar withlabel" id="parallax_bg_speed" name="parallax_bg_speed" value="<?php echo RevSliderFunctions::getVal($arrFieldsParams, "parallax_bg_speed", "0");?>">									
+												<span ><?php _e("ms", 'revslider');?></span>
+												<div class="clear"></div>			
+
+												<span class="label" id="label_parallax_ls_speed" origtitle="<?php _e("Parallax Speed for Layer movements.", 'revslider');?>"><?php _e("Layers Speed", 'revslider');?> </span>
+												<input type="text" class="text-sidebar withlabel" id="parallax_ls_speed" name="parallax_ls_speed" value="<?php echo RevSliderFunctions::getVal($arrFieldsParams, "parallax_ls_speed", "0");?>">									
+												<span ><?php _e("ms", 'revslider');?></span>
+												<div class="clear"></div>			
+											</div>
 										</div>							
 
 										<h4 class="hide_on_ddd_parallax"><?php _e("Parallax Levels", 'revslider');?></h4>
@@ -4189,6 +4210,28 @@ if(!isset($linksEditSlides)) $linksEditSlides = '';
 											jQuery('.show_on_ddd_parallax').hide();
 										}
 								});
+								
+								function showHidePXBaseds() {
+									var v = jQuery('#parallax_type').val();
+									switch(v) {
+									  case "scroll":
+										jQuery('#px_m_b_speed').hide();
+										jQuery('#px_s_b_speed').show();	
+									  break;
+									  case "mouse":									
+										jQuery('#px_m_b_speed').show();
+										jQuery('#px_s_b_speed').hide();	
+									  break;
+									  case "mouse+scroll":
+									  	jQuery('#px_m_b_speed').show();
+										jQuery('#px_s_b_speed').show();	
+									  break;
+									}						
+								}
+
+								jQuery('#parallax_type').on("change",showHidePXBaseds);		
+								showHidePXBaseds();							
+
 								jQuery('#ddd_parallax').on("change",function() {
 									drawToolBarPreview();
 									var sbi = jQuery(this);

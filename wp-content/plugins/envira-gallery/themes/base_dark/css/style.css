@@ -17,7 +17,9 @@
       display: none; }
     .envirabox-overlay.overlay-supersize.overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay {
       bottom: 15px;
-      width: auto; }
+      width: auto;
+      display: table;
+      /* table, otherwise the overlap - like in pinterest addon - will not allow the nav arrows to be clicked because the div height will extend */ }
     .envirabox-overlay.overlay-supersize.overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay.envira-gallery-top-left, .envirabox-overlay.overlay-supersize.overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay.envira-gallery-top-right {
       top: 0; }
     .envirabox-overlay.overlay-supersize.overlay-base_dark .envirabox-wrap .envirabox-title {
@@ -179,12 +181,22 @@
       content: ''; }
     .overlay-base_dark .envirabox-wrap .envirabox-actions .envira-zoom-button.zoom-on:before {
       content: "\e90b"; }
-  .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay {
+  .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay,
+  .overlay-base_dark .envirabox-wrap .envirabox-inner {
     width: 100%;
     text-align: center;
     bottom: -38px;
     top: inherit; }
-    .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons {
+    .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons-exterior,
+    .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons-exterior {
+      bottom: 15px;
+      width: 100%;
+      position: absolute;
+      z-index: 99;
+      pointer-events: none; }
+    .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons,
+    .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons {
+      pointer-events: initial;
       display: inline-block;
       float: none;
       padding: 5px;
@@ -196,19 +208,23 @@
       /**
       * Buttons for each Social Network
       */ }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons.orientation-horizontal.outside {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons.orientation-horizontal.outside,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons.orientation-horizontal.outside {
         position: relative;
         bottom: 0;
         min-width: inherit;
         max-width: inherit; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons.orientation-vertical.outside {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons.orientation-vertical.outside,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons.orientation-vertical.outside {
         position: relative;
         left: 0;
         min-width: inherit;
         max-width: inherit; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons .envira-social-network {
         clear: none; }
-        .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button {
+        .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button,
+        .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons .envira-social-network a.envira-social-button {
           margin: 5px;
           width: 25px;
           height: 25px;
@@ -222,24 +238,33 @@
           display: block;
           outline: none;
           position: relative; }
-          .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button span {
+          .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button span,
+          .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons .envira-social-network a.envira-social-button span {
             display: none; }
-          .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button:after {
+          .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons .envira-social-network a.envira-social-button:after,
+          .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons .envira-social-network a.envira-social-button:after {
             font-size: 25px;
             text-indent: 0;
             position: absolute;
             top: 0;
             left: 0; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.facebook a:after {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.facebook a:after,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons div.facebook a:after {
         content: "\e902"; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.twitter a:after {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.twitter a:after,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons div.twitter a:after {
         content: "\e90a"; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.pinterest a:after {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.pinterest a:after,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons div.pinterest a:after {
         content: "\e907"; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.google a:after {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.google a:after,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons div.google a:after {
         content: "\e904"; }
-      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.email a:after {
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envirabox-position-overlay .envira-social-buttons div.email a:after,
+      .overlay-base_dark .envirabox-wrap .envirabox-inner .envira-social-buttons div.email a:after {
         content: "\e901"; }
+  .overlay-base_dark .envirabox-wrap .envirabox-inner {
+    bottom: inherit; }
 
 #envirabox-thumbs.envirabox-thumbs-base_dark.thumbs-supersize {
   background: rgba(0, 0, 0, 0.35); }
@@ -253,7 +278,7 @@
   vertical-align: middle; }
 
 .envirabox-overlay.overlay-video .envirabox-inner .envirabox-position-overlay {
-  pointer-events: none; }
+  /* pointer-events: none; */ }
   .envirabox-overlay.overlay-video .envirabox-inner .envirabox-position-overlay .envira-social-buttons {
     pointer-events: auto; }
 

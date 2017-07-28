@@ -80,7 +80,7 @@ class Envira_Gallery_Settings {
         // Register the submenu.
         $this->hook = add_submenu_page(
             'edit.php?post_type=envira',
-            __( 'Envira Gallery Settings', 'envira-gallery' ),
+            __( apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' Gallery Settings', 'envira-gallery' ),
             __( 'Settings', 'envira-gallery' ),
             apply_filters( 'envira_gallery_menu_cap', 'manage_options' ),
             $this->base->plugin_slug . '-settings',
@@ -304,6 +304,10 @@ class Envira_Gallery_Settings {
                 add_action( 'envira_gallery_settings_standalone_tab_notice', array( $this, 'standalone_settings_slug_notice' ) );
                 return;
             }
+            if ( $slug != 'albums' && ( strtolower( $_POST['envira-albums-slug'] ) == strtolower( $_POST['envira-' . $slug . '-slug'] ) ) ) {
+                add_action( 'envira_gallery_settings_standalone_tab_notice', array( $this, 'standalone_settings_unique_slugs' ) );
+                return;
+            }
 
             // Check slug is not reserved
             if ( !is_array($slugs) ) {
@@ -354,6 +358,21 @@ class Envira_Gallery_Settings {
         ?>
         <div class="notice updated below-h2">
             <p><?php echo ( __( 'Slug updated successfully!', 'envira-standalone' ) ); ?></p>
+        </div>
+        <?php
+
+    }
+
+    /**
+     * Outputs a message to tell the user that the slugs must be unique
+     *
+     * @since 1.5.7.3
+     */
+    public function standalone_settings_unique_slugs() {
+
+        ?>
+        <div class="notice error below-h2">
+            <p><?php echo ( __( 'The gallery slug and album link must be unique.', 'envira-standalone' ) ); ?></p>
         </div>
         <?php
 
@@ -637,7 +656,7 @@ class Envira_Gallery_Settings {
                 <tbody>
                     <tr id="envira-settings-key-box">
                         <th scope="row">
-                            <label for="envira-settings-key"><?php _e( 'Envira License Key', 'envira-gallery' ); ?></label>
+                            <label for="envira-settings-key"><?php _e( apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' License Key', 'envira-gallery' ); ?></label>
                         </th>
                         <td>
                             <form id="envira-settings-verify-key" method="post">
@@ -645,14 +664,14 @@ class Envira_Gallery_Settings {
                                 <?php wp_nonce_field( 'envira-gallery-key-nonce', 'envira-gallery-key-nonce' ); ?>
                                 <?php submit_button( __( 'Verify Key', 'envira-gallery' ), 'primary', 'envira-gallery-verify-submit', false ); ?>
                                 <?php submit_button( __( 'Deactivate Key', 'envira-gallery' ), 'secondary', 'envira-gallery-deactivate-submit', false ); ?>
-                                <p class="description"><?php _e( 'License key to enable automatic updates for Envira.', 'envira-gallery' ); ?></p>
+                                <p class="description"><?php _e( 'License key to enable automatic updates for ' . apply_filters( 'envira_whitelabel_name', 'Envira' ), 'envira-gallery' ); ?></p>
                             </form>
                         </td>
                     </tr>
                     <?php $type = $this->base->get_license_key_type(); if ( ! empty( $type ) ) : ?>
                     <tr id="envira-settings-key-type-box">
                         <th scope="row">
-                            <label for="envira-settings-key-type"><?php _e( 'Envira License Key Type', 'envira-gallery' ); ?></label>
+                            <label for="envira-settings-key-type"><?php _e( apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' License Key Type', 'envira-gallery' ); ?></label>
                         </th>
                         <td>
                             <form id="envira-settings-key-type" method="post">
@@ -775,7 +794,7 @@ class Envira_Gallery_Settings {
                                     <label for="envira-standalone-enable">
                                         <input type="checkbox" name="envira-standalone-enable" id="envira-standalone-enable" value="1" <?php checked( true, $enabled ); ?> />
                                         <?php wp_nonce_field( 'envira-standalone-nonce', 'envira-standalone-nonce' ); ?>
-                                        <?php _e( 'The standalone option allows you to access galleries created through the Envira post type with unique URLs. Now your galleries can have dedicated gallery pages!', 'envira-standalone' ); ?>
+                                        <?php _e( 'The standalone option allows you to access galleries created through the ' . apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' post type with unique URLs. Now your galleries can have dedicated gallery pages!', 'envira-standalone' ); ?>
                                     </label>
                                 </p>
                             </td>
@@ -787,7 +806,7 @@ class Envira_Gallery_Settings {
                             </th>
                             <td>
                                 <input type="text" name="envira-gallery-slug" id="envira-gallery-slug" value="<?php echo $slug; ?>" />
-                                <p class="description"><?php _e( 'The slug to prefix to all Envira Galleries.', 'envira-standalone' ); ?></p>
+                                <p class="description"><?php _e( 'The slug to prefix to all ' . apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' Galleries.', 'envira-standalone' ); ?></p>
                             </td>
                         </tr>
 
@@ -797,7 +816,7 @@ class Envira_Gallery_Settings {
                             </th>
                             <td>
                                 <input type="text" name="envira-albums-slug" id="envira-albums-slug" value="<?php echo $albumSlug; ?>" />
-                                <p class="description"><?php _e( 'The slug to prefix to all Envira Albums.', 'envira-standalone' ); ?></p>
+                                <p class="description"><?php _e( 'The slug to prefix to all ' . apply_filters( 'envira_whitelabel_name', 'Envira' ) . ' Albums.', 'envira-standalone' ); ?></p>
                             </td>
                         </tr>
 

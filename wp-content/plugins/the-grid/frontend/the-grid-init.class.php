@@ -91,7 +91,7 @@ class The_Grid_Init {
 		// dequeue Mediaelement & register new styles
 		add_action('wp_enqueue_scripts', array($this, 'mediaelement_styles'), 100);
 		add_action('admin_enqueue_scripts', array($this, 'mediaelement_styles'), 100);
-		
+
 	}
 		
 	/**
@@ -148,7 +148,7 @@ class The_Grid_Init {
 		
 		global $post;
 		$global_library = get_option('the_grid_global_library', true);
-		
+
     	if($global_library || ($post && has_shortcode($post->post_content, 'the_grid'))) {
 			$this->global_scripts();
 			$this->global_styles();
@@ -161,7 +161,7 @@ class The_Grid_Init {
 	* @since 1.0.0
 	*/
 	public function admin_enqueue_scripts() {
-		
+
 		$screen = get_current_screen();
 
 		if (strpos($screen->id, 'admin_page_the_grid_settings') !== false || strpos($screen->id, 'the_grid_skins_overview') !== false) {
