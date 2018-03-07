@@ -143,6 +143,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 				return $this->statusLog($datas['backupParentHID'], array('stage' => 'trigger_check', 'status' => 'error', 'statusMsg' => 'Error while fetching table data', 'statusCode' => 'error_while_fetching_table_data'));
 			}
 			$action = $responseParams['nextFunc'];
+			$status = $responseParams['status'];
 			if(empty($action))
 			{
 				manual_debug('', 'triggerError');
@@ -164,6 +165,11 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 				}
 				manual_debug('', 'triggerEnd');
 				return $result;
+			}else{
+				if ($action == 'backupFilesZIPOver' && $status == 'completed') {
+					$result = array('status' => 'completed');
+					return $result;
+				}
 			}
 		}
 	}
@@ -362,6 +368,114 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 		
 		
 	}
+
+	function backup_db_dump_multi($historyID)
+    {	
+    	$requestParams = $this->getRequiredData($historyID, "requestParams");
+		$db_loop_break_time = $requestParams['args']['db_loop_break_time'];
+    	$responseParams = $this -> getRequiredData($historyID,"responseParams");
+		$file = $responseParams['file_name'];
+		
+		if(!$file)
+		{
+			$file = '';
+		}
+    	$db_folder = IWP_DB_DIR . '/';
+		$temp_sql_file_name = '';
+		$db_final_response = array();
+		$db_final_response['success'] = array ();
+		$db_final_response['success']['type'] = 'db';
+		if($file == '')
+		{
+			$file = DB_NAME;
+		}
+		$db_final_response['success']['file_name'] = $file;		
+		//$temp_sql_file_name = $file."-".$callCount.".sql";			//old method 
+		$temp_sql_file_name = $file.".sql";
+		$file   = $db_folder . $temp_sql_file_name;
+        global $wpdb;
+        $paths   = $this->check_mysql_paths();
+        $brace   = (substr(PHP_OS, 0, 3) == 'WIN') ? '"' : '';
+		//$command = $brace . $paths['mysqldump'] . $brace . ' --force --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables "' . DB_NAME . '" > ' . $brace . $file . $brace;
+        $command0 = $wpdb->get_col('SHOW TABLES LIKE "'.$wpdb->base_prefix.'%"');
+        $wp_tables = join("\" \"",$command0);
+        $command = $brace . $paths['mysqldump'] . $brace . ' --force --host="' . DB_HOST . '" --user="' . DB_USER . '" --password="' . DB_PASSWORD . '" --add-drop-table --skip-lock-tables --extended-insert=FALSE "' . DB_NAME . '" "'.$wp_tables.'" > ' . $brace . $file . $brace;
+		iwp_mmb_print_flush('DB DUMP CMD: Start');
+        ob_start();
+        $result = $this->iwp_mmb_exec($command);
+        ob_get_clean();
+		iwp_mmb_print_flush('DB DUMP CMD: End');
+		$time = microtime(true);
+		$finish_part = $time;
+		$total_time_part = $finish_part - $this->iwpScriptStartTime;
+        
+        if (!$result) { // Fallback to php
+            // $result = $this->backup_db_php($file);
+            return $result;
+        }
+        
+        if (iwp_mmb_get_file_size($file) == 0 || !is_file($file) || !$result) {
+            @unlink($file);
+            return false;
+        } else {
+			$db_final_response['success']['backup_file'] = $responseParams['backup_file'];
+			$db_final_response['success']['backup_url'] = $responseParams['backup_url'];
+			$db_final_response['success']['parentHID'] = $historyID;
+			$db_final_response['success']['backupParentHID'] = $historyID;
+			$db_final_response['success']['nextFunc'] = 'backupDBZip';
+			$db_final_response['success']['account_info'] = $responseParams['account_info'];
+			//$this->statusLog($historyID, "backupDB", true, "completed", $params, true);
+			//$this->statusLog($historyID, array('stage' => $backupStage, 'status' => 'completed', 'statusMsg' => 'backupDBCompleted'));
+			$db_final_response['success']['status'] = 'partiallyCompleted';
+			$this->statusLog($historyID, array('stage' => $backupStage, 'status' => 'completed', 'statusMsg' => 'backupDBCompleted','nextFunc' => 'backupDBZip', 'responseParams' => $db_final_response['success']));
+			unset($db_final_response['success']['response_data']);
+			//to continue in the same call
+			if(($db_loop_break_time - $total_time_part) > 5)
+			{
+				return $this->backupDBZip($historyID);
+			}
+			else
+			{
+				$db_res_array = array();
+				$db_res_array['status'] = $db_final_response['success']['status'];
+				$db_res_array['backupParentHID'] = $db_final_response['success']['backupParentHID'];
+				$db_res_array['parentHID'] = $db_final_response['success']['parentHID'];
+				return $db_res_array;
+			}
+        }
+    }
+
+  function check_mysql_paths()
+    {
+        global $wpdb;
+        $paths = array(
+            'mysql' => '',
+            'mysqldump' => ''
+        );
+        if (substr(PHP_OS, 0, 3) == 'WIN') {
+            $mysql_install = $wpdb->get_row("SHOW VARIABLES LIKE 'basedir'");
+            if ($mysql_install) {
+                $install_path       = str_replace('\\', '/', $mysql_install->Value);
+                $paths['mysql']     = $install_path . '/bin/mysql.exe';
+                $paths['mysqldump'] = $install_path . '/bin/mysqldump.exe';
+            } else {
+                $paths['mysql']     = 'mysql.exe';
+                $paths['mysqldump'] = 'mysqldump.exe';
+            }
+        } else {
+            $paths['mysql'] = $this->iwp_mmb_exec('which mysql', true);
+            if (empty($paths['mysql']))
+                $paths['mysql'] = 'mysql'; // try anyway
+            
+            $paths['mysqldump'] = $this->iwp_mmb_exec('which mysqldump', true);
+            if (empty($paths['mysqldump']))
+                $paths['mysqldump'] = 'mysqldump'; // try anyway         
+            
+        }
+        
+        
+        return $paths;
+    }
 	
 	function backup_uploads($historyID)
 	{
@@ -524,7 +638,14 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			$res_arr['backup_url'] = $this -> backup_url;
 			$res_arr['account_info'] = $account_info;
 			$this->statusLog($historyID, array('stage' => 'backupDB', 'status' => 'initiating', 'statusMsg' => 'createdFileNameAndSent','responseParams' => $res_arr));
-			$db_result = $this->backupDBPHP($historyID);
+			$func = $this->check_sys();	
+			$db_result = true;
+			if ($db_result) {
+				$db_result = $this->backup_db_dump_multi($historyID);
+			}
+			if ($db_result == false) {
+				$db_result = $this->backupDBPHP($historyID);
+			}	
 			
 			//arguments format - dbresult_before_zip
 			//$result = $this->backupDBZip($historyID,$db_result,$backup_url);				//if DB is succsessful do the DB zip 
@@ -1416,6 +1537,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			if (   ($p_filedescr_list[$j]['type'] != 'virtual_file')
 					&& (!file_exists($p_filedescr_list[$j]['filename']))) {
 						echo 'iwpmsg FILE DOESNT EXIST';
+						continue;
 			}
 
 			// ----- Look if it is a file or a dir with no all path remove option
@@ -1924,6 +2046,7 @@ class IWP_MMB_Backup_Multicall extends IWP_MMB_Core
 			if (   ($p_filedescr_list[$j]['type'] != 'virtual_file')
 					&& (!file_exists($p_filedescr_list[$j]['filename']))) {
 				echo 'FILE DOESNT EXIST';
+				continue;
 			}
 
 			// ----- Look if it is a file or a dir with no all path remove option
@@ -4527,7 +4650,11 @@ function ftp_backup($historyID,$args = '')
 						// Try the indicated offset
 						$we_tried = $matches[1];
 						$offset = $matches[2];
-						$chunkResult = $dropbox->chunked_upload($backup_file, $dropbox_destination, true, $uploadid, $offset, $isCommit);
+						if($oldVersion){
+							$chunkResult = $dropbox->chunked_upload($backup_file, $dropbox_destination, true, $uploadid, $offset, $readsize, $isCommit);
+						}else{
+							$chunkResult = $dropbox->chunked_upload($backup_file ,$dropbox_destination, true, $uploadid, $offset, $isCommit);
+						}
 						$result_arr = array();
 						$result_arr['response_data'] = $chunkResult;
 						$result_arr['nextFunc'] = 'dropbox_backup';
@@ -4536,6 +4663,7 @@ function ftp_backup($historyID,$args = '')
 						$uploadid = isset($chunkResult['upload_id']) ? $chunkResult['upload_id'] : 0; 
 						$resArray = array (
 						  'backupParentHID' => $historyID,
+						  'status' => 'partiallyCompleted'
 						);
 						$result_arr['nextFunc'] = 'dropbox_backup';
 						$result_arr['current_file_num'] = $current_file_num;
@@ -6473,8 +6601,7 @@ function ftp_backup($historyID,$args = '')
 						if($action == 'insert'){
 							$this_insertID = $wpdb->insert_id;
 						}
-					}
-					else{
+					}elseif ($result === false) {
 						if($action == 'update'){
 							return array('error' => 1);
 						}
@@ -6495,7 +6622,11 @@ function ftp_backup($historyID,$args = '')
 	
 	if( !function_exists('check_and_break_iwp') ){
 		function check_and_break_iwp(){
-			if((microtime(true) - $GLOBALS['IWP_MMB_PROFILING']['ACTION_START']) > 22){
+			$timeLimit = 18;
+			if (defined('IWP_FILE_LIST_BREAK_TIME') && IWP_FILE_LIST_BREAK_TIME) {
+				$timeLimit = IWP_FILE_LIST_BREAK_TIME;
+			}
+			if((microtime(true) - $GLOBALS['IWP_MMB_PROFILING']['ACTION_START']) > $timeLimit){
 				return true;
 			}
 			else{

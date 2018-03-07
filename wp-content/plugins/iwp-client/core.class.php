@@ -45,6 +45,7 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 	var $optimize_instance;
 	
     private $action_call;
+    public  $request_params;
     private $action_params;
     private $iwp_mmb_pre_init_actions;
     private $iwp_mmb_pre_init_filters;
@@ -196,13 +197,44 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 		add_action('rightnow_end', array( &$this, 'add_right_now_info' ));       
 		add_action('admin_menu', array($this,'iwp_admin_menu_actions'), 999, 1);
 		add_action('admin_init', array(&$this,'admin_actions'));   
-		add_action('init', array( &$this, 'iwp_mmb_remote_action'), 9999);
-		add_action('setup_theme', 'iwp_mmb_parse_request');
+		// add_action('wp_loaded', array( &$this, 'iwp_mmb_remote_action'), 2147483650);
+		add_action('plugins_loaded', 'iwp_mmb_add_readd_request');
+		add_action('setup_theme', 'iwp_mmb_set_request');
 		add_action('set_auth_cookie', array( &$this, 'iwp_mmb_set_auth_cookie'));
 		add_action('set_logged_in_cookie', array( &$this, 'iwp_mmb_set_logged_in_cookie'));
 		
     }
     
+	function admin_wp_loaded_iwp(){
+        if (!defined('WP_ADMIN')) {
+        	define('WP_ADMIN', true);
+        }
+        if (is_multisite() && !defined('WP_NETWORK_ADMIN')) {
+        	define('WP_NETWORK_ADMIN', true);
+        }
+        define('WP_BLOG_ADMIN', true);
+        require_once ABSPATH.'wp-admin/includes/admin.php';
+        // define('DOING_AJAX', true);
+        do_action('admin_init');
+        if (function_exists('wp_clean_update_cache')) {
+            /** @handled function */
+            wp_clean_update_cache();
+        }
+
+        /** @handled function */
+        wp_update_plugins();
+
+        /** @handled function */
+        set_current_screen();
+        do_action('load-update-core.php');
+
+        /** @handled function */
+        wp_version_check();
+
+        /** @handled function */
+        wp_version_check(array(), true);
+    }
+    	
 	function iwp_mmb_remote_action(){
 		if($this->action_call != null){
 			$params = isset($this->action_params) && $this->action_params != null ? $this->action_params : array();
@@ -211,6 +243,14 @@ class IWP_MMB_Core extends IWP_MMB_Helper
 	}
 	
 	function register_action_params( $action = false, $params = array() ){
+		if ($action == 'get_stats' || $action == 'do_upgrade') {
+			add_action('wp_loaded', array( &$this, 'iwp_mmb_remote_action'), 2147483650);
+			add_action('wp_loaded', array( &$this, 'admin_wp_loaded_iwp'), 2147483649);
+		}elseif ($action == 'install_addon') {
+			add_action('wp_loaded', array( &$this, 'iwp_mmb_remote_action'));
+		}else{
+			add_action('init', array( &$this, 'iwp_mmb_remote_action'), 9999);
+		}
 		
 		if(isset($this->iwp_mmb_pre_init_actions[$action]) && function_exists($this->iwp_mmb_pre_init_actions[$action])){
 			call_user_func($this->iwp_mmb_pre_init_actions[$action], $params);
@@ -1035,6 +1075,10 @@ class IWP_MMB_Core extends IWP_MMB_Helper
     	}
 		    	  	
     	return $all_plugins;
+    }
+
+    function add_login_action(){
+		add_action('plugins_loaded', array( &$this, 'automatic_login'), 10);
     }
     
    
