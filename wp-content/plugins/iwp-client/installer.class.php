@@ -70,7 +70,12 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return array(
                 'error' => '<p>No files received. Internal error.</p>', 'error_code' => 'no_files_receive_internal_error'
             );
-			
+		
+        if (!$this->define_ftp_constants($params)) {
+            return array(
+                'error' => 'FTP constant define failed', 'error_code' => 'ftp constant define failed'
+            );
+        }	
         if (!$this->is_server_writable()) {
             return array(
                 'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_install_remote_file'
@@ -193,7 +198,11 @@ class IWP_MMB_Installer extends IWP_MMB_Core
             return array(
                 'error' => 'No upgrades passed.', 'error_code' => 'no_upgrades_passed'
             );
-         
+        if (!$this->define_ftp_constants($params)) {
+            return array(
+                'error' => 'FTP constant define failed', 'error_code' => 'ftp constant define failed'
+            );
+        } 
         if (!$this->is_server_writable()) {
             return array(
                 'error' => 'Failed, please add FTP details', 'error_code' => 'failed_please_add_ftp_do_upgrade'
@@ -1082,6 +1091,11 @@ class IWP_MMB_Installer extends IWP_MMB_Core
     {
         extract($args);
         $return = array();
+        if (!$this->define_ftp_constants($args)) {
+            return array(
+                'error' => 'FTP constant define failed', 'error_code' => 'ftp constant define failed'
+            );
+        }
         if ($type == 'plugins') {
             $return['plugins'] = $this->edit_plugins($args);
         } elseif ($type == 'themes') {

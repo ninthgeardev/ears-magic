@@ -2,7 +2,7 @@
 Contributors: infinitewp
 Tags: admin, administration, amazon, api, authentication, automatic, dashboard, dropbox, events, integration, manage, multisite, multiple, notification, performance, s3, security, seo, stats, tracking, infinitewp, updates, backup, restore, iwp, infinite
 Requires at least: 3.1
-Tested up to: 4.9.1
+Tested up to: 4.9.4
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
@@ -47,6 +47,28 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 5. One-click updates
 
 == Changelog ==
+= 1.8.1 - Apr 3rd 2018 =
+* Feature: New backup method introduced named Phoenix.
+* Improvement: Multicall method is implemented for Restore process.
+* Improvement: Backup Constants added for Phoenix method.
+* Improvement: Support for Wordfence Security plugin New version.
+* Improvement: Support for purging cache on WordPress sites.
+* Improvement: Phoenix backup now supports V4 AWS regions.
+* Improvement: WordFence and Itheme Security added for client reporting.
+* Improvement: Site FTP details will be used from the panel if any update require FTP details.
+* Improvement: Now you can create S3 buckets in the Paris region.
+* Fix: PHP fatal error while backing up your site to a SFTP server using the single call backup method.
+* Fix: Restore failed if the backup is placed inside a folder on your S3 bucket(Single call and Multicall).
+* Fix: Restore failed if backup files are splitted into part files (Single call and Multicall).
+* Fix: Undefined index: hook_suffix warning is fixed.
+* Fix: Compatibility with All In One Security.
+* Fix: PHP fatal errors due to incompatibility with few plugins like Cornerstone, Litespeed cache, Offers for WooCommerce etc.
+* Fix: Dropbox storage exceeds limit error showing incorrectly with "path error".
+* Fix: A Few security plugins block the calls to IWP Client plugin breaking the panel and site connection.
+* Fix: PHP Fatal error while backing up your site to your SFTP server using SIngle call method.
+* Fix: PHP Fatal error occurred: Uncaught Guzzle\Service\Exception\ValidationException: Validation errors: [Key] is a required string in while backing up the site using the multicall method.
+
+
 = 1.6.8.3 - Jan 8th 2018 =
 * Improvement: Now IWP Client Plugin is compatible with most of the premium plugin/theme updates.
 * Improvement: Now you can update your Child Themes on WP sites from your IWP dashboard.

@@ -485,6 +485,36 @@ class IWP_MMB_Helper
 		else
 			return true;
 	}
+
+
+    function define_ftp_constants($params){
+
+        if (!$this->is_server_writable()) {
+            $ftp_details = unserialize($params['account_info']);
+            if (empty($ftp_details)) {
+                return true;
+            }
+            if (!defined('FS_METHOD')) {
+                define( 'FS_METHOD', 'ftpext' );
+            }
+            if (!defined('FTP_BASE')) {
+                define( 'FTP_BASE', $ftp_details['remoteFolder'] );
+            }
+            if (!defined('FTP_USER')) {
+                define( 'FTP_USER', $ftp_details['hostUserName'] );
+            }
+            if (!defined('FTP_PASS')) {
+                define( 'FTP_PASS', $ftp_details['hostPassword'] );
+            }
+            if (!defined('FTP_HOST')) {
+                define( 'FTP_HOST', $ftp_details['hostName'] );
+            }
+            if (!defined('FTP_SSL')) {
+                define( 'FTP_SSL', $ftp_details['hostSSL'] );
+            }
+        }
+        return true;
+    }
 	
 	function iwp_mmb_download_url($url, $file_name)
 	{

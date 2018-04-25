@@ -5307,6 +5307,11 @@ endif;
 
     // ----- Go to the end of the zip file
     $v_size = iwp_mmb_get_file_size($this->zipname);
+    $disk_space = iwp_mmb_check_disk_space();
+    if ($disk_space != false) {
+      return array('error' => 'Your disk space is very low available space: '.$disk_space.'MB');
+    }
+
 	if($v_size === false)
 	{
 		echo "error getting file size";
@@ -5399,9 +5404,10 @@ endif;
       // ----- Look if not found end of central dir
       if ($v_pos == $v_size)
       {
-		echo "Unable to find End of Central Dir Record signature ";
-    echo "v_pos".$v_pos;
-    echo "v_pos".$v_size;
+        echo "Unable to find End of Central Dir Record signature ";
+        echo "v_pos".$v_pos;
+        echo "v_pos".$v_size;
+
         // ----- Error log
         IWPPclZip::privErrorLog(IWP_PCLZIP_ERR_BAD_FORMAT, "Unable to find End of Central Dir Record signature");
 		
@@ -6528,3 +6534,4 @@ endif;
 		}
 	}
 }
+

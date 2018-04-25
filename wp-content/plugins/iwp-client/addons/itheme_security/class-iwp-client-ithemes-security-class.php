@@ -14,12 +14,16 @@ final class IWP_MMB_IThemes_Security extends IWP_MMB_Core {
                 self::checkIThemesModules();
     }
 
-    function getLogCounts(){
-        $from = date('Y-m-d h:i:s', strtotime('yesterday'));
-        $to = date('Y-m-d H:i:s', time());
-        $return['file_change'] = self::getFileChangeHistory($from, $to);
-        $return['four_oh_four'] = self::getFourOhFourHistory($from, $to);
-        $return['brute_force'] = self::getBruteForceHistory($from, $to);
+    function getLogCounts($from = false, $to = false ){
+         if (!$from && !$to) {
+            $from = strtotime('yesterday');
+            $to = time();
+        }
+        $from = date('Y-m-d h:i:s', $from);
+        $to = date('Y-m-d H:i:s', $to);
+        $return['itheme_file_change'] = self::getFileChangeHistory($from, $to);
+        $return['itheme_four_oh_four'] = self::getFourOhFourHistory($from, $to);
+        $return['itheme_brute_force'] = self::getBruteForceHistory($from, $to);
         return $return;
     }
 
