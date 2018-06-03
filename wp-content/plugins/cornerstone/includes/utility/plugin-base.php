@@ -5,197 +5,229 @@
  */
 abstract class Cornerstone_Plugin_Base {
 
-	// Optionally override in a child class to adjust behavior
-	protected $init_priority = 10;
-	protected $admin_init_priority = 10;
-	protected $includes_folder = 'includes';
-	protected $config_folder = 'includes/config';
+  // Optionally override in a child class to adjust behavior
+  protected $init_priority = 10;
+  protected $admin_init_priority = 10;
+  protected $includes_folder = 'includes';
+  protected $config_folder = 'includes/config';
   protected $i18n_folder = 'includes/i18n';
-	protected $templates_folder = 'templates';
-	protected $views_folder = 'includes/views';
-	protected $theme_template_folder = ''; // defaults to slug
-	protected $register_activation_hooks = true;
+  protected $templates_folder = 'templates';
+  protected $views_folder = 'includes/views';
+  protected $theme_template_folder = ''; // defaults to slug
+  protected $register_activation_hooks = true;
 
-	// These should never be overriden by the child class
-	protected $registry;
-	protected $components = array();
-	protected $config_store = array();
-	protected $file;
-	protected $name;
-	protected $slug;
-	protected $version;
-	protected $text_domain;
-	protected $domain_path;
-	protected $path;
-	protected $url;
+  // These should never be overriden by the child class
+  protected $registry;
+  protected $components = array();
+  protected $config_store = array();
+  protected $i18n_strings = array();
+  protected $file;
+  protected $name;
+  protected $slug;
+  protected $version;
+  protected $text_domain;
+  protected $domain_path;
+  protected $path;
+  protected $url;
+  protected $i18n_path;
 
-	/**
-	 * Assign plugin variables
-	 */
-	public function __construct( $file, $name, $slug, $version, $text_domain, $domain_path ) {
+  /**
+   * Assign plugin variables
+   */
+  public function __construct( $file, $name, $slug, $version, $text_domain, $domain_path, $path = '', $url = '' ) {
 
-		$this->file = $file;
-		$this->name = $name;
-		$this->slug = $slug;
-		$this->version = $version;
-		$this->text_domain = $text_domain;
-		$this->domain_path = $domain_path;
-		$this->path = plugin_dir_path( $file );
-		$this->url = plugin_dir_url( $file );
+    $this->file = $file;
+    $this->name = $name;
+    $this->slug = $slug;
+    $this->version = $version;
+    $this->text_domain = $text_domain;
+    $this->domain_path = $domain_path;
+    $this->path = ( $path ) ? $path : plugin_dir_path( $file );
+    $this->url = ( $url ) ? $url : plugin_dir_url( $file );
 
-	}
-
-
-	/**
-	 * Run after plugin instantiation
-	 */
-	public function superPreinit() {
-
-		$this->preinitBefore();
-
-		// Register activation / deactivation hooks
-		if ( $this->register_activation_hooks ) {
-			register_activation_hook( $this->file, array( $this, 'onActivate' ) );
-			register_deactivation_hook( $this->file, array( $this, 'onDeactivate' ) );
-		}
-
-		// Load WP-CLI commands
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			$this->loadFiles( 'wp-cli' );
-			$this->loadComponents( 'wp-cli' );
-		}
-
-		$this->components = array();
-		$this->registry = include $this->path( $this->includes_folder . '/registry.php' );
-
-		// Load preinit files and components
-		$this->loadFiles( 'preinit' );
-		$this->loadComponents( 'preinit' );
-
-		// Defer until the init action
-		add_action( 'init', array( $this, 'init' ), $this->init_priority );
-		add_action( 'admin_init', array( $this, 'adminInit' ), $this->admin_init_priority );
-
-		$this->preinitAfter();
-	}
+  }
 
 
-	/**
-	 * Perform boilerplate init actions
-	 * @return none
-	 */
-	public function init() {
+  /**
+   * Run after plugin instantiation
+   */
+  public function superPreinit( $i18n_path = '' ) {
 
-		$this->initBefore();
 
-		// Load init files and components
-		$this->loadFiles( 'init' );
-		$this->loadComponents( 'init' );
+    $this->i18n_path = ( '' !== $i18n_path ) ? $i18n_path : $this->path($this->i18n_folder);
 
-		// Localize
-		load_plugin_textdomain( $this->td() , false, $this->path( $this->domain_path . '/' ) );
+    $this->preinitBefore();
 
-		$this->initAfter();
+    // Register activation / deactivation hooks
+    if ( $this->register_activation_hooks ) {
+      register_activation_hook( $this->file, array( $this, 'onActivate' ) );
+      register_deactivation_hook( $this->file, array( $this, 'onDeactivate' ) );
+    }
 
-		// Load user/admin classes
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
+    // Load WP-CLI commands
+    if ( defined( 'WP_CLI' ) && WP_CLI ) {
+      $this->loadFiles( 'wp-cli' );
+      $this->loadComponents( 'wp-cli' );
+    }
 
-		$this->loggedinBefore();
+    $this->components = array();
+    $this->registry = include $this->path( $this->includes_folder . '/registry.php' );
 
-		// Load logged-in files and components
-		$this->loadFiles( 'loggedin' );
-		$this->loadComponents( 'loggedin' );
+    // Load preinit files and components
+    $this->loadFiles( 'preinit' );
+    $this->loadComponents( 'preinit' );
 
-		$this->loggedinAfter();
+    // Defer actions
+    add_action( 'init', array( $this, 'init' ), $this->init_priority );
+    add_action( 'after_theme_setup', array( $this, 'after_theme_setup' ) );
+    add_action( 'admin_init', array( $this, 'adminInit' ), $this->admin_init_priority );
 
-	}
+    $this->preinitAfter();
+  }
 
-	public function adminInit() {
 
-		$this->adminBefore();
+  /**
+   * Perform boilerplate init actions
+   * @return none
+   */
+  public function init() {
 
-		// Load logged-in files and components
-		$this->loadFiles( 'admin' );
-		$this->loadComponents( 'admin' );
-		$this->versionMigration();
+    $this->initBefore();
 
-		$this->adminAfter();
+    // Load init files and components
+    $this->loadFiles( 'init' );
+    $this->loadComponents( 'init' );
+    $this->versionMigration();
 
-	}
+    $this->initAfter();
 
-	/**
-	 * Require a set of registered files
-	 * @param  string  $group A group of files found in registry.php
-	 * @return bool whether or not the operation suceeded
-	 */
-	public function loadFiles( $group ) {
+    // Load user/admin classes
+    if ( ! is_user_logged_in() ) {
+      return;
+    }
 
-		if ( ! isset( $this->registry['files'][ $group ] ) ) {
-			return false;
-		}
+    $this->loggedinBefore();
 
-		$includes = $this->registry['files'][ $group ];
+    // Load logged-in files and components
+    $this->loadFiles( 'loggedin' );
+    $this->loadComponents( 'loggedin' );
 
-		if ( ! is_array( $includes ) ) {
-			return false;
-		}
+    $this->loggedinAfter();
 
-		try {
-			foreach ( $includes as $filename ) {
-				require_once $this->path( "$this->includes_folder/$filename.php" );
-			}
-		} catch ( Exception $e ) {
-			trigger_error( 'Exception: ' .  $e->getMessage() );
-			return false;
-		}
+  }
 
-		return true;
+  /**
+   * Perform boilerplate init actions
+   * @return none
+   */
+  public function after_theme_setup() {
 
-	}
+    // Load after_theme_setup files and components
+    $this->loadFiles( 'after_theme_setup' );
+    $this->loadComponents( 'after_theme_setup' );
 
-	/**
-	 * Instantiate a set of component classes
-	 * @param  string  $group A group of componenets found in registry.php
-	 * @return bool whether or not the operation suceeded
-	 */
-	public function loadComponents( $group ) {
+  }
 
-		if ( ! isset( $this->registry['components'][ $group ] ) ) {
-			return false;
-		}
+  public function adminInit() {
 
-		$components = $this->registry['components'][ $group ];
+    $this->adminBefore();
 
-		if ( ! is_array( $components ) ) {
-			return;
-		}
+    // Load logged-in files and components
+    $this->loadFiles( 'admin' );
+    $this->loadComponents( 'admin' );
 
-		foreach ( $components as $component ) {
-			$this->loadComponent( $component );
-		}
+    $this->adminAfter();
 
-	}
+  }
 
-	public function loadComponent( $name ) {
+  /**
+   * Require a set of registered files
+   * @param  string  $group A group of files found in registry.php
+   * @return bool whether or not the operation suceeded
+   */
+  public function loadFiles( $group ) {
+
+    if ( ! isset( $this->registry['files'][ $group ] ) ) {
+      return false;
+    }
+
+    $includes = $this->registry['files'][ $group ];
+
+    if ( ! is_array( $includes ) ) {
+      return false;
+    }
+
+    try {
+      foreach ( $includes as $filename ) {
+        require_once $this->path( "$this->includes_folder/$filename.php" );
+      }
+    } catch ( Exception $e ) {
+      trigger_error( 'Exception: ' .  $e->getMessage() );
+      return false;
+    }
+
+    return true;
+
+  }
+
+  /**
+   * Instantiate a set of component classes
+   * @param  string  $group A group of componenets found in registry.php
+   * @return bool whether or not the operation suceeded
+   */
+  public function loadComponents( $group ) {
+
+    if ( ! isset( $this->registry['components'][ $group ] ) ) {
+      return false;
+    }
+
+    $components = $this->registry['components'][ $group ];
+
+    if ( ! is_array( $components ) ) {
+      return;
+    }
+
+    foreach ( $components as $component ) {
+      $this->component( $component );
+    }
+
+  }
+
+  public function get_registry() {
+    $args = func_get_args();
+    $registry = null;
+    $args = array_reverse($args);
+    $level = $this->registry;
+    while(count($args)) {
+      $key = array_pop( $args );
+      if ( isset( $level[$key] ) ) {
+        $level = $level[$key];
+      } else {
+        return null;
+      }
+    }
+
+    return $level;
+  }
+
+  public function loadComponent( $name ) {
 
     try {
 
-			$class = $this->name . '_' . $name;
-      $exists = false;
+      if ( ! isset( $this->components[ $name ] ) ) {
 
-      try {
-        $exists = class_exists( $class );
-      } catch ( Exception $e ) {
-        trigger_error( 'Exception: ',  $e->getMessage(), "\n" );
-      }
+        $class = $this->name . '_' . $name;
+        $exists = false;
 
-			if ( ! $exists ) {
-				return false;
-			}
+        try {
+          $exists = class_exists( $class );
+        } catch ( Exception $e ) {
+          trigger_error( 'Exception: ' . $e->getMessage() . "\n" );
+        }
 
-			if ( ! isset( $this->components[ $name ] ) ) {
+        if ( ! $exists ) {
+          return false;
+        }
 
         $name = $this->componentConditions( $name );
 
@@ -203,32 +235,32 @@ abstract class Cornerstone_Plugin_Base {
           return false;
         }
 
-				$instance = new $class( $this );
-				$this->components[ $name ] = $instance;
-				$instance->beforeDependencies();
+        $instance = new $class( $this );
+        $this->components[ $name ] = $instance;
+        $instance->beforeDependencies();
 
-				if ( is_array( $instance->dependencies ) ) {
-					foreach ( $instance->dependencies as $component ) {
-						$this->loadComponent( $component );
-					}
-				}
+        if ( is_array( $instance->dependencies ) ) {
+          foreach ( $instance->dependencies as $component ) {
+            $this->component( $component );
+          }
+        }
 
-				$instance->setup();
+        $instance->setup();
 
-			}
+      }
 
-			return $this->components[ $name ];
+      return $this->components[ $name ];
 
-		} catch ( Exception $e ) {
-			trigger_error( 'Exception: ',  $e->getMessage(), "\n" );
-		}
+    } catch ( Exception $e ) {
+      trigger_error( 'Exception: ' .  $e->getMessage() . "\n" );
+    }
 
-		return false;
+    return false;
 
-	}
+  }
 
   public function controller( $name ) {
-    return $this->loadComponent( "Controller_$name" );
+    return $this->component( "Controller_$name" );
   }
 
   public function componentConditions( $name ) {
@@ -250,243 +282,245 @@ abstract class Cornerstone_Plugin_Base {
     return false;
   }
 
-	/**
-	 * Returns a component instance via it's name
-	 * @return object Component instance
-	 */
-	public function component( $handle ) {
-		return ( isset( $this->components[ $handle ] ) ) ? $this->components[ $handle ] : null;
-	}
+  /**
+   * Returns a component instance via its name
+   * @return object Component instance
+   */
+  public function component( $handle ) {
+    return $this->loadComponent( $handle );
+  }
 
-	/**
-	 * Gets the path to the Cornerstone plugin directory.
-	 * Should be used in combination with the instance wrapper funciton.
-	 * For example: $path = CS()->path();
-	 * This will include a trailing slash, so do not include one when using $to
-	 * @param  string  $to Path to desired location relative to the plugin path.
-	 * @return string filterable equivilent of plugin_dir_path( __FILE__ )
-	 */
-	public function path( $to = '' ) {
-		return apply_filters( $this->slug . '_path', $this->path ) . $to;
-	}
+  /**
+   * Gets the path to the Cornerstone plugin directory.
+   * Should be used in combination with the instance wrapper funciton.
+   * For example: $path = CS()->path();
+   * This will include a trailing slash, so do not include one when using $to
+   * @param  string  $to Path to desired location relative to the plugin path.
+   * @return string filterable equivilent of plugin_dir_path( __FILE__ )
+   */
+  public function path( $to = '' ) {
+    return apply_filters( $this->slug . '_path', $this->path ) . $to;
+  }
 
-	/**
-	 * Gets the url to the plugin directory.
-	 * Should be used in combination with the instance wrapper funciton.
-	 * This will include a trailing slash, so do not include one when using $to
-	 * @param  string  $to URL to desired location relative to the plugin URL.
-	 * @return string filterable equivilent of plugin_dir_url( __FILE__ )
-	 */
-	public function url( $to = '' ) {
-		return apply_filters( $this->slug . '_url', $this->url ) . $to;
-	}
+  /**
+   * Gets the url to the plugin directory.
+   * Should be used in combination with the instance wrapper funciton.
+   * This will include a trailing slash, so do not include one when using $to
+   * @param  string  $to URL to desired location relative to the plugin URL.
+   * @return string filterable equivilent of plugin_dir_url( __FILE__ )
+   */
+  public function url( $to = '' ) {
+    return apply_filters( $this->slug . '_url', $this->url ) . $to;
+  }
 
-	/**
-	 * Returns the plugin version number
-	 * @return string Obtained from the file header and cached
-	 */
-	public function version() {
-		return $this->version;
-	}
+  /**
+   * Returns the plugin version number
+   * @return string Obtained from the file header and cached
+   */
+  public function version() {
+    return $this->version;
+  }
 
-	/**
-	 * Returns the plugin name
-	 * @return string
-	 */
-	public function name() {
-		return $this->name;
-	}
+  /**
+   * Returns the plugin name
+   * @return string
+   */
+  public function name() {
+    return $this->name;
+  }
 
-	/**
-	 * Returns the plugin slug
-	 * @return string
-	 */
-	public function slug() {
-		return $this->slug;
-	}
+  /**
+   * Returns the plugin slug
+   * @return string
+   */
+  public function slug() {
+    return $this->slug;
+  }
 
-	/**
-	 * Returns the plugin text domain
-	 * Call the helper method instead: 'cornerstone'
-	 * @return string Obtained from the file header and cached
-	 */
-	public function td() {
-		return $this->text_domain;
-	}
+  /**
+   * Returns the plugin text domain
+   * Call the helper method instead: 'cornerstone'
+   * @return string Obtained from the file header and cached
+   */
+  public function td() {
+    return $this->text_domain;
+  }
 
-	/**
-	 * Adds myplugin_activation hook on plugin activation
-	 * Tie into this from one of your preinit components
-	 * @return none
-	 */
-	public function onActivate() {
-		do_action( $this->slug . '_activation' );
-	}
+  /**
+   * Adds myplugin_activation hook on plugin activation
+   * Tie into this from one of your preinit components
+   * @return none
+   */
+  public function onActivate() {
+    do_action( $this->slug . '_activation' );
+  }
 
-	/**
-	 * Adds myplugin_deactivation hook on plugin deactivation
-	 * Tie into this from one of your preinit components
-	 * @return none
-	 */
-	public function onDeactivate() {
-		do_action( $this->slug . '_deactivation' );
-	}
+  /**
+   * Adds myplugin_deactivation hook on plugin deactivation
+   * Tie into this from one of your preinit components
+   * @return none
+   */
+  public function onDeactivate() {
+    do_action( $this->slug . '_deactivation' );
+  }
 
-	/**
-	 * Simple version migration system
-	 * Hook into `myplugin_updated` and test against the supplied
-	 * version number to conditionally run migration logic
-	 * @return none
-	 */
-	public function versionMigration() {
 
-		$prior = get_option( $this->slug . '_version', 0 );
 
-		if ( version_compare( $prior, $this->version(), '>' ) ) {
-			return;
-		}
+  /**
+   * Simple version migration system
+   * Hook into `myplugin_updated` and test against the supplied
+   * version number to conditionally run migration logic
+   * @return none
+   */
+  public function versionMigration() {
+    $prior = get_option( $this->slug . '_version', 0 );
+    $current = $this->version();
 
-		do_action( $this->slug .'_updated', $prior );
+    if ( version_compare( $prior, $current, '>=' ) ) {
+      return;
+    }
 
-		update_option( $this->slug . '_version', $this->version() );
+    do_action( $this->slug .'_updated', $prior );
 
-	}
+    update_option( $this->slug . '_version', $current, true );
 
-	public function get_template_part( $slug, $name = null, $load = true ) {
+  }
 
-		do_action( 'get_template_part_' . $slug, $slug, $name );
+  public function get_template_part( $slug, $name = null, $load = true ) {
 
-		$templates = array();
-		if ( isset( $name ) ) {
-			$templates[] = $slug . '-' . $name . '.php';
-		}
-		$templates[] = $slug . '.php';
+    do_action( 'get_template_part_' . $slug, $slug, $name );
 
-		$templates = apply_filters( $this->slug . '_get_template_part', $templates, $slug, $name );
+    $templates = array();
+    if ( isset( $name ) ) {
+      $templates[] = $slug . '-' . $name . '.php';
+    }
+    $templates[] = $slug . '.php';
 
-		return $this->locate_template( $templates, $load, false );
+    $templates = apply_filters( $this->slug . '_get_template_part', $templates, $slug, $name );
 
-	}
+    return $this->locate_template( $templates, $load, false );
 
-	/**
-	 * Retrieve the name of the highest priority template file that exists.
-	 *
-	 * Searches in the STYLESHEETPATH before TEMPLATEPATH so that themes which
-	 * inherit from a parent theme can just overload one file. If the template is
-	 * not found in either of those, it looks in the theme-compat folder last.
-	 *
-	 * @param string|array $template_names Template file(s) to search for, in order.
-	 * @param bool $load If true the template file will be loaded if it is found.
-	 * @param bool $require_once Whether to require_once or require. Default true.
-	 *                            Has no effect if $load is false.
-	 * @return string The template filename if one is located.
-	 */
-	public function locate_template( $template_names, $load = false, $require_once = true ) {
+  }
 
-		$filename = false;
+  /**
+   * Retrieve the name of the highest priority template file that exists.
+   *
+   * Searches in the STYLESHEETPATH before TEMPLATEPATH so that themes which
+   * inherit from a parent theme can just overload one file. If the template is
+   * not found in either of those, it looks in the theme-compat folder last.
+   *
+   * @param string|array $template_names Template file(s) to search for, in order.
+   * @param bool $load If true the template file will be loaded if it is found.
+   * @param bool $require_once Whether to require_once or require. Default true.
+   *                            Has no effect if $load is false.
+   * @return string The template filename if one is located.
+   */
+  public function locate_template( $template_names, $load = false, $require_once = true ) {
 
-		foreach ( (array) $template_names as $template_name ) {
+    $filename = false;
 
-			if ( empty( $template_name ) ) {
-				continue;
-			}
+    foreach ( (array) $template_names as $template_name ) {
 
-			$template_name = untrailingslashit( $template_name );
+      if ( empty( $template_name ) ) {
+        continue;
+      }
 
-			$theme_template_folder = trailingslashit( ( '' !== $this->theme_template_folder ) ?
-			$this->theme_template_folder : $this->slug );
+      $template_name = untrailingslashit( $template_name );
 
-			// Check child theme first
-			$child = get_stylesheet_directory() . '/' . $theme_template_folder . $template_name;
-			if ( file_exists( $child ) ) {
-				$filename = $child;
-				break;
-			}
+      $theme_template_folder = trailingslashit( ( '' !== $this->theme_template_folder ) ?
+      $this->theme_template_folder : $this->slug );
 
-			$parent = get_template_directory() . '/' . $theme_template_folder . $template_name;
-			if ( file_exists( $parent ) ) {
-				$filename = $parent;
-				break;
-			}
+      // Check child theme first
+      $child = get_stylesheet_directory() . '/' . $theme_template_folder . $template_name;
+      if ( file_exists( $child ) ) {
+        $filename = $child;
+        break;
+      }
 
-			$plugin = $this->path( "$this->templates_folder/$template_name" );
-			if ( file_exists( $plugin ) ) {
-				$filename = $plugin;
-				break;
-			}
-		}
+      $parent = get_template_directory() . '/' . $theme_template_folder . $template_name;
+      if ( file_exists( $parent ) ) {
+        $filename = $parent;
+        break;
+      }
 
-		if ( $load && ! empty( $filename ) ) {
-			load_template( $filename, $require_once );
-		}
+      $plugin = $this->path( "$this->templates_folder/$template_name" );
+      if ( file_exists( $plugin ) ) {
+        $filename = $plugin;
+        break;
+      }
+    }
 
-		return $filename;
+    if ( $load && ! empty( $filename ) ) {
+      load_template( $filename, $require_once );
+    }
 
-	}
+    return $filename;
 
-	/**
-	 * Find a template so we can include it ourselves.
-	 * Doesn't run through `load_template` so some globals may need to be declared.
-	 * This can be used to load markup used in the dashboard.
-	 */
-	public function template( $slug, $name = null, $echo = true ) {
+  }
 
-		ob_start();
+  /**
+   * Find a template so we can include it ourselves.
+   * Doesn't run through `load_template` so some globals may need to be declared.
+   * This can be used to load markup used in the dashboard.
+   */
+  public function template( $slug, $name = null, $echo = true ) {
 
-		$template = $this->get_template_part( $slug, $name, false );
+    ob_start();
 
-		if ( $template ) {
-			include( $template );
-		}
+    $template = $this->get_template_part( $slug, $name, false );
 
-		$contents = ob_get_clean();
+    if ( $template ) {
+      include( $template );
+    }
 
-		if ( $echo ) {
-			echo $contents;
-		}
+    $contents = ob_get_clean();
 
-		return $contents;
+    if ( $echo ) {
+      echo $contents;
+    }
 
-	}
+    return $contents;
 
-	/**
-	 * Include a view file, optionally outputting it's contents.
-	 */
-	public function view( $name, $echo = true, $data = array(), $extract = false ) {
+  }
 
-		ob_start();
+  /**
+   * Include a view file, optionally outputting its contents.
+   */
+  public function view( $name, $echo = true, $data = array(), $extract = false ) {
 
-		$view = $this->locate_view( $name );
+    ob_start();
 
-		if ( $extract ) {
-			extract( $data );
-		}
+    $view = $this->locate_view( $name );
 
-		if ( $view ) {
-			include( $view );
-		}
+    if ( $extract ) {
+      extract( $data );
+    }
 
-		$contents = ob_get_clean();
+    if ( $view ) {
+      include( $view );
+    }
 
-		if ( $echo ) {
-			echo $contents;
-		}
+    $contents = ob_get_clean();
 
-		return $contents;
+    if ( $echo ) {
+      echo $contents;
+    }
 
-	}
+    return $contents;
 
-	public function locate_view( $name ) {
+  }
 
-		$file = $this->path( trailingslashit( $this->views_folder ) . $name . '.php' );
+  public function locate_view( $name ) {
 
-		if ( ! file_exists( $file ) ) {
-			return false;
-		}
+    $file = $this->path( trailingslashit( $this->views_folder ) . $name . '.php' );
 
-		return $file;
+    if ( ! file_exists( $file ) ) {
+      return false;
+    }
 
-	}
+    return $file;
+
+  }
 
 /**
    *
@@ -494,118 +528,160 @@ abstract class Cornerstone_Plugin_Base {
    * @param  string path to config file
    * @return array
    */
-	/**
+  /**
    * Retrieve a particular configuration set and apply filters.
    * @param  string $name      string path to config file
    * @param  string $namespace namespace to prepend to key for caching
    * @param  string $path      alternate path
    * @return array            requested configuration values
    */
-	public function config( $name = '', $namespace = '', $path = '' ) {
+  public function config_group( $name = '', $namespace = '', $path = '', $abs_path = false ) {
 
     $key = ( $namespace ) ? "{$namespace}.{$name}" : $name;
     $path = ( $path ) ? $path : $this->config_folder;
-		if ( ! isset( $this->config_store[ $key ] ) ) {
-			$data = array();
-			$value = include( $this->path( trailingslashit( $path ) . $name . '.php' ) );
-			if ( is_array( $value ) ) {
-				$data = $value;
-			}
-			$this->config_store[ $key ] = $data;
-		}
+    if ( ! isset( $this->config_store[ $key ] ) ) {
 
-		/**
-		 * Filter example: $name == 'folder/defaults-file'
-		 * 'plugin_config_folder_defaults-file'
-     * 'plugin_config_folder_defaults-file'
-		 */
-		$filter_name = sanitize_key( str_replace( '/', '_', $name ) );
-		return apply_filters( "{$this->slug}_config_{$filter_name}", $this->config_store[ $key ] );
+      $config_path = trailingslashit( $path ) . $name . '.php';
+      if ( ! $abs_path ) {
+        $config_path = $this->path( $config_path );
+      }
+      $value = include( $config_path );
+      $data = is_array( $value ) ? $value : array();
 
-	}
+      /**
+       * Filter example: $name == 'folder/defaults-file'
+       * 'plugin_config_folder_defaults-file'
+       * 'plugin_config_folder_defaults-file'
+       */
+      $filter_name = sanitize_key( str_replace( '.', '_', str_replace( '/', '_', $key ) ) );
+      $this->config_store[ $key ] = apply_filters( "{$this->slug}_config_{$filter_name}", $data );
+
+    }
+
+    return $this->config_store[ $key ];
+
+  }
+
+  public function config( $group_name, $item ) {
+    $group = $this->config_group( $group_name );
+    return ( isset( $group[$item] ) ) ? $group[$item] : null;
+  }
 
   /**
    * Get a named set of localized strings from the i18n directory
-   * @param  string  $name      Name of the strings file to load
+   * @param  string  $group      Name of the strings file to load
    * @param  boolean $namespace Should we prepend a namespace to the keys?
    * @return array              Localized strings
    */
-  public function i18n( $name, $namespace = true ) {
+  public function i18n_group( $group, $namespace = true, $filter = '' ) {
 
-    $strings = $this->config( $name, 'i18n', $this->i18n_folder );
+    $strings = $this->config_group( $group, 'i18n', $this->i18n_path, true );
 
-    if ( !$namespace ) {
+    if ( $filter ) {
+
+      $filtered = array();
+
+      foreach ($strings as $key => $value) {
+        if ( 0 === strpos($key,"$filter.") ) {
+          $k = substr($key, strlen($filter) + 1);
+          $filtered[$k] = $value;
+        }
+      }
+
+      $strings = $filtered;
+
+    }
+
+    if ( ! $namespace ) {
       return $strings;
     }
 
     $namespaced = array();
+    $namespace = $filter ? $filter : $group;
 
     foreach ( $strings as $key => $value ) {
-      $namespaced["$name.$key"] = $value;
+      $namespaced["$namespace.$key"] = $value;
     }
 
     return $namespaced;
   }
 
-	/**
-	 * Plugin entry point.
-	 * @param  string $file This should be __FILE__ from the main plugin file
-	 * @return bool true if the instance was generated for the first time
-	 */
-	public static function run( $file, $name = '', $slug = '' ) {
+  public function i18n( $key ) {
 
-		if ( ! defined( 'ABSPATH' ) ) {
-			die();
-		}
+    if ( ! isset( $this->i18n_strings[ $key ] ) ) {
+      $group = 'common';
+      $group_index = strpos($key, '.');
+      if ( -1 !== $group_index ) {
+        $group = substr( $key, 0, $group_index );
+      }
+      $strings = $this->i18n_group( $group );
+      foreach ($strings as $string => $value) {
+        $this->i18n_strings[ $string ] = $value;
+      }
+    }
 
-		$data = get_file_data( $file, array( 'Plugin Name', 'Version', 'Text Domain', 'Domain Path' ) );
+    return isset( $this->i18n_strings[ $key ] ) ? $this->i18n_strings[ $key ] : '';
+  }
 
-		$plugin_name = array_shift( $data );
-		$version = array_shift( $data );
-		$text_domain = array_shift( $data );
-		$domain_path = array_shift( $data );
+  /**
+   * Plugin entry point.
+   * @param  string $file This should be __FILE__ from the main plugin file
+   * @return bool true if the instance was generated for the first time
+   */
+  public static function run( $file, $i18n_path = '', $path = '', $url = '', $name = '', $slug = '' ) {
 
-		if ( '' === $name ) {
-			$name = $plugin_name;
-		}
+    if ( ! defined( 'ABSPATH' ) ) {
+      die();
+    }
 
-		if ( '' === $slug ) {
-			$slug = $text_domain;
-		}
+    $data = get_file_data( $file, array( 'Plugin Name', 'Version', 'Text Domain', 'Domain Path' ) );
 
-		$class = new ReflectionClass( $name . '_Plugin' );
+    $plugin_name = array_shift( $data );
+    $version = array_shift( $data );
+    $text_domain = array_shift( $data );
+    $domain_path = array_shift( $data );
 
-		if ( ! is_null( $class->getStaticPropertyValue( 'instance', null ) ) ) {
-			return false;
-		}
+    if ( '' === $name ) {
+      $name = $plugin_name;
+    }
 
-		$instance = $class->newInstance( $file, $name, $slug, $version, $text_domain, $domain_path );
+    if ( '' === $slug ) {
+      $slug = $text_domain;
+    }
 
-		// Setup as a singleton for global access
-		if ( $class->hasProperty( 'instance' ) ) {
-			$class->setStaticPropertyValue( 'instance', $instance );
-		} else {
-			// If the child doesn't have an instance property, we'll create a global variable.
-			$GLOBALS[ $slug . '_plugin' ] = $instance;
-		}
+    $class = new ReflectionClass( $name . '_Plugin' );
 
-		$instance->superPreinit();
+    if ( ! is_null( $class->getStaticPropertyValue( 'instance', null ) ) ) {
+      return false;
+    }
 
-		return true;
+    $instance = $class->newInstance( $file, $name, $slug, $version, $text_domain, $domain_path, $path, $url );
 
-	}
+    // Setup as a singleton for global access
+    if ( $class->hasProperty( 'instance' ) ) {
+      $class->setStaticPropertyValue( 'instance', $instance );
+    } else {
+      // If the child doesn't have an instance property, we'll create a global variable.
+      $GLOBALS[ $slug . '_plugin' ] = $instance;
+    }
 
-	/**
-	 * Methods to optionally override in child class
-	 */
-	protected function preinitBefore() {}
-	protected function preinitAfter() {}
-	protected function initBefore() {}
-	protected function initAfter() {}
-	protected function loggedinBefore() {}
-	protected function loggedinAfter() {}
-	protected function adminBefore() {}
-	protected function adminAfter() {}
+    $instance->superPreinit( $i18n_path );
+
+    return true;
+
+  }
+
+  /**
+   * Methods to optionally override in child class
+   */
+  protected function preinitBefore() {}
+  protected function preinitAfter() {}
+  protected function initBefore() {}
+  protected function initAfter() {}
+  protected function loggedinBefore() {}
+  protected function loggedinAfter() {}
+  protected function adminBefore() {}
+  protected function adminAfter() {}
 
 }
 
@@ -621,112 +697,124 @@ abstract class Cornerstone_Plugin_Base {
  */
 abstract class Cornerstone_Plugin_Component {
 
-	protected $plugin;
-	public $dependencies = false;
-	protected $path = '';
-	protected $url = '';
+  protected $plugin;
+  public $dependencies = false;
+  protected $path = '';
+  protected $url = '';
 
-	public function __construct( $plugin ) {
+  public function __construct( $plugin ) {
 
-		$this->plugin = $plugin;
-		$this->td = $this->plugin->td();
+    $this->plugin = $plugin;
+    $this->td = $this->plugin->td();
 
-	}
+  }
 
-	public function setup() { }
-	public function beforeDependencies() { }
+  public function setup() { }
+  public function beforeDependencies() { }
 
-	/**
-	 * Shortcut to plugin path method including component local path additions.
-	 * @param  $to (optional) Append to the current path
-	 * @return string
-	 */
-	public function path( $to = '' ) {
-		return trailingslashit( $this->plugin->path( $this->path ) ) . $to;
-	}
+  /**
+   * Shortcut to plugin path method including component local path additions.
+   * @param  $to (optional) Append to the current path
+   * @return string
+   */
+  public function path( $to = '' ) {
+    return trailingslashit( $this->plugin->path( $this->path ) ) . $to;
+  }
 
-	/**
-	 * Shortcut to plugin url method including component local path additions.
-	 * @param  $to (optional) Append to the current url
-	 * @return string
-	 */
-	public function url( $to = '' ) {
-		return trailingslashit( $this->plugin->url( $this->url ) ) . $to;
-	}
+  /**
+   * Shortcut to plugin url method including component local path additions.
+   * @param  $to (optional) Append to the current url
+   * @return string
+   */
+  public function url( $to = '' ) {
+    return trailingslashit( $this->plugin->url( $this->url ) ) . $to;
+  }
 
-	/**
-	 * Returns a component instance via it's name
-	 * @return object Component instance
-	 */
-	public function component( $handle ) {
-		return ( isset( $this->components[ $handle ] ) ) ? $this->components[ $handle ] : null;
-	}
+  /**
+   * Returns a component instance via its name
+   * @return object Component instance
+   */
+  public function component( $handle ) {
+    return $this->plugin->component($handle);
+  }
 
-	/**
-	 * Passthrough get_template_part
-	 * This runs through WordPress `load_template` when $load is true
-	 */
-	public function get_template_part( $slug, $name = null, $load = true ) {
-		return $this->plugin->get_template_part( $slug, $name, $load );
-	}
+  /**
+   * Passthrough get_template_part
+   * This runs through WordPress `load_template` when $load is true
+   */
+  public function get_template_part( $slug, $name = null, $load = true ) {
+    return $this->plugin->get_template_part( $slug, $name, $load );
+  }
 
-	/**
-	 * Find a template so we can include it ourselves.
-	 * Doesn't run through `load_template` so some globals may need to be declared.
-	 * This can be used to load markup used in the dashboard.
-	 */
-	public function template( $slug, $name = null, $echo = true ) {
+  /**
+   * Find a template so we can include it ourselves.
+   * Doesn't run through `load_template` so some globals may need to be declared.
+   * This can be used to load markup used in the dashboard.
+   */
+  public function template( $slug, $name = null, $echo = true ) {
 
-		ob_start();
+    ob_start();
 
-		$template = $this->plugin->get_template_part( $slug, $name, false );
+    $template = $this->plugin->get_template_part( $slug, $name, false );
 
-		if ( $template ) {
-			include( $template );
-		}
+    if ( $template ) {
+      include( $template );
+    }
 
-		$contents = ob_get_clean();
+    $contents = ob_get_clean();
 
-		if ( $echo ) {
-			echo $contents;
-		}
+    if ( $echo ) {
+      echo $contents;
+    }
 
-		return $contents;
+    return $contents;
 
-	}
+  }
 
-	/**
-	 * Get the path to a view so it can be passed to "include", preserving scope.
-	 */
-	public function locate_view( $name ) {
-		return $this->plugin->locate_view( $name );
-	}
+  /**
+   * Get the path to a view so it can be passed to "include", preserving scope.
+   */
+  public function locate_view( $name ) {
+    return $this->plugin->locate_view( $name );
+  }
 
-	/**
-	 * Include a view file, optionally outputting it's contents.
-	 */
-	public function view( $name, $echo = true, $data = array(), $extract = false ) {
+  /**
+   * Include a view file, optionally outputting its contents.
+   */
+  public function view( $name, $echo = true, $data = array(), $extract = false ) {
 
-		ob_start();
+    ob_start();
 
-		$view = $this->locate_view( $name );
+    $view = $this->locate_view( $name );
 
-		if ( $extract ) {
-			extract( $data );
-		}
+    if ( $extract ) {
+      extract( $data );
+    }
 
-		if ( $view ) {
-			include( $view );
-		}
+    if ( $view ) {
+      include( $view );
+    }
 
-		$contents = ob_get_clean();
+    $contents = ob_get_clean();
 
-		if ( $echo ) {
-			echo $contents;
-		}
+    if ( $echo ) {
+      echo $contents;
+    }
 
-		return $contents;
+    return $contents;
 
-	}
+  }
+
+  public function i18n_group( $group, $namespace = true, $filter = '' ) {
+    return $this->plugin->i18n_group( $group, $namespace, $filter );
+  }
+
+  public function config_group( $group, $namespace = true, $path = '' ) {
+    return $this->plugin->config_group( $group, $namespace, $path );
+  }
+
+  public function config_item( $group, $key = null ) {
+    return $this->plugin->config( $group, $key );
+  }
 
 }

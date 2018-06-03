@@ -5,7 +5,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
   public function data() {
     return array(
       'name'        => 'x-settings',
-      'title'       => __( 'X Settings', 'cornerstone' ),
+      'title'       => __( 'Meta Settings', 'cornerstone' ),
       'priority' => '20'
     );
   }
@@ -94,7 +94,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
     $default = ( $meta == '' ) ? '7500' : $meta;
 
     $this->addControl(
-      'image_full_duration',
+      'bg_image_full_duration',
       'text',
       __( 'Background Images Duration', 'cornerstone' ),
       __( 'Only applicable if multiple images are selected, creating a background image slider. Set a time in milliseconds for your images to remain on screen.', 'cornerstone' ),
@@ -196,7 +196,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
     $default = ( $meta == '' ) ? '7500' : $meta;
 
     $this->addControl(
-      'image_full_duration',
+      'bg_image_full_duration',
       'text',
       __( 'Background Images Duration', 'cornerstone' ),
       __( 'Only applicable if multiple images are selected, creating a background image slider. Set a time in milliseconds for your images to remain on screen.', 'cornerstone' ),
@@ -358,7 +358,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
       'featured_content',
       'select',
       __( 'Featured Content', 'cornerstone' ),
-      __( 'Select "Media" if you would like to show your video or gallery on the index page in place of the featured image.', 'cornerstone' ),
+      __( 'Select "Media" if you would like to show your video or gallery on the index page in place of the featured image. Note: will always use "Thumbnail" in Ethos due to Stack styling.', 'cornerstone' ),
       get_post_meta( $post->ID, '_x_portfolio_index_media', true ),
       array(
         'choices' => array(
@@ -409,7 +409,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
     $default = ( $meta == '' ) ? '7500' : $meta;
 
     $this->addControl(
-      'image_full_duration',
+      'bg_image_full_duration',
       'text',
       __( 'Background Images Duration', 'cornerstone' ),
       __( 'Only applicable if multiple images are selected, creating a background image slider. Set a time in milliseconds for your images to remain on screen.', 'cornerstone' ),
@@ -421,9 +421,8 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
 
   }
 
-  public function handler( $atts ) {
+  public function handler( $post, $atts ) {
 
-    global $post;
   	extract( $atts );
 
   	$classes = explode(' ', $body_css_class );
@@ -434,7 +433,7 @@ class CS_Settings_X_Settings extends Cornerstone_Legacy_Setting_Section {
   	update_post_meta( $post->ID, '_x_entry_alternate_index_title', sanitize_text_field( $alternate_index_title ) );
   	update_post_meta( $post->ID, '_x_entry_bg_image_full', $bg_image_full );
     update_post_meta( $post->ID, '_x_entry_bg_image_full_fade', $bg_image_full_fade );
-    update_post_meta( $post->ID, '_x_entry_bg_image_full_duration', $image_full_duration );
+    update_post_meta( $post->ID, '_x_entry_bg_image_full_duration', $bg_image_full_duration );
 
     if ( $post->post_type == 'post') {
 

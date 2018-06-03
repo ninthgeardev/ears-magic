@@ -1,7 +1,5 @@
 /*global jQuery:false*/
 
-jQuery.noConflict();
-
 (function($) {
 	
 	"use strict";

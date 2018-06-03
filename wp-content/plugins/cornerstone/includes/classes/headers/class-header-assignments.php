@@ -2,14 +2,32 @@
 
 class Cornerstone_Header_Assignments extends Cornerstone_Plugin_Component {
 
+  protected $option_key = 'cornerstone_header_assignments';
+  protected $located;
+
   public function setup() {
+    add_action( 'cornerstone_delete_header', array( $this, 'assignments_deleted' ) );
     add_filter( 'cornerstone_option_model_whitelist', array( $this, 'whitelist_options' ) );
-    add_filter( 'cornerstone_option_model_load_transform', array( $this, 'load_transform' ) );
-    add_filter( 'cornerstone_option_model_save_transform', array( $this, 'save_transform' ) );
+    add_filter( 'cornerstone_option_model_load_' . $this->option_key, array( $this, 'load_transform' ) );
+    add_filter( 'cornerstone_option_model_save_' . $this->option_key, array( $this, 'save_transform' ) );
+    add_filter( 'cornerstone_option_model_permissions_' . $this->option_key, array( $this, 'permissions' ), 10, 2 );
+  }
+
+  public function assignments_deleted( $entity_id ) {
+    $data = $this->load_transform( get_option($this->option_key) );
+
+    foreach ($data as $key => $value) {
+      if ( (int) $entity_id === (int) $value ) {
+        unset($data[$key]);
+      }
+    }
+
+    update_option($this->option_key, $this->save_transform( $data ) );
+
   }
 
   public function whitelist_options( $keys ) {
-    $keys[] = 'cornerstone_header_assignments';
+    $keys[] = $this->option_key;
     return $keys;
   }
 
@@ -64,7 +82,12 @@ class Cornerstone_Header_Assignments extends Cornerstone_Plugin_Component {
       )
     );
   }
+
   public function save_transform( $data ) {
+
+    if ( ! is_array( $data ) ) {
+      $data = array();
+    }
 
     ksort($data);
 
@@ -102,15 +125,17 @@ class Cornerstone_Header_Assignments extends Cornerstone_Plugin_Component {
     $groups = array(
       'indexes' => array(
         'title' => false,
-        'tag' => 'Indexes',
+        'tag' => csi18n('common.assignments-indexes'),
         'items' => array(
           array(
             'value' => 'front',
-            'title' => 'Front Page',
+            'title' => csi18n('common.assignments-front-page'),
+            'url'   => home_url()
           ),
           array(
             'value' => 'home',
-            'title' => 'Posts Page',
+            'title' => csi18n('common.assignments-posts-page'),
+            'url'   =>  ('page' === get_option('show_on_front')) ? get_permalink(get_option('page_for_posts')) : home_url()
           )
         )
       )
@@ -135,18 +160,21 @@ class Cornerstone_Header_Assignments extends Cornerstone_Plugin_Component {
       $post_type_obj = get_post_type_object( $post->post_type );
 
       $key = 'post_type::' . $post->post_type;
+      $url = get_permalink( $post->ID );
 
       if ( ! isset( $groups[ $key ] ) ) {
         $groups[ $key ] = array(
-          'title' => sprintf( __( 'All %s', 'cornerstone' ), $post_type_obj->labels->name ),
+          'title' => sprintf( csi18n('common.assignments-all'), $post_type_obj->labels->name ),
           'tag'   => $post_type_obj->labels->singular_name,
-          'items'   => array()
+          'url'   => $url,
+          'items' => array()
         );
       }
 
       $groups[ $key ]['items'][] = array(
         'value' => $post->ID,
         'title' => $post->post_title,
+        'url'   => $url,
       );
 
     }
@@ -176,49 +204,74 @@ class Cornerstone_Header_Assignments extends Cornerstone_Plugin_Component {
     return wp_parse_args( json_decode( wp_unslash( get_option( 'cornerstone_header_assignments' ) ), true ), $this->assignment_schema() );
   }
 
-  public function locate_assignment() {
-    $assignments = $this->get_assignments();
+  public function locate_assignment( $fallback = false ) {
 
-    // Start by using the global header
-    $match = $assignments['global'];
-    $post = get_post();
+    if ( ! isset( $this->located ) ) {
 
-    if ( is_front_page() && isset( $assignments['indexes']['front'] ) ) {
-      $match = $assignments['indexes']['front'];
-    } elseif ( is_home() && isset( $assignments['indexes']['home'] ) ) {
-      $match = $assignments['indexes']['home'];
-    } elseif ( is_a( $post, 'WP_POST' ) ) {
+      $assignments = $this->get_assignments();
 
-      if ( isset( $assignments['post_types'][ $post->post_type ] ) ) {
-        $match = $assignments['post_types'][ $post->post_type ];
+      // Start by using the global header
+      $match = $assignments['global'];
+
+      if ( function_exists( 'is_shop' ) && is_shop() ) {
+        $post = get_post( wc_get_page_id( 'shop' ) );
+      } else {
+        $post = get_post();
       }
 
-      if ( isset( $assignments['posts'][ 'post-' . $post->ID ] ) ) {
-        $match = $assignments['posts'][ 'post-' . $post->ID ];
+      // Allow integrations to detect assignments
+      $match = apply_filters( 'cs_locate_header_assignment', $match, $assignments, $post );
+
+      if ( is_front_page() && isset( $assignments['indexes']['front'] ) ) {
+        $match = $assignments['indexes']['front'];
+      } elseif ( is_home() && isset( $assignments['indexes']['home'] ) ) {
+        $match = $assignments['indexes']['home'];
+      } elseif ( is_a( $post, 'WP_POST' ) ) {
+
+        if ( isset( $assignments['post_types'][ $post->post_type ] ) ) {
+          $match = $assignments['post_types'][ $post->post_type ];
+        }
+
+        $source_post_id = CS()->component('Wpml')->get_source_id_for_post($post->ID, $post->post_type);
+        if ( isset( $assignments['posts'][ 'post-' . $source_post_id ] ) ) {
+          $match = $assignments['posts'][ 'post-' . $source_post_id ];
+        }
+
       }
 
-    }
+      // Allow integrations for force assigments. Unless you have a specific
+      // reason, it is better to use the `cs_locate_header_assignment` filter above
+      // as that allows individual posts to take precedence.
+      $match = apply_filters( 'cs_match_header_assignment', $match, $assignments, $post );
 
-    // Fallback to the oldest header
-    if ( null === $match ) {
-      $posts = get_posts( array(
-        'post_type' => 'cs_header',
-        'post_status' => 'any',
-        'order' => 'ASC',
-        'posts_per_page' => 1
-      ) );
 
-      if ( ! empty( $posts) ) {
-        $match = $posts[0]->ID;
+      // Fallback to the oldest header
+      if ( $fallback && null === $match ) {
+        $posts = get_posts( array(
+          'post_type' => 'cs_header',
+          'post_status' => 'any',
+          'order' => 'ASC',
+          'posts_per_page' => 1
+        ) );
+
+        if ( ! empty( $posts) ) {
+          $match = $posts[0]->ID;
+        }
+
       }
 
+      if ( ! is_null( $match ) ) {
+        $match = (int) $match = (int) apply_filters( 'wpml_object_id', $match, 'cs_header', true, apply_filters( 'wpml_current_language', null ) );
+      }
+
+      $this->located = $match;
     }
 
-    if ( ! is_null( $match ) ) {
-      $match = (int) $match;
-    }
+    return $this->located;
+  }
 
-    return $match;
+  public function permissions( $value, $operation ) {
+    return $this->plugin->component('App_Permissions')->user_can('headers.manage_assignments');
   }
 
 }

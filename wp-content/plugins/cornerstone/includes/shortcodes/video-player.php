@@ -104,7 +104,7 @@ function x_shortcode_video_player( $atts ) {
     if ( $is_vimeo ) {
       $mime  = array( 'type' => 'video/vimeo' );
       $vimeo = ' vimeo';
-      wp_enqueue_script( 'froogaloop' );
+      wp_enqueue_script( 'mediaelement-vimeo' );
     } else if ( $is_youtube ) {
       $mime    = array( 'type' => 'video/youtube' );
       $youtube = ' youtube';
@@ -131,15 +131,25 @@ function x_shortcode_video_player( $atts ) {
 
 
   //
+  // Legacy.
+  //
+
+  GLOBAL $wp_version;
+
+  $legacy = ( version_compare( '4.9', $wp_version, '>' ) ) ? ' x-mejs-legacy-compat' : '';
+
+
+  //
   // Markup.
   //
+
   if ( ! empty( $sources ) ) {
 
     $sources = implode( '', $sources );
-    $video = "<video class=\"x-mejs{$advanced_controls}\"{$poster_attr}{$preload}{$autoplay}{$loop}{$muted}>{$sources}</video>";
+    $video = "<video class=\"x-mejs has-stack-styles{$advanced_controls}{$legacy}\"{$poster_attr}{$preload}{$autoplay}{$loop}{$muted}>{$sources}</video>";
 
   } else {
-    $video = '<span class="x-mejs-no-source">' . __( 'Video source missing', 'cornerstone' ) . '</span>';
+    $video = '<span class="x-mejs-no-source">' . csi18n('shortcodes.video-missing-source') . '</span>';
   }
 
   $output = "<div {$id} class=\"{$class}{$hide_controls}{$autoplay}{$loop}{$muted}{$no_container}{$vimeo}{$youtube}\" {$data} {$style}>"

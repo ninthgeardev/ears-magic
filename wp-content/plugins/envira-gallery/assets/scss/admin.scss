@@ -388,85 +388,6 @@ body.post-php.post-type-envira {
 	}
 }
 
-/* ==========================================================================
-   Inline Notices
-   - These are Envira-specific notices with custom styling for e.g. Instagram oAuth,
-   upgrade / upsells.
-   ========================================================================== */
-.envira-notice {
-	position: relative;
-	margin: 0 0 20px 0;
-    padding: 20px;
-    @include borderRadius(2px);
-
-    /**
-    * Heading
-    */
-    p.envira-intro {
-        border: none !important;
-        margin: 0 0 20px 0 !important;
-        padding: 0 !important;
-    }
-
-    /**
-    * Close Button
-    */
-    .notice-dismiss {
-        top: 10px;
-        right: 10px;
-        color: $white;
-
-        &:before {
-            color: $white;
-            width: 26px;
-            height: 26px;
-            font-size: 22px;
-        }
-    }
-
-    /**
-    * Success
-    */
-    &.success {
-        background: $green;
-        color: $white;
-        border: none;
-
-        /**
-        * Button background color needs to be adjusted so it displays over the green background
-        * of the success message
-        */
-        .button.button-primary {
-        	background-color: $green_alt;
-        	border-color: $green_alt;
-        }
-    }
-
-    /**
-    * Warning
-    */
-    &.warning {
-        background: #fcf8e3;
-        border: 1px solid #faebcc;
-
-        .notice-dismiss {
-        	color: $black;
-
-        	&:before {
-        		color: $black;
-        	}	
-        }
-    }
-
-    /**
-    * Error
-    */
-    &.error {
-        border-top: 1px solid #dc3232;
-        border-right: 1px solid #dc3232;
-        border-bottom: 1px solid #dc3232;
-    }
-}
 
 /* ==========================================================================
    Table, Add, Edit Screens
@@ -634,4 +555,58 @@ body.envira-whitelabel {
 
 body.rtl.post-type-envira div.wrap a.page-title-action {
     left: -235px;
+}
+body.rtl ul#envira-tabs-nav {
+	float: right;
+}
+
+body.rtl form#post.envira-gallery #poststuff #envira-gallery-settings #envira-tabs, 
+body.rtl form#post.envira-gallery #poststuff #envira-albums-settings #envira-tabs {
+	margin: 0 160px 0 0;
+}
+
+body.rtl form#post.envira-gallery #poststuff #envira-gallery-settings #envira-tabs #envira-tab-images nav ul.envira-right-options, 
+body.rtl form#post.envira-gallery #poststuff #envira-albums-settings #envira-tabs #envira-tab-images nav ul.envira-right-options {
+	left: 20px;
+	right: inherit;
+	li.envira-select {
+		text-align: left;
+	}
+}
+
+/* ==========================================================================
+   Default Addon Adjustment
+   ========================================================================== */
+
+body.post-type-envira.envira-default-success,
+body.post-type-envira_album.envira-default-success {
+	/**
+	* Wrapper
+	*/
+	div.wrap {
+		a.page-title-action {
+			top: -108px;
+		}
+	}
+	#wpbody-content {
+		#message {
+			margin-top: 20px;
+		}
+	}
+}
+
+/* ==========================================================================
+   Debug Screen
+   ========================================================================== */
+
+#envira-settings-debug #debug-textarea {
+	height: 500px;
+	width: 80%;
+}
+
+/* ==========================================================================
+   Modal General
+   ========================================================================== */
+.envira-addons .hidden {
+  display: none; 
 }

@@ -38,7 +38,7 @@ class Cornerstone_Plugin extends Cornerstone_Plugin_Base {
 	 * @return array
 	 */
 	public function settings() {
-		return wp_parse_args( get_option( 'cornerstone_settings', array() ), $this->config( 'common/default-settings' ) );
+		return wp_parse_args( get_option( 'cornerstone_settings', array() ), $this->config_group( 'common/default-settings' ) );
 	}
 
 	/**
@@ -56,25 +56,27 @@ class Cornerstone_Plugin extends Cornerstone_Plugin_Base {
 	public function preinitBefore() {
 
 		// Register class autoloader
-		$this->autoload_directories = glob( self::$instance->path( 'includes/classes' ) . '/*' );
+    $classes = glob( self::$instance->path( 'includes/classes' ) . '/*' );
+    $classic_classes = glob( self::$instance->path( 'includes/classes/classic' ) . '/*' );
+    $this->autoload_directories = array_merge( $classes, $classic_classes );
 		spl_autoload_register( array( __CLASS__, 'autoloader' ) );
 
-	}
-
-	public function adminBefore() {
-		// Version migrations
-		add_action( 'cornerstone_updated', array( $this, 'update' ) );
+    add_action( 'cornerstone_updated', array( $this, 'update' ) );
 	}
 
 	public function update( $prior ) {
-
-		//delete_option( 'cs_legacy_ajax' );
 
 		/**
 		 * Run if coming from a version prior to Before 1.0.7
 		 * if ( version_compare( $prior, '1.0.7', '<' ) ) {
 		 * }
 		 */
+
+    // if ( ! is_null( $prior ) ) {
+    //
+    // }
+
+    CS()->component('Cleanup')->clean_generated_styles();
 
 	}
 
@@ -115,13 +117,4 @@ class Cornerstone_Plugin extends Cornerstone_Plugin_Base {
  */
 function CS() {
 	return Cornerstone_Plugin::instance();
-}
-
-
-/**
- * Text Domain helper method
- * @return string  text domain
- */
-function csl18n() {
-	return CS()->td();
 }

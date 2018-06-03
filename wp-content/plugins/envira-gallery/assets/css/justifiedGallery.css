@@ -27,6 +27,13 @@
   -webkit-backface-visibility: hidden;
   -webkit-transform:translate3d(0,0,0);
 }
+.envira-js-desaturate:hover,
+.envira-js-blur:hover,
+.envira-js-vintage:hover,
+.envira-js-threshold:hover {
+  filter: none;
+  -webkit-filter: none;
+}
 /*!
  * Justified Gallery - v3.6.2
  * http://miromannino.github.io/Envira-jusTified-gallery/

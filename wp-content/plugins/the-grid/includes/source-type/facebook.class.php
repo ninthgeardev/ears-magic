@@ -239,7 +239,7 @@ class The_Grid_Facebook {
 			
 		}
 		
-		$this->get_response('https://graph.facebook.com/'.$this->facebook_user.'/posts?'.$this->request_query());
+		$this->get_response('https://graph.facebook.com/v2.12/'.$this->facebook_user.'/feed?'.$this->request_query());
 
 	}
 	
@@ -256,7 +256,7 @@ class The_Grid_Facebook {
 
 		}
 
-		$this->get_response('https://graph.facebook.com/'.$this->facebook_group_id.'/feed?'.$this->request_query());
+		$this->get_response('https://graph.facebook.com/v2.12/'.$this->facebook_group_id.'/feed?'.$this->request_query());
 	
 	}
 	
@@ -273,7 +273,7 @@ class The_Grid_Facebook {
 
 		}
 		
-		$this->get_response('https://graph.facebook.com/'.$this->facebook_album_id.'/photos?'.$this->request_query());
+		$this->get_response('https://graph.facebook.com/v2.12/'.$this->facebook_album_id.'/photos?'.$this->request_query());
 	
 	}
 	
@@ -283,8 +283,8 @@ class The_Grid_Facebook {
 	*/
 	public function request_query(){
 
-		$oauth = json_decode( $this->get_oauth() );
-		$oauth = isset( $oauth->access_token ) ? 'access_token=' . $oauth->access_token : 'access_token=null';
+		$access_token = $this->get_oauth();
+		$oauth = $access_token ? 'access_token=' . $access_token : 'access_token=null';
 
 		return $oauth . $this->request_fields() . '&offset=' . $this->grid_data['offset'] . '&limit=' . $this->grid_data['item_number'];
 	
@@ -298,7 +298,7 @@ class The_Grid_Facebook {
 		
 		$fields  = '&fields=';
 		$fields .= 'likes.summary(true),comments.summary(true),shares,';
-		$fields .= 'id,object_id,source,type,status_type,link,from,name,message,story,created_time,picture,full_picture,attachments{media,subattachments}';
+		$fields .= 'id,from,object_id,source,type,status_type,link,name,message,story,created_time,picture,full_picture,attachments{media,subattachments}';
 		
 		return $fields;
 		
@@ -309,28 +309,39 @@ class The_Grid_Facebook {
 	* @since 2.0.0
 	*/
 	public function get_oauth() {
-		
-		$oauth = 'https://graph.facebook.com/oauth/access_token?type=client_cred&client_id='.$this->app_ID.'&client_secret='.$this->app_secret;
-		
-		$transient_name = 'tg_grid_' . md5($oauth);
 
-		if ($this->transient_sec > 0 && ($transient = get_transient($transient_name)) !== false) {
-			$oauth = $transient;
-		} else {
-			$oauth = wp_remote_fopen($oauth);
-			$json = json_decode($oauth);
-			if (isset($json->error->message)) {
-				$error_msg  = __( 'Sorry, an error occurs from your Facebook App:', 'tg-text-domain' );
-				$error_msg .= ' '.$json->error->message;
-				throw new Exception($error_msg);
-			} else {
-				set_transient($transient_name, $oauth, $this->transient_sec);
-			}
+		$oauth = add_query_arg( array(
+			'type'          => 'client_cred',
+			'client_id'     => $this->app_ID,
+			'client_secret' => $this->app_secret
+		), 'https://graph.facebook.com/oauth/access_token' );
+
+		$transient_name = 'tg_grid_' . md5( $oauth );
+
+		if ( $this->transient_sec > 0 && ( $transient = get_transient( $transient_name ) ) !== false ) {
+			return $transient;
 		}
 
-		return $oauth;
+		$oauth = wp_remote_fopen( $oauth );
+		$oauth = json_decode( $oauth );
+
+		if ( isset( $oauth->error->message ) ) {
+
+			$error_msg  = __( 'Sorry, an error occurs from your Facebook App:', 'tg-text-domain' );
+			$error_msg .= ' ' . $oauth->error->message;
+			throw new Exception( $error_msg );
+
+		}
+
+		if ( isset( $oauth->access_token ) ) {
+
+			set_transient( $transient_name, $oauth->access_token, $this->transient_sec );
+			return $oauth->access_token;
+
+		}
 	
 	}
+	
 	
 	/**
 	* Get url response (transient)
@@ -389,7 +400,8 @@ class The_Grid_Facebook {
 		    return isset($data->name) ? (string) $data->name : null;
 	    } else if (isset($data->message)) {
 			$attributes = ' target="_blank" class="tg-item-social-link"'; 
-			$message    = preg_replace('/(https?:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/i', '<a href="$1"'.$attributes.'>$1</a>', $data->message);
+			$message    = preg_replace('/\b(?:(?:https?|ftp|file):\/\/|www\.|ftp\.)[-A-Z0-9+&@#\/%=~_|$?!:,.]*[A-Z0-9+&@#\/%=~_|$]/i', '<a href="$0"'.$attributes.'>$0</a>', $data->message);
+			//$message    = preg_replace('/(https?:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/i', '<a href="$1"'.$attributes.'>$1</a>', $data->message);
 			$message    = preg_replace('/#([\\d\\w]+)/', '<a href="https://www.facebook.com/hashtag/$1?source=feed_text&story_id='.$data->id.'"'.$attributes.'>$0</a>', $message);
 			return $message;
 		} else if (isset($data->story)) {
@@ -405,6 +417,10 @@ class The_Grid_Facebook {
 	* @since 2.0.0
 	*/
 	public function get_user_picture($data) {
+		
+		if ( ! isset( $data->from->id ) ) {
+			return;
+		}
 		
 		if (isset($data->from->id) && !empty($data->from->id) && !array_key_exists($data->from->id, $this->facebook_user_id)){
 			
@@ -514,27 +530,18 @@ class The_Grid_Facebook {
 	* @since 2.0.0
 	*/
 	public function get_video($data) {
-		
-		if (isset($data->type) && $data->type == 'video' && isset($data->object_id) && !empty($data->object_id)) {
-			
-			$video_url  = 'http://graph.facebook.com/'.$data->object_id;
-			$video_json = json_decode(wp_remote_fopen(stripslashes($video_url)));
-			
-			if (isset($video_json->source) && !empty($video_json->source)) {
-				
-				return array(
-					'type'     => 'video',
-					'duration' => null,
-					'source'   => array(
-						'mp4'   => $video_json->source,
-					),
-				);
-				
-			}
-			
+
+		if ( isset( $data->type ) && $data->type == 'video' && isset( $data->source ) && ! empty( $data->source ) ) {
+
+			return array(
+				'type'     => 'video',
+				'duration' => null,
+				'source'   => array(
+					'mp4' => $data->source,
+				)
+			);
+
 		}
-		
-		return;
 			
 	}
 	 

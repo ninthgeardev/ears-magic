@@ -6,7 +6,7 @@ class Cornerstone_Settings_Handler extends Cornerstone_Plugin_Component {
 	public function setup_controls() {
 
 		$this->settings = CS()->settings();
-		$controls = $this->plugin->config( 'admin/settings-controls' );
+		$controls = $this->plugin->config_group( 'admin/settings-controls' );
 
 		foreach ($controls as $key => $value) {
 			$controls[$key]['context'] = 'settings';
@@ -57,7 +57,8 @@ class Cornerstone_Settings_Handler extends Cornerstone_Plugin_Component {
 				'default'      => 'admin/forms/text',
 				'checkbox'     => 'admin/forms/checkbox',
 				'multi-select' => 'admin/forms/multi-select',
-				'text'         => 'admin/forms/text',
+        'select'       => 'admin/forms/select',
+        'text'         => 'admin/forms/text',
 			);
 
 		}
@@ -122,6 +123,24 @@ class Cornerstone_Settings_Handler extends Cornerstone_Plugin_Component {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return cs_send_json_error();
 		}
+
+    if ( isset( $data['permissions'] ) ) {
+
+      $permissions = json_decode( wp_unslash($data['permissions']), true );
+
+      if ( is_null( $permissions ) ) {
+        return cs_send_json_error(array('Unable to decode permissions', $data['permissions']));
+      }
+
+      $save_permissions = $this->plugin->component('App_Permissions')->update_stored_permissions( $permissions );
+
+      if ( is_wp_error( $save_permissions ) ) {
+        return cs_send_json_error( $save_permissions );
+      }
+
+      unset($data['permissions']);
+
+    }
 
 		$this->setup_controls();
 		$data = $this->controls->sanitize( $data );

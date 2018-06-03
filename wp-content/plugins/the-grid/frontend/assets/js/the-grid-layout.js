@@ -5757,13 +5757,23 @@ if ( typeof define === 'function' && define.amd ) {
 		return justified;
 		
 	}
-	
-	if ( typeof define === 'function' && define.amd ){
-		// AMD
-		define(['TG_Layout/js/TG_Layout-mode'], cellsByRowDefinition );
+
+	if ( typeof define === 'function' && define.amd ) {
+	  // AMD
+	  define( [
+		  'TG_Layout/js/layout-mode'
+		],
+		justifiedDefinition );
+	} else if ( typeof exports === 'object' ) {
+	  // CommonJS
+	  module.exports = justifiedDefinition(
+		require('TG_Layout-layout/js/layout-mode')
+	  );
 	} else {
-		// browser global
-		justifiedDefinition(window.TG_Layout.LayoutMode);
+	  // browser global
+	  justifiedDefinition(
+		window.TG_Layout.LayoutMode
+	  );
 	}
 
 })( window );

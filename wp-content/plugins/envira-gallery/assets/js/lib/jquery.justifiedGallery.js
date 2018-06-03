@@ -646,9 +646,6 @@
       });
     } else if ($.isFunction(settings.filter)) {
       // Filter using the passed function
-      console.log('test');
-      console.log(settings);
-      console.log(a.filter(settings.filter));
       return a.filter(settings.filter);
     }
   };
@@ -1081,6 +1078,7 @@
     return this.each(function (index, gallery) {
 
       var $gallery = $(gallery);
+      
       $gallery.addClass('envira-justified-gallery');
 
       var controller = $gallery.data('jg.controller');
@@ -1152,7 +1150,7 @@
     rel: null, // rewrite the rel of each analyzed links
     target: null, // rewrite the target of all links
     extension: /\.[^.\\/]+$/, // regexp to capture the extension of an image
-    refreshTime: 200, // time interval (in ms) to check if the page changes its width
+    refreshTime: 100, // time interval (in ms) to check if the page changes its width
     refreshSensitivity: 0, // change in width allowed (in px) without re-building the gallery
     randomize: false,
     sort: false, /*

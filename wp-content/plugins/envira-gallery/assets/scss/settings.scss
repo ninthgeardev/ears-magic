@@ -156,8 +156,8 @@
 #envira-tabs {
 	.form-table {
 		th, td {
-			padding-top: 40px;
-			padding-bottom: 40px;	
+			padding-top: 25px;
+			padding-bottom: 25px;	
 		}
 		th {
 			@include mq(sm) {
@@ -196,6 +196,16 @@
 			border-bottom: 0;
 		}
 	}
+	.envira-tab {
+		table.form-table {
+			tr:first-of-type th,
+			tr:first-of-type td {
+				padding-top: 0;	
+			}
+			
+		}
+	}
+
 	.description {
 		color: $grey;
 		font-size: 13px;

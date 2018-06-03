@@ -245,7 +245,7 @@ if (!class_exists( 'TG_Envato_API' )) {
 			$requires = null;
 			$tested = null;
 			$versions = array();
-			
+
 			if (isset($plugin['item'])) {
 
 				// Set the required and tested WordPress version numbers.
@@ -270,7 +270,7 @@ if (!class_exists( 'TG_Envato_API' )) {
 					'author' => $plugin['item']['wordpress_plugin_metadata']['author'],
 					'version' => $plugin['item']['wordpress_plugin_metadata']['version'],
 					'description' => self::remove_non_unicode( $plugin['item']['wordpress_plugin_metadata']['description'] ),
-					'content' => preg_replace('/<img[^>]+\>/i', '', $plugin['item']['description']),
+					'content' => self::remove_non_unicode( $plugin['item']['wordpress_plugin_metadata']['description'] ),
 					'url' => $plugin['item']['url'],
 					'author_url' => (isset($plugin['item']['author_url'])) ? $plugin['item']['author_url'] : null,
 					'thumbnail_url' => (isset($plugin['item']['thumbnail_url'])) ? $plugin['item']['thumbnail_url'] : null,

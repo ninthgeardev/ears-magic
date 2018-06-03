@@ -582,9 +582,6 @@ wp.media.controller.EnviraGalleryController = wp.media.controller.State.extend( 
 
                 var list =  jQuery( 'ul#envira-gallery-output li').length;
 
-                console.log( 'list' );
-                console.log( list );
-
 				// If there are slides
 				if ( list !== 0 ){
 					//Fade out Settings header
@@ -596,9 +593,6 @@ wp.media.controller.EnviraGalleryController = wp.media.controller.State.extend( 
 
 				// Update count
 				jQuery( 'span.envira-count' ).html ( list );
-
-                console.log( 'response' );
-                console.log( response );
 
                 // Tell wp.media we've finished
 				this.trigger( 'loaded' );

@@ -12,14 +12,19 @@ if (!defined('ABSPATH')) {
 
 global $wp_query;
 
-echo The_Grid( $name );
-
 if ( ( isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'action=cs_render_element') !== false ) || ( isset( $wp_query->query_vars[ 'cornerstone-endpoint' ] ) && defined( 'DOING_AJAX' ) ) ) {
+	echo '<div class="tg-error-msg">The Grid - Preview not available in Cornerstone</div>';
+} else {
+	echo The_Grid( $name );
+}
+
+
+/*if ( ( isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'action=cs_render_element') !== false ) || ( isset( $wp_query->query_vars[ 'cornerstone-endpoint' ] ) && defined( 'DOING_AJAX' ) ) ) {
 
 	$grid_info = get_page_by_title( html_entity_decode( $name ), 'OBJECT', 'the_grid' );
 	$ID = 'grid-' . $grid_info->ID;
 
-	echo '<script type="text/javascript">';
+	echo '<script language="javascript">';
 	echo '(function($) {
 		"use strict";
 		$.TG_media_init();
@@ -30,4 +35,4 @@ if ( ( isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'acti
 	})(jQuery);';
 	echo '</script>';
 
-}
+}*/

@@ -1,6 +1,7 @@
-name: ears-magic
-recipe: pantheon
+name: earsmagic
+recipe: wordpress
 config:
   framework: wordpress
   site: ears-magic
   id: 6fd867de-dda6-4a2f-acfd-b523ae8c7946
+  webroot: .

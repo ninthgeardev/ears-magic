@@ -17,6 +17,7 @@
  * limitations under the License.
  * ========================================================== */
 ;(function($){
+	
     $(function(){
 
         // Addons Search
@@ -84,6 +85,7 @@
         var envira_addons_unlicensed_sorting = new List( 'envira-addons-unlicensed', {
             valueNames: [ 'envira-addon-title' ]
         } );
+        
         $( 'select#envira-filter-select' ).on( 'change', function() {
             if ( typeof envira_addons_licensed_sorting.sort !== 'undefined' ) {
                 envira_addons_licensed_sorting.sort( 'envira-addon-title', {
@@ -389,7 +391,6 @@
                 $(element).text(envira_gallery_addons.install);
         }
 
-
-
     });
+    
 }(jQuery));

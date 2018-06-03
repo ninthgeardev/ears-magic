@@ -309,7 +309,7 @@ class The_Grid_Twitter {
 		$include_retweets  = (isset($this->grid_data['twitter_include']) && in_array('retweets', (array) $this->grid_data['twitter_include'])) ? 'true' : 'false';
 		$exclude_replies   = (isset($this->grid_data['twitter_include']) && in_array('replies', (array) $this->grid_data['twitter_include']))  ? 'false' : 'true';
 		$twitter_max_id    = $this->max_id ? 'max_id='.$this->max_id.'&' : null;
-		
+
 		return $twitter_max_id.
 			$twitter_username.'&'.
 			$twitter_listname.
@@ -318,6 +318,7 @@ class The_Grid_Twitter {
 			'&include_entities=true'.
 			'&include_rts='.$include_retweets.
 			'&exclude_replies='.$exclude_replies.
+			'&tweet_mode=extended'.
 			'&result_type=mixed';
 	
 	}
@@ -377,11 +378,13 @@ class The_Grid_Twitter {
 	*/
 	public function tweet_text($tweet) {
 		
-		$return   = $tweet->text;
+		$reply    = isset( $tweet->in_reply_to_status_id ) && ! empty( $tweet->in_reply_to_status_id );
+		$data     = isset( $tweet->retweeted_status ) ? $tweet->retweeted_status : $tweet;
+		$text     = isset( $data->display_text_range ) && ! $reply ? mb_substr( $data->full_text, $data->display_text_range[0], $data->display_text_range[1] - $data->display_text_range[0], 'UTF-8' ) : $data->full_text;
 		$entities = array();
 
-		if (isset($tweet->entities->urls) && is_array($tweet->entities->urls)) {
-			foreach($tweet->entities->urls as $e) {
+		if (isset($data->entities->urls) && is_array($data->entities->urls)) {
+			foreach($data->entities->urls as $e) {
 				array_push($entities, array(
 					'start' => $e->indices[0],
 					'end'   => $e->indices[1],
@@ -390,8 +393,8 @@ class The_Grid_Twitter {
 			}
 		} 
 		
-		if (isset($tweet->entities->user_mentions) && is_array($tweet->entities->user_mentions)) {
-			foreach($tweet->entities->user_mentions as $e) {
+		if (isset($data->entities->user_mentions) && is_array($data->entities->user_mentions)) {
+			foreach($data->entities->user_mentions as $e) {
 				array_push($entities, array(
 					'start' => $e->indices[0],
 					'end'   => $e->indices[1],
@@ -400,8 +403,8 @@ class The_Grid_Twitter {
 			}
 		}
 		
-		if (isset($tweet->entities->hashtags) && is_array($tweet->entities->hashtags)) {
-			foreach($tweet->entities->hashtags as $e) {
+		if (isset($data->entities->hashtags) && is_array($data->entities->hashtags)) {
+			foreach($data->entities->hashtags as $e) {
 				array_push($entities, array(
 					'start' => $e->indices[0],
 					'end'   => $e->indices[1],
@@ -410,8 +413,8 @@ class The_Grid_Twitter {
 			}
 		}
 		
-		if (isset($tweet->entities->media) && is_array($tweet->entities->media)) {
-			foreach($tweet->entities->media as $e) {
+		if (isset($data->entities->media) && is_array($data->entities->media)) {
+			foreach($data->entities->media as $e) {
 				array_push($entities, array(
 					'start' => $e->indices[0],
 					'end'   => $e->indices[1],
@@ -425,12 +428,27 @@ class The_Grid_Twitter {
 		});
 	
 		foreach ($entities as $item) {
-			$startString = mb_substr($return, 0, $item['start'], 'UTF-8');
-			$endString   = mb_substr($return, $item['end'], mb_strlen($return), 'UTF-8');
-			$return = $startString . $item['repl'] . $endString;
+			$startString = mb_substr($text, 0, $item['start'], 'UTF-8');
+			$endString   = mb_substr($text, $item['end'], mb_strlen($text), 'UTF-8');
+			$text = $startString . $item['repl'] . $endString;
 		}
-	
-		return $return;
+		
+		if ( isset( $tweet->retweeted_status ) ) {
+
+			foreach( $tweet->entities->user_mentions as $e ) {
+
+				if ( $e->indices[0] === 3 && $e->indices[1] === 14 ) {
+					$replace     = '<a href="https://twitter.com/'.$e->screen_name.'" target="_blank" class="tg-item-social-link">@'.$e->screen_name.'</a>';
+					$text        = 'RT ' . $replace . ': ' . $text;
+				} else {
+					break;
+				}
+
+			}
+			
+		}
+
+		return $text;
 		
 	}
 	 
@@ -449,9 +467,9 @@ class The_Grid_Twitter {
 			foreach ((array) $response as $data) {
 				
 				if (isset($data->id_str) && $data->id_str != $this->max_id) {
-					
+
 					$image = null;
-					
+
 					if(isset($data->entities->media[0])) {
 						
 						$image = array(
@@ -471,7 +489,7 @@ class The_Grid_Twitter {
 						'url'             => isset($data->user->screen_name) ? 'https://twitter.com/'.$data->user->screen_name.'/status/'.$data->id_str : null,
 						'url_target'      => '_blank',
 						'title'           => null,
-						'excerpt'         => isset($data->text) ? $this->tweet_text($data) : null,
+						'excerpt'         => isset($data->full_text) ? $this->tweet_text($data) : null,
 						'terms'           => null,
 						'author'          => array(
 							'ID'     => isset($data->id_str) ? $data->id_str : null,

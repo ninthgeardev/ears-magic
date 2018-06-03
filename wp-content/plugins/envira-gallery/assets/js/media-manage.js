@@ -16,25 +16,26 @@ var envira_manage = window.envira_manage || {};
 	window.envira_manage = envira_manage = {
 
 		init: function(){
-
+			
+			var self = this;
+			
 			//Select Functions
-			this.select();
-			this.select_all();
-			this.clear_selected();
+			self.select();
+			self.select_all();
+			self.clear_selected();
 
 			//Sortable
-			this.sortable();
-			//this.sort_images();
+			self.sortable();
+			self.sort_images();
 
 			//List/Grid Display
-			this.display_toggle();
+			self.display_toggle();
 
 			//Items
-			this.delete_item();
-			this.bulk_delete();
-			this.edit_meta();
-			this.toggle_status();
-
+			self.delete_item();
+			self.bulk_delete();
+			self.edit_meta();
+			self.toggle_status();
 
 			this.tooltip();
 
@@ -47,7 +48,23 @@ var envira_manage = window.envira_manage || {};
 			$( document ).trigger('envriaAdminInit');
 
 		},
-
+		image_filter: function(){
+			
+			$( '#envira-filter').on( 'keyup', function(e){
+				
+				var $this = $( this ),
+					val = $this.val(),
+					items = $( '.envira-item');
+					
+					if( val != '' ){
+						
+					} else {
+						
+						//show all items
+					}
+			});
+			
+		},
 		//Toggle Image States
 		toggle_status: function(){
 
@@ -181,11 +198,11 @@ var envira_manage = window.envira_manage || {};
 		//Sort Images
 		sort_images: function(){
 
-			$(document).on('change', '#envira-config-image-sort', function(){
+			$(document).on('change', '#envira-config-image-sort, #envira-config-image-sort-dir', function(){
 
 				var $this = $(this),
-					$sort = $this.val(),
-					$direction = '',
+					$sort = $('#envira-config-image-sort').val(),
+					$direction = $('#envira-config-image-sort-dir').val(),
 					opts = {
 						  url:		envira_gallery_metabox.ajax,
 						  type:		'post',
@@ -209,7 +226,7 @@ var envira_manage = window.envira_manage || {};
 
 								  EnviraGalleryImagesUpdate( false );
 
-								  if ( $sort === 'manual' ){
+								  if ( $sort === 'manual' || $sort == '0' ) {
 
 									   $( output ).attr('data-sortable', "1" );
 
@@ -238,66 +255,82 @@ var envira_manage = window.envira_manage || {};
 		//Drag and drop
 		sortable: function(){
 
-			// Add sortable support to Envira Gallery Media items
-			$( output ).sortable( {
-				containment: output,
-				items: 'li',
-				cursor: 'move',
-				forcePlaceholderSize: true,
-				placeholder: 'dropzone',
-				helper: function( e, item ) {
+		    var is_sortable = $( output ).attr('data-sortable');
 
-					// Basically, if you grab an unhighlighted item to drag, it will deselect (unhighlight) everything else
-					if ( ! item.hasClass( 'selected' ) ) {
-						item.addClass( 'selected' ).siblings().removeClass( 'selected' );
-					}
-
-					// Clone the selected items into an array
-					var elements = item.parent().children( '.selected' ).clone();
-
-					// Add a property to `item` called 'multidrag` that contains the
-					// selected items, then remove the selected items from the source list
-					item.data( 'multidrag', elements ).siblings( '.selected' ).remove();
-
-					// Now the selected items exist in memory, attached to the `item`,
-					// so we can access them later when we get to the `stop()` callback
-
-					// Create the helper
-					var helper = $( '<li/>' );
-					return helper.append( elements );
-
-				},
-				stop: function( e, ui ) {
-
-					// Remove the helper so we just display the sorted items
-					var elements = ui.item.data( 'multidrag' );
-					ui.item.after(elements).remove();
-
-					// Send AJAX request to store the new sort order
-					$.ajax( {
-						url:		 envira_gallery_metabox.ajax,
-						type:	  'post',
-						async:	  true,
-						cache:	  false,
-						dataType: 'json',
-						data: {
-							action:	 'envira_gallery_sort_images',
-							order:	 $( output ).sortable( 'toArray' ).toString(),
-							post_id: envira_gallery_metabox.id,
-							nonce:	 envira_gallery_metabox.sort
-						},
-						success: function( response ) {
-							// Repopulate the Envira Gallery Backbone Image Collection
-							EnviraGalleryImagesUpdate( false );
-							return;
-						},
-						error: function( xhr, textStatus, e ) {
-							// Inject the error message into the tab settings area
-							$( output ).before( '<div class="error"><p>' + textStatus.responseText + '</p></div>' );
-						}
-					} );
+		    if ( is_sortable === "1" ) {
+			    
+				if ( $( output ).hasClass('ui-sortable') ){
+					$( output ).sortable( "enable" );		
 				}
-			} );
+
+				// Add sortable support to Envira Gallery Media items
+				$( output ).sortable( {
+					containment: output,
+					items: 'li',
+					cursor: 'move',
+					forcePlaceholderSize: true,
+					placeholder: 'dropzone',
+					helper: function( e, item ) {
+
+						// Basically, if you grab an unhighlighted item to drag, it will deselect (unhighlight) everything else
+						if ( ! item.hasClass( 'selected' ) ) {
+							item.addClass( 'selected' ).siblings().removeClass( 'selected' );
+						}
+
+						// Clone the selected items into an array
+						var elements = item.parent().children( '.selected' ).clone();
+
+						// Add a property to `item` called 'multidrag` that contains the
+						// selected items, then remove the selected items from the source list
+						item.data( 'multidrag', elements ).siblings( '.selected' ).remove();
+
+						// Now the selected items exist in memory, attached to the `item`,
+						// so we can access them later when we get to the `stop()` callback
+
+						// Create the helper
+						var helper = $( '<li/>' );
+						return helper.append( elements );
+
+					},
+					stop: function( e, ui ) {
+
+						// Remove the helper so we just display the sorted items
+						var elements = ui.item.data( 'multidrag' );
+						ui.item.after(elements).remove();
+
+						// Send AJAX request to store the new sort order
+						$.ajax( {
+							url:		 envira_gallery_metabox.ajax,
+							type:	  'post',
+							async:	  true,
+							cache:	  false,
+							dataType: 'json',
+							data: {
+								action:	 'envira_gallery_sort_images',
+								order:	 $( output ).sortable( 'toArray' ).toString(),
+								post_id: envira_gallery_metabox.id,
+								nonce:	 envira_gallery_metabox.sort
+							},
+							success: function( response ) {
+								// Repopulate the Envira Gallery Backbone Image Collection
+								EnviraGalleryImagesUpdate( false );
+								return;
+							},
+							error: function( xhr, textStatus, e ) {
+								// Inject the error message into the tab settings area
+								$( output ).before( '<div class="error"><p>' + textStatus.responseText + '</p></div>' );
+							}
+						} );
+					}
+				} );
+
+			} else {
+				
+				if ( $( output ).hasClass('ui-sortable') ){
+					 $( output ).sortable('disable')
+				}
+				
+			}
 
 		},
 
@@ -479,8 +512,10 @@ var envira_manage = window.envira_manage || {};
 
 		//Chosen Select boxes
 		chosen: function(){
-			 //Create the Select boxes
+			//Create the Select boxes
 			$('.envira-chosen').each(function (){
+
+				alert ('b');
 
 				//Get the options from the data.
 				var data_options = $(this).data('envira-chosen-options');

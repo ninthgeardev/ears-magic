@@ -127,7 +127,7 @@ if(!class_exists('TO_First_Media')) {
 			if (!empty($content)) {
 				
 				libxml_use_internal_errors(true);
-				$dom->loadHTML(apply_filters('the_content', $content));
+				$dom->loadHTML('<?xml encoding="UTF-8">' . apply_filters('the_content', $content));
 				$blockquotes = $dom->getElementsByTagname('blockquote');
 	
 				if ($blockquotes->length > 0) {

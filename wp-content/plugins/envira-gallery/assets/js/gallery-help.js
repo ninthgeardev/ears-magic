@@ -32,7 +32,7 @@ jQuery( document ).ready( function( $ ) {
         // }
 
         // Destroy any other instances of Envira Video iframes
-        // $( 'div.envira-video-help' ).remove();
+        $( 'div.envira-video-help' ).remove();
 
         // Get the intro paragraph
         var envira_video_paragraph = $( this ).closest( 'p.envira-intro' );

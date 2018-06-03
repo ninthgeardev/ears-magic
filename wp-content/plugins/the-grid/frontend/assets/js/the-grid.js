@@ -16,8 +16,6 @@
 /*global FOOBOX*/
 /*func = shorthand if function */
 
-jQuery.noConflict();
-
 // The Grid default settings
 var The_Grid = {
 	preview : '#tg-grid-preview-inner',
@@ -176,7 +174,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				offs,
 				realW,
 				func,
-				xhr = null;
+				xhr = null,queue = [];
 			
 			// define main DOM
 			var ID        = el.closest(The_Grid.wrapper).attr('id'),
@@ -905,7 +903,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						if ($items.find(The_Grid.grid).length > 0) {
 							$items = $items.find(The_Grid.item).removeClass('tg-item-reveal');
 						}
-						
+
 						el.append($items);              // 01. append items
 						$item = el.find(The_Grid.item); // 02. redefined $item DOM
 						$items.hide();			        // 03. hide to append with delay
@@ -915,45 +913,15 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						update_gallery();               // 07. update gallery dom
 						item_gallery();                 // 08. update animated gallery
 						exclude_item();                 // 09. only for preview mode
-
+						
 						// Remove comment tags before items (otherwise it will count 2x and multiply delay)
 						$items = $($.grep($items, function(e){ return typeof e.id !== 'undefined';}));
-						var itemNb = $items.length-1;
-						// wait all images load (mandatory for masonry layout)
-						$items.the_grid_images_loaded({
-							complete: function() {
-								var i = 0, interval;
-								$loader.hide();
-								func = (data) && $($ajaxMsg).removeClass('tg-loading');
-								func = (options.layout === 'horizontal') && el.css('min-height','');
-								func = (options.style === 'masonry' && options.layout === 'horizontal') && slider_size();
-								interval = window.tgInterval(function(){
-									// check if grid still exist during appending (prevent errors on destroy or ajax)
-									if (el.closest('body').length > 0) {	
-										func = (options.ajaxDelay) && el.TG_Layout('appended',$items.eq(i));													
-										func = (options.layout === 'horizontal') && $frame.reload();
-										// show ajax pages & reset ajax
-										if (itemNb === i || !options.ajaxDelay) {
-											count_filter(); // 10. re-count filter nb  
-											count_items();  // 11. re-count item for ajax button
-											func = (!options.ajaxDelay) && el.TG_Layout('appended',$items);
-											func = (options.layout === 'horizontal') && $frame.reload();
-											$pages.removeClass('tg-loading');
-											isAjax = false;
-											interval.clear();
-											// update 3rd party plugins lightbox
-											func = (typeof FOOBOX !== 'undefined' && $.isFunction(FOOBOX.init)) && FOOBOX.init();
-											func = ($().fancybox) && $('.tg-item a.fancybox').fancybox();
-											func = ($().prettyPhoto) && $('.tg-item  a[rel^="prettyPhoto"]').prettyPhoto();
-											// clean data
-											cleanData($item);
-											return false;
-										}
-										i++;
-									}
-								},options.ajaxDelay);
-							}
-						});
+
+						queue.push( $items );
+						if ( queue.length < 2 ) {	
+							append_items( $items );
+						}
+
 					},
 					error : function(jqXHR, textStatus, errorThrown) {
 						page = page - 1;
@@ -961,6 +929,56 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 						console.error(textStatus + " :: " + errorThrown);
 					}
 				});
+			}
+			
+			function append_items( $items ) {
+
+				var itemNb = $items.length - 1;
+
+				$items.the_grid_images_loaded({
+					complete: function() {
+						var i = 0, interval;
+						$loader.hide();
+						func = (data) && $($ajaxMsg).removeClass('tg-loading');
+						func = (options.layout === 'horizontal') && el.css('min-height','');
+						func = (options.style === 'masonry' && options.layout === 'horizontal') && slider_size();
+						interval = window.tgInterval(function(){
+							// check if grid still exist during appending (prevent errors on destroy or ajax)
+							if (el.closest('body').length > 0) {
+								el.TG_Layout( 'reLayout' );
+								func = (options.ajaxDelay) && el.TG_Layout('appended',$items.eq(i));													
+								func = (options.layout === 'horizontal') && $frame.reload();
+								// show ajax pages & reset ajax
+								if (itemNb === i || !options.ajaxDelay) {
+									count_filter(); // 10. re-count filter nb  
+									count_items();  // 11. re-count item for ajax button
+									func = (!options.ajaxDelay) && el.TG_Layout('appended',$items);
+									func = (options.layout === 'horizontal') && $frame.reload();
+									$pages.removeClass('tg-loading');
+									isAjax = false;
+									interval.clear();
+									// update 3rd party plugins lightbox
+									func = (typeof FOOBOX !== 'undefined' && $.isFunction(FOOBOX.init)) && FOOBOX.init();
+									func = ($().fancybox) && $('.tg-item a.fancybox').fancybox();
+									func = ($().prettyPhoto) && $('.tg-item  a[rel^="prettyPhoto"]').prettyPhoto();
+									// clean data
+									cleanData($item);
+
+									if ( queue.length > 0 ) {
+										queue.splice(0, 1);
+										if ( queue[0] ) {
+											append_items( queue[0] );
+										}
+									}
+										
+									return false;
+								}
+								i++;
+							}
+						},options.ajaxDelay);
+					}
+				});
+
 			}
 			
 			// only if in backend mode for preview
@@ -1277,9 +1295,9 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 					
 					$.TG_Media_Ready($this,player,'STD');
 				
-					player.bind(SC.Widget.Events.PLAY,function() {
-						$.TG_Media_Play($this);
-					});
+					/*player.bind(SC.Widget.Events.PLAY,function() {
+						//$.TG_Media_Play($this);
+					});*/
 						
 					player.bind(SC.Widget.Events.PAUSE,function() {
 						$.TG_Media_Pause($this);
@@ -1516,7 +1534,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 	
 	// on first play build iframe and init script
 	$(document).on('click', '.tg-item:not(.tg-media-init) .tg-item-button-play', function(e) {
-		
+
 		e.preventDefault();
 		
 		var $this     = $(this).closest('.tg-item'),
@@ -1537,7 +1555,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		var $this  = $(this).closest('.tg-item'),
 			method = $this.data('pause-method'),
 			player = $this.data('media-player');
-		
+
 		// pause and return if media is playing
 		if ($this.is('.tg-force-play, .tg-is-playing')){
 			$.TG_Pause_Players();
@@ -1570,6 +1588,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 
 	// Pause all kind of video/audio media
 	$.TG_Pause_Players = function() {
+		
 		$('.tg-item.tg-is-playing, .tg-item.tg-force-play').each(function() {
 			var $this  = $(this),
 				method = $this.data('pause-method'),
@@ -1672,7 +1691,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 				$('.tg-item-video-player:not(.tg-mediaelement-init), .tg-item-audio-player:not(.tg-mediaelement-init)').mediaelementplayer({
 					audioVolume: 'vertical',
 					videoVolume: 'vertical',
-					features: ['playpause', 'current', 'progress', 'fullscreen', 'volume', 'duration'],
+					features: ['playpause', 'current', 'progress', 'duration', 'volume', 'fullscreen' ],
 					startVolume: 0.8
 				});	
 				$('.tg-item-video-player, .tg-item-audio-player').addClass('tg-mediaelement-init');
@@ -1835,7 +1854,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 					media_poster = media_arr[media_id].poster;
 					media_poster = (media_poster) ? ' poster="'+media_poster+'"' : '';
 					var attribute = (autoplay) ? ' autoplay' : '';
-					media_html   = $('<video class="tolb-video" controls'+media_poster+attribute+'>'+source+'</video>');
+					media_html   = $('<video class="tolb-video" controls'+media_poster+attribute+' width="100%">'+source+'</video>');
 					load_video();
 					break;
 			}
@@ -1897,7 +1916,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		
 		function mediaelement() {
 			media_html.mediaelementplayer({
-				features: ['playpause', 'stop', 'loop', 'current', 'progress', 'duration', 'volume', 'sourcechooser', 'fullscreen'],
+				features: ['playpause', 'stop', 'loop', 'current', 'progress', 'duration', 'volume', 'fullscreen'],
 				videoVolume: 'horizontal',
 				startVolume: 0.8,
 				success: function(media, domObject) {
@@ -1989,7 +2008,7 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		e.preventDefault();
 		var id = $(this).data('tolb-id');
 		if (id) {
-			$('#'+id).trigger('click');
+			$('#'+id)[0].click();
 		}
 	});
 
@@ -2141,7 +2160,6 @@ var tg_is_mobile = (tg_global_var.is_mobile); // check is we are on a mobile dev
 		$.TO_Lightbox();	
 	});
 
-
 	// ======================================================
 	// Helpers
 	// ======================================================
@@ -2253,13 +2271,3 @@ window.tgInterval = function(a, b) {
         }
     };
 };
-
-/* jshint ignore:start */
-if (tg_global_var.mediaelement_ex) {
-// mediaelement extended for loop and source button (The Grid lightbox only)
-// Loop: http://mediaelementjs.com/examples/?name=loop
-// source chooser: https://github.com/johndyer/mediaelement/blob/master/src/js/mep-feature-sourcechooser.js	
-!function(e){e.extend(mejs.MepDefaults,{sourcechooserText:"Source Chooser"}),e.extend(MediaElementPlayer.prototype,{buildsourcechooser:function(o,t,s,c){var r=this;o.sourcechooserButton=e('<div class="mejs-button mejs-sourcechooser-button"><button type="button" aria-controls="'+r.id+'" title="'+r.options.sourcechooserText+'" aria-label="'+r.options.sourcechooserText+'"></button><div class="mejs-sourcechooser-selector"><ul></ul></div></div>').appendTo(t).delegate("input[type=checkbox]","click",function(){var o=this.value;e(this).closest(".mejs-sourcechooser-selector").find("input").removeAttr("checked"),e(this).closest(".mejs-sourcechooser-selector").find("label").removeClass("active"),e(this).next("label").addClass("active"),c.currentSrc!=o&&(currentTime=c.currentTime,paused=c.paused,c.setSrc(o),c.load(),c.addEventListener("loadedmetadata",function(){this.currentTime=currentTime},!0),c.addEventListener("canplay",function(){paused||this.play()},!0))});for(var n in c.children){var i=c.children[n];"SOURCE"!==i.nodeName||"probably"!=c.canPlayType(i.type)&&"maybe"!=c.canPlayType(i.type)||o.addSourceButton(i.src,i.title,i.type,c.src==i.src)}},addSourceButton:function(o,t,s,c){var r=this;(""===t||void 0==t)&&(t=o),s=s.split("/")[1],r.sourcechooserButton.find("ul").append(e('<li><input type="checkbox" name="'+r.id+'_sourcechooser" id="'+r.id+"_sourcechooser_"+s+'" value="'+o+'" '+(c?'checked="checked"':"")+' /><label for="'+r.id+"_sourcechooser_"+s+'">'+s+"</label></li>")),r.adjustSourcechooserBox()},adjustSourcechooserBox:function(){var e=this;e.sourcechooserButton.find(".mejs-sourcechooser-selector").height(e.sourcechooserButton.find(".mejs-sourcechooser-selector ul").outerHeight(!0))}})}(mejs.$),function(e){e.extend(MediaElementPlayer.prototype,{buildloop:function(o,t){var s=this,c=e('<div class="mejs-button mejs-loop-button '+(o.options.loop?"mejs-loop-on":"mejs-loop-off")+'"><button type="button" aria-controls="'+s.id+'" title="Toggle Loop" aria-label="Toggle Loop"></button></div>').appendTo(t).click(function(){o.options.loop=!o.options.loop,o.options.loop?c.removeClass("mejs-loop-off").addClass("mejs-loop-on"):c.removeClass("mejs-loop-on").addClass("mejs-loop-off")})}})}(mejs.$);
-
-}
-/* jshint ignore:end */

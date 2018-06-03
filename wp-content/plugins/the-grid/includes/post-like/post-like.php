@@ -118,7 +118,7 @@ if(!class_exists('TO_Post_Like')) {
 			if (!$this->debug_mode) {
 				$script = '<script type="text/javascript">';
 				$script .= 'var to_like_post = {"url":"'.admin_url( 'admin-ajax.php' ).'","nonce":"'.wp_create_nonce( 'to_like_post' ).'"};';
-				$script .= 'jQuery.noConflict(),function(a){"use strict";a(document).ready(function(){a(document).on("click",".to-post-like:not(\'.to-post-like-unactive\')",function(b){b.preventDefault();var c=a(this),d=c.data("post-id"),e=parseInt(c.find(".to-like-count").text());return c.addClass("heart-pulse"),a.ajax({type:"post",url:to_like_post.url,data:{nonce:to_like_post.nonce,action:"to_like_post",post_id:d,like_nb:e},context:c,success:function(b){b&&(c=a(this),c.attr("title",b.title),c.find(".to-like-count").text(b.count),c.removeClass(b.remove_class+" heart-pulse").addClass(b.add_class))}}),!1})})}(jQuery);';
+				$script .= '!function(t){"use strict";t(document).ready(function(){t(document).on("click",".to-post-like:not(\'.to-post-like-unactive\')",function(e){e.preventDefault();var o=t(this),n=o.data("post-id"),s=parseInt(o.find(".to-like-count").text());return o.addClass("heart-pulse"),t.ajax({type:"post",url:to_like_post.url,data:{nonce:to_like_post.nonce,action:"to_like_post",post_id:n,like_nb:s},context:o,success:function(e){e&&((o=t(this)).attr("title",e.title),o.find(".to-like-count").text(e.count),o.removeClass(e.remove_class+" heart-pulse").addClass(e.add_class))}}),!1})})}(jQuery);';
 				$script .= '</script>';
 				echo $script;
 			}

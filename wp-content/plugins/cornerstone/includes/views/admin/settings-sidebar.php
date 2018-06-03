@@ -3,11 +3,11 @@
     <div class="tco-column">
       <div class="tco-box">
         <header class="tco-box-header">
-          <h2 class="tco-box-title">Save</h2>
+          <h2 class="tco-box-title"><?php e_csi18n('admin.dashboard-settings-save-title'); ?></h2>
         </header>
         <div class="tco-box-content">
-          <p><?php _e( 'Once you are satisfied with your settings, click the button below to save them.', 'cornerstone' ); ?></p>
-          <button class="tco-btn tco-btn-block" type="submit" name="submit" data-tco-module-target="update"><?php _e( 'Update', 'cornerstone' ); ?></button>
+          <p><?php e_csi18n('admin.dashboard-settings-save-info'); ?></p>
+          <button class="tco-btn tco-btn-block" type="submit" name="submit" data-tco-module-target="update"><?php e_csi18n('admin.dashboard-settings-save-update'); ?></button>
         </div>
       </div>
     </div>

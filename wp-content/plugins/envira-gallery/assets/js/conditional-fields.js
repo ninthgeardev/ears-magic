@@ -19,7 +19,7 @@ jQuery( document ).ready( function( $ ) {
 				actions: {
 					if: [
 						{
-							element: '#envira-config-lightbox-title-display-box, #envira-config-lightbox-arrows-box, #envira-config-lightbox-toolbar-box, #envira-config-supersize-box',
+							element: '#envira-config-lightbox-title-display-box, #envira-config-lightbox-arrows-box, #envira-config-lightbox-toolbar-box',
 							action: 'show'
 						}
 					]
@@ -35,7 +35,7 @@ jQuery( document ).ready( function( $ ) {
 				actions: {
 					if: [
 						{
-							element: '#envira-config-lightbox-title-display-box, #envira-config-lightbox-arrows-box, #envira-config-lightbox-toolbar-box, #envira-config-supersize-box',
+							element: '#envira-config-lightbox-title-display-box, #envira-config-lightbox-arrows-box, #envira-config-lightbox-toolbar-box',
 							action: 'hide'
 						}
 					]
@@ -62,6 +62,26 @@ jQuery( document ).ready( function( $ ) {
 					},
 					else: {
 						element: '#envira-config-lightbox-arrows-position-box',
+						action: 'hide'
+					}
+				}
+			},
+			{	// Items that are dependent on dark and new themes
+				conditions: [
+					{
+						element: '[name="_envira_gallery[lightbox_theme]"]',
+						type: 'value',
+						operator: 'array',
+						condition: [ 'base_dark' ]
+					}
+				],
+				actions: {
+					if: {
+						element: '#envira-config-image-counter',
+						action: 'show'
+					},
+					else: {
+						element: '#envira-config-image-counter',
 						action: 'hide'
 					}
 				}
@@ -137,6 +157,23 @@ jQuery( document ).ready( function( $ ) {
 					}
 				}
 			},
+			{	// Mobile Elements Independant of Theme
+				conditions: {
+					element: '[name="_envira_gallery[mobile_lightbox]"]',
+					type: 'checked',
+					operator: 'is'
+				},
+				actions: {
+					if: {
+						element: '#envira-config-lightbox-mobile-enable-links',
+						action: 'hide'
+					},
+					else: {
+						element: '#envira-config-lightbox-mobile-enable-links',
+						action: 'show'
+					}
+				}
+			},
 			{	// Thumbnail Elements Dependant on Theme
 				conditions: [
 					{
@@ -177,6 +214,31 @@ jQuery( document ).ready( function( $ ) {
 					},
 					else: {
 						element: '#envira-config-thumbnails-height-box, #envira-config-thumbnails-width-box',
+						action: 'hide'
+					}
+				}
+			},
+			{	// Thumbnail Elements Dependant on Base Theme
+				conditions: [
+					{
+						element: '[name="_envira_gallery[lightbox_theme]"]',
+						type: 'value',
+						operator: 'array',
+						condition: [ 'base_dark', 'base_light' ]
+					},
+					{
+						element: '[name="_envira_gallery[thumbnails]"]',
+						type: 'checked',
+						operator: 'is'
+					}
+				],
+				actions: {
+					if: {
+						element: '#envira-config-thumbnail-button',
+						action: 'show'
+					},
+					else: {
+						element: '#envira-config-thumbnail-button',
 						action: 'hide'
 					}
 				}
@@ -337,6 +399,27 @@ jQuery( document ).ready( function( $ ) {
 						{
 							element: '#envira-lightbox-settings',
 							action: 'hide'
+						}
+					]
+				}
+			},
+			{	// Gallery Lightbox
+				conditions: {
+					element: '[name="_envira_gallery[lightbox_enabled]"]',
+					type: 'checked',
+					operator: 'is'
+				},
+				actions: {
+					if: [
+						{
+							element: '#envira-config-lightbox-enabled-link',
+							action: 'hide'
+						}
+					],
+					else: [
+						{
+							element: '#envira-config-lightbox-enabled-link',
+							action: 'show'
 						}
 					]
 				}

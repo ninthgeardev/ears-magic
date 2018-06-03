@@ -1177,18 +1177,33 @@ input.tomb-image {
    11. wpColorPicker Alpha
 /* ============================================================ */
 
+.tomb-type-color .wp-picker-container,
+.tomb-type-color .wp-picker-container:active {
+    display: inline-block;
+    outline: 0;
+}
+.tomb-type-color .wp-color-result-text {
+	height: 26px !important;
+    line-height: 26px !important;
+}
 .tomb-type-color .wp-color-result,
-.tomb-type-color .wp-color-result:after,
 .tomb-type-color .wp-picker-open+.wp-picker-input-wrap,
 .tomb-type-color .wp-picker-open+.wp-picker-input-wrap input {
 	vertical-align: top !important;
-	height: 26px !important;
-	line-height: 26px !important;
+	height: 28px !important;
+	line-height: 28px !important;
 	-webkit-border-radius: 0 !important;
     border-radius: 0 !important;
 	-webkit-box-shadow: none !important;
 	box-shadow: none !important;
 	margin: 0 0 2px 0 !important;
+	box-sizing: border-box !important;
+	background-color: none !important;
+}
+.tomb-type-color .wp-color-result:after {
+	height: 26px !important;
+	line-height: 26px !important;
+	box-sizing: border-box !important;
 }
 .tomb-type-color .wp-picker-open+.wp-picker-input-wrap,
 .tomb-type-color .wp-picker-open+.wp-picker-input-wrap input {
@@ -1245,7 +1260,7 @@ input.tomb-image {
 .tomb-alpha-container .ui-slider-range {
     background: transparent;
 }
-.wp-picker-container a.wp-picker-open ~ div.tomb-alpha-container {
+.wp-picker-container .wp-picker-open ~ div.tomb-alpha-container {
 	position: relative;
     display:block;
 	top: -1px;

@@ -5,20 +5,22 @@
 
 class Cornerstone_Integration_X_Theme {
 
+  protected $pro = false;
+
   /**
    * Theme integrations should provide a stylesheet function returning the stylesheet name
    * This will be matched with get_stylesheet() to determine if the integration will load
    */
   public static function stylesheet() {
-    return 'x';
+    return array( 'x', 'pro', 'xpro' );
   }
 
   /**
    * Theme integrations are loaded on the after_theme_setup hook
    */
-  public function __construct() {
+  public function theme_setup( $theme ) {
 
-    add_action( 'init', array( $this, 'init' ) );
+    add_action( 'init', array( $this, 'init' ), 20 );
     add_action( 'admin_init', array( $this, 'admin_init' ) );
 
     add_action( 'cornerstone_load_preview', array( $this, 'load_preview' ) );
@@ -29,7 +31,7 @@ class Cornerstone_Integration_X_Theme {
     add_filter( 'cornerstone_customizer_output',  '__return_false' );
 
     // Set the app slug
-    add_filter( 'cornerstone_default_app_slug', array( $this, 'x_slug' ) );
+    add_filter( 'cornerstone_default_app_slug', array( $this, 'app_slug' ) );
 
     // Don't load the Customizer
     add_filter( 'cornerstone_options_use_native',  '__return_false' );
@@ -43,9 +45,8 @@ class Cornerstone_Integration_X_Theme {
     // Declare support for page builder features
     add_filter( 'cornerstone_looks_like_support', '__return_true' );
 
-    // Shortcode generator tweaks
-    add_action( 'cornerstone_generator_preview_before', array( $this, 'shortcodeGeneratorPreviewBefore' ), -9999 );
-    add_filter( 'cornerstone_generator_map', array( $this, 'shortcodeGeneratorDemoURL' ) );
+    // No selector prefix for element styles
+    add_filter( 'cs_coalescence_selector_prefix', '__return_empty_string' );
 
     // Alias legacy shortcode names.
     add_action( 'cornerstone_shortcodes_loaded', array( $this, 'aliasShortcodes' ) );
@@ -53,17 +54,19 @@ class Cornerstone_Integration_X_Theme {
     add_filter( 'cornerstone_scrolltop_selector', array( $this, 'scrollTopSelector' ) );
     add_filter( 'cs_recent_posts_post_types', array( $this, 'recentPostTypes' ) );
 
+    add_filter( 'cornerstone_menu_item_root', array( $this, 'relocateDashboardMenuCustomItems') );
+
+    add_filter( '_cs_validation_url', 'x_addons_get_link_home' );
+
+    add_filter( 'cs_app_preference_defaults', array( $this, 'app_preference_defaults') );
+
+    add_filter( 'cs_late_styling_hook', array( $this, 'styling_hook') );
   }
 
   public function init() {
 
-    // Add Logic for additional contact methods if not overridden in a child theme
-    if ( ! function_exists( 'x_modify_contact_methods' ) ) {
-      add_filter( 'user_contactmethods', array( $this, 'modifyContactMethods' ) );
-    }
-
     // Remove empty p and br HTML elements for legacy pages not using Cornerstone sections
-    add_filter( 'the_content', 'cs_noemptyp' );
+    add_filter( 'the_content', array( $this, 'legacy_the_content') );
 
     // Enqueue Legacy font classes
     $settings = CS()->settings();
@@ -73,10 +76,14 @@ class Cornerstone_Integration_X_Theme {
 
     add_filter( 'pre_option_cs_product_validation_key', array( $this, 'validation_passthru' ) );
 
+    $front_end = CS()->component('Front_End');
+    remove_action( 'cs_the_content_late', array( $front_end, 'shim_x_before_site_end') );
+
   }
 
-  public function x_slug() {
-    return 'x';
+  public function app_slug() {
+    $slug = csi18n('app.integration-mode');
+    return ( $slug ) ? $slug :'x';
   }
 
   public function admin_init() {
@@ -158,7 +165,7 @@ class Cornerstone_Integration_X_Theme {
     cs_alias_shortcode( 'toc_item',             'x_toc_item', false );
     cs_alias_shortcode( 'visibility',           'x_visibility', false );
 
-    CS_Shortcode_Preserver::preserve( 'code' );
+    Cornerstone_Shortcode_Preserver::preserve( 'code' );
 
   }
 
@@ -172,63 +179,8 @@ class Cornerstone_Integration_X_Theme {
     return '.x-navbar-fixed-top';
   }
 
-  public function modifyContactMethods( $user_contactmethods ) {
-
-    if ( isset( $user_contactmethods['yim'] ) ) {
-      unset( $user_contactmethods['yim'] );
-    }
-
-    if ( isset( $user_contactmethods['aim'] ) ) {
-      unset( $user_contactmethods['aim'] );
-    }
-
-    if ( isset( $user_contactmethods['jabber'] ) ) {
-      unset( $user_contactmethods['jabber'] );
-    }
-
-    $user_contactmethods['facebook']   = __( 'Facebook Profile',  'cornerstone' );
-    $user_contactmethods['twitter']    = __( 'Twitter Profile',  'cornerstone' );
-    $user_contactmethods['googleplus'] = __( 'Google+ Profile',  'cornerstone' );
-
-    return $user_contactmethods;
-  }
-
-  public function shortcodeGeneratorPreviewBefore() {
-
-    remove_all_actions( 'cornerstone_generator_preview_before' );
-
-    $list_stacks = array(
-      'integrity' => __( 'Integrity',  'cornerstone' ),
-      'renew'     => __( 'Renew',  'cornerstone' ),
-      'icon'      => __( 'Icon',  'cornerstone' ),
-      'ethos'     => __( 'Ethos',  'cornerstone' )
-    );
-
-    $stack = $this->x_get_stack();
-    $stack_name = ( isset( $list_stacks[ $stack ] ) ) ? $list_stacks[ $stack ] : 'X';
-
-    printf(
-        __( 'You&apos;re using %s. Click the button below to check out a live example of this shortcode when using this Stack.', 'cornerstone' ),
-        '<strong>' . $stack_name . '</strong>'
-    );
-  }
-
-  public function shortcodeGeneratorDemoURL( $attributes ) {
-
-    if ( isset( $attributes['demo'] ) ) {
-      $attributes['demo'] = str_replace( 'integrity', $this->x_get_stack(), $attributes['demo'] );
-    }
-
-    return $attributes;
-  }
-
-  public function x_get_stack() {
-    // Some plugins abort the theme loading process in certain contexts.
-    // This provide a safe fallback for x_get_stack calls
-    if ( function_exists( 'x_get_stack' ) ) {
-      return x_get_stack();
-    }
-    return apply_filters( 'x_option_x_stack', get_option( 'x_stack', 'integrity' ) );
+  public function relocateDashboardMenuCustomItems() {
+    return 'x-addons-home';
   }
 
   public function addDefaultSettings( $settings ) {
@@ -242,6 +194,29 @@ class Cornerstone_Integration_X_Theme {
       remove_action( 'wp_footer', 'x_video_lock_output' );
     }
 
+  }
+
+  public function app_preference_defaults( $defaults ) {
+
+    $env = CS()->common()->get_env_data();
+
+    if ( 'pro' === $env['product'] ) {
+      $defaults['advanced_mode'] = true;
+    }
+
+    return $defaults;
+
+  }
+
+  public function styling_hook() {
+    return 'x_head_css';
+  }
+
+  public function legacy_the_content( $the_content ) {
+    if ( $the_content && false !== strpos($the_content, '[content_band') && false !== strpos($the_content, '[x_content_band') ) {
+      $the_content = cs_noemptyp($the_content);
+    }
+    return $the_content;
   }
 
 }

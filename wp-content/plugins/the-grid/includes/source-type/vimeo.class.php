@@ -130,28 +130,11 @@ class The_Grid_Vimeo {
 	* @since 1.0.0
 	*/
 	public function __construct($grid_data = '') {
-		
-		$this->get_API_key();
+
 		$this->get_transient_expiration();
+		$this->get_oauth();
+		$this->get_API_key();
 		$this->grid_data = $grid_data;
-		
-	}
-	
-	/**
-	* Get Vimeo API Key
-	* @since: 1.0.0
-	*/
-	public function get_API_key(){
-		
-		$this->api_key = trim(get_option('the_grid_vimeo_api_key', ''));
-		
-		if (empty($this->api_key)) {
-			$error_msg  = __( 'You didn\'t authorize The Grid to', 'tg-text-domain' );
-			$error_msg .= ' <a style="text-decoration: underline;" href="'.admin_url('admin.php?page=the_grid_global_settings').'">';
-			$error_msg .= __( 'connect to Vimeo.', 'tg-text-domain' );
-			$error_msg .= '</a>';
-			throw new Exception($error_msg);
-		}
 		
 	}
 
@@ -164,7 +147,87 @@ class The_Grid_Vimeo {
 		$this->transient_sec = apply_filters('tg_transient_vimeo', 3600);
 		
 	}
-	
+
+	/**
+	* Get url response (transient)
+	* @since 2.0.0
+	*/
+	public function get_oauth() {
+
+		$client_id      = trim( get_option( 'the_grid_vimeo_client_id', '' ) );
+		$client_secrets = trim( get_option( 'the_grid_vimeo_client_secrets', '' ) );
+
+		if ( empty( $client_id ) || empty( $client_secrets ) ) {
+			return;
+		}
+
+		$oauth = 'https://api.vimeo.com/oauth/authorize/client?grant_type=client_credentials&scope=public&private';
+		$args  = array(
+			'headers'  => array(
+				'Authorization' => 'Basic ' . base64_encode( $client_id . ':' . $client_secrets ),
+				'Content-Type'  => 'application/json'
+			),
+			'timeout' => 30
+		);
+
+		$transient_name = 'tg_grid_' . md5( $client_id . $client_secrets );
+
+		if ( ( $transient = get_transient( $transient_name) ) !== false ) {
+			$this->api_key = $transient;
+		} else {
+
+			$response = wp_remote_post( $oauth, $args );
+		
+			if ( is_wp_error( $response ) ) {
+
+				$error_msg  = __( 'Sorry, an error occurs from your Vimeo API:', 'tg-text-domain' );
+				$error_msg .= ' ' . $response->get_error_message();
+				throw new Exception( $error_msg );
+
+			} else {
+
+				$body = json_decode( $response['body'] );
+
+				if ( isset( $body->access_token ) ) {
+
+					$this->api_key = $body->access_token;
+					set_transient( $transient_name, $this->api_key, 0 );
+
+				} else {
+
+					$error_msg  = __( 'Sorry, your Vimeo Client ID and Secrets are not valid.', 'tg-text-domain' );
+					throw new Exception( $error_msg );
+
+				}
+
+			}
+
+		}
+
+	}
+
+	/**
+	* Get Vimeo API Key
+	* @since: 1.0.0
+	*/
+	public function get_API_key(){
+		
+		if ( $this->api_key ) {
+			return;
+		}
+		
+		$this->api_key = trim(get_option('the_grid_vimeo_api_key', ''));
+		
+		if ( empty( $this->api_key ) ) {
+			$error_msg  = __( 'You didn\'t authorize The Grid to', 'tg-text-domain' );
+			$error_msg .= ' <a style="text-decoration: underline;" href="'.admin_url('admin.php?page=the_grid_global_settings').'">';
+			$error_msg .= __( 'connect to Vimeo.', 'tg-text-domain' );
+			$error_msg .= '</a>';
+			throw new Exception($error_msg);
+		}
+		
+	}
+
 	/**
 	* Return array of data
 	* @since 1.0.0
@@ -264,7 +327,7 @@ class The_Grid_Vimeo {
 	*/
 	public function get_user($user){
 		
-		$url = 'https://api.vimeo.com/users/'.$user.'/?access_token='.$this->api_key;
+		$url = 'https://api.vimeo.com/users/'.$user.'?access_token='.$this->api_key;
 		$response = $this->get_response($url);
 
 		if (isset($response) && !empty($response)){

@@ -9,7 +9,7 @@
  * Plugin Name:  The Grid
  * Plugin URI:   http://www.theme-one.com/the-grid/
  * Description:  The Grid - Create advanced grids for any post type with endless possibilities (no programming knowledge required)
- * Version:      2.4.0
+ * Version:      2.6.56
  * Author:       Themeone
  * Author URI:   http://www.theme-one.com/
  * Text Domain:  tg-text-domain
@@ -34,7 +34,7 @@ if (!class_exists('The_Grid_Plugin')) {
 		*
 		* @var string
 		*/
-		public $plugin_version = '2.4.0';
+		public $plugin_version = '2.6.56';
 		
 		/**
 		* Plugin Slug
@@ -167,7 +167,7 @@ if (!class_exists('The_Grid_Plugin')) {
 			// Register The Grid post type
 			add_action( 'init', array( &$this, 'register_post_type' ) );
 			// Add post format for any kind of post type
-			add_action( 'current_screen', array( &$this, 'post_formats' ) );
+			add_action( 'init', array( &$this, 'post_formats' ) );
 			// Register The Grid additionnal image sizes
 			add_action( 'after_setup_theme', array( &$this, 'add_image_size' ) );
 			
@@ -180,7 +180,7 @@ if (!class_exists('The_Grid_Plugin')) {
 			register_activation_hook( __FILE__, array( &$this, 'plugin_activated' ) );
 			// Make changes on plugin deactivation
 			register_deactivation_hook( __FILE__, array( &$this, 'plugin_deactivated' ) );
-			
+
 		}
 		
 		/**
@@ -255,7 +255,7 @@ if (!class_exists('The_Grid_Plugin')) {
 			$post_format = get_option('the_grid_post_formats', false);
 			
 			// Add post formats support if option enable in global settings
-			if ($post_format == true) {
+			if ( $post_format ) {
 				
 				// Post formats supported by The Grid Plugin
 				add_theme_support('post-formats', array('gallery', 'video', 'audio', 'quote', 'link'));
@@ -267,13 +267,16 @@ if (!class_exists('The_Grid_Plugin')) {
 				unset($post_types['attachment']);
 				
 				foreach ($post_types as $slug => $name) {
-					add_post_type_support($slug, 'post-formats');
+
+					add_post_type_support( $slug, 'post-formats' );
+					register_taxonomy_for_object_type( 'post_format', $slug );
+
 				}
 				
 			}
 			
 		}
-		
+
 		/**
 		* Add image sizes to Wordpress
 		* @since 1.0.0

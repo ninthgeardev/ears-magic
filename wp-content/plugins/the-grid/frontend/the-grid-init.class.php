@@ -243,7 +243,9 @@ class The_Grid_Init {
 	* @since 1.0.0
 	*/
 	public function mediaelement_styles() {
-		
+
+		global $wp_version;
+
 		if ($this->grid_options['mediaelement'] && $this->grid_options['mediaelement_ex']) {
 			
 			wp_dequeue_style('wp-mediaelement');       // native Wordpress
@@ -252,9 +254,18 @@ class The_Grid_Init {
 			wp_deregister_style('mediaelementplayer'); // alternative Theme	
 				
 			if ($this->debug_mode) {
-				wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement.css', array(), TG_VERSION);
+				if ( version_compare( $wp_version, '4.9', '>=' ) ) {
+					wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement.css', array(), TG_VERSION);
+				} else {
+					wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement-old.css', array(), TG_VERSION);
+				}
+				
 			} else {
-				wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement.min.css', array(), TG_VERSION);
+				if ( version_compare( $wp_version, '4.9', '>=' ) ) {
+					wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement.min.css', array(), TG_VERSION);
+				} else {
+					wp_enqueue_style('wp-mediaelement', TG_PLUGIN_URL . 'frontend/assets/css/wp-mediaelement-old.min.css', array(), TG_VERSION);
+				}
 			}
 			
 		}

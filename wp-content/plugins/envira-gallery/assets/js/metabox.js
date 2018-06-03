@@ -31,5 +31,9 @@ jQuery( document ).ready( function( $ ) {
 
 	// Run the above conditions on load.
 	$( 'select[name="_envira_gallery[image_size]"]' ).trigger( 'change' );
-
+	
+	$('#envira-gallery.postbox').on("dragstart", function(e) {
+		return false;
+	});
+	
 } );
