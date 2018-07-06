@@ -18,8 +18,10 @@ $categories = get_categories( array( 'include' => x_get_option( 'x_ethos_filtera
       <i class="x-icon-chevron-down" data-x-icon="&#xf078;"></i>
     </a>
     <ul class="x-index-filters-menu unstyled">
-      <?php foreach ( $categories as $category ) { ?>
         <?php static $i = 1; $selected = ( $i == 1 ) ? 'class="selected"' : ''; ?>
+        <li><a href="#" <?php echo $selected; ?> data-category-id="0"><?php _e( 'All', '__x__' ); ?></a></li>
+
+        <?php foreach ( $categories as $category ) { ?>
 
         <li><a href="#" <?php echo $selected; ?> data-category-id="<?php echo $category->term_id ?>"><?php echo $category->name; ?></a></li>
 
@@ -68,7 +70,7 @@ $categories = get_categories( array( 'include' => x_get_option( 'x_ethos_filtera
   jQuery('.x-index-filters').click(function(e) {
     e.preventDefault();
     var $this = jQuery(this);
-    $this.parent().find('ul').slideToggle(600, 'easeOutExpo');
+    $this.parent().find('ul').slideToggle(600, 'xEaseOutExpo');
     if ( $this.hasClass('selected') ) {
       $this.removeClass('selected');
     } else {
@@ -92,6 +94,10 @@ $categories = get_categories( array( 'include' => x_get_option( 'x_ethos_filtera
         $this.find('.x-btn-filterable').css({ 'display' : 'block' });
       } else {
         $this.css({ 'display' : 'none', 'visibility' : 'hidden' });
+      }
+      if ( $filter_cat === 0 ) {
+        $this.css({ 'display' : 'block', 'visibility' : 'visible' });
+        $this.find('.x-btn-filterable').css({ 'display' : 'block' });
       }
     });
   });

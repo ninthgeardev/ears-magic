@@ -9,143 +9,237 @@
 // =============================================================================
 // TABLE OF CONTENTS
 // -----------------------------------------------------------------------------
-//   01. Set Paths
-//   02. Require Files
+//   01. Boot Registry
+//   02. Bootstrap Class
+//   03. Content Width
+//   04. Localization
 // =============================================================================
 
-// Set Paths
+// Boot Registry
 // =============================================================================
 
-$func_path = 'framework/functions';
-$glob_path = 'framework/functions/global';
-$admn_path = 'framework/functions/global/admin';
-$eque_path = 'framework/functions/global/enqueue';
-$plgn_path = 'framework/functions/global/plugins';
+function x_boot_registry() {
+  return array(
+    'preinit' => array(
+      'functions/helpers',
+      'functions/thumbnails',
+      'functions/setup',
+
+      'tco/tco',
+      'legacy/setup',
+      'functions/fonts',
+      'functions/custom-sidebars',
+
+      'functions/portfolio',
+      'functions/plugins/setup',
+      'functions/updates/class-theme-updater',
+      'functions/updates/class-plugin-updater'
+    ),
+
+    'init' => array(),
+
+    'front_end' => array(
+      'functions/frontend/view-routing',
+      'functions/frontend/styles',
+      'functions/frontend/scripts',
+      'functions/frontend/content',
+      'functions/frontend/classes',
+      'functions/frontend/meta',
+      'functions/frontend/integrity',
+      'functions/frontend/renew',
+      'functions/frontend/icon',
+      'functions/frontend/ethos',
+      'functions/frontend/social',
+      'functions/frontend/breadcrumbs',
+      'functions/frontend/pagination',
+      'functions/frontend/featured',
+      'functions/frontend/conditionals',
+    ),
+
+    'logged_in' => array(
+
+    ),
+
+    'admin' => array(
+      'functions/admin/class-validation',
+      'functions/admin/class-validation-updates',
+      'functions/admin/class-validation-theme-options-manager',
+      'functions/admin/class-validation-extensions',
+      'functions/admin/setup',
+      'functions/admin/customizer',
+      'functions/admin/meta-boxes',
+      'functions/admin/meta-entries',
+      'functions/admin/taxonomies'
+    ),
+
+    'app_init' => array(
+      'functions/theme-options',
+    ),
+
+    'ajax' => array()
+
+  );
+}
 
 
 
-// Require Files
+// Bootstrap Class
 // =============================================================================
 
+class X_Bootstrap {
 
-//
-// Debugging, conditionals, helpers, and stack data.
-//
+  private static $instance;
+  protected $registry = array();
+  protected $theme_option_defaults = array();
 
-require_once( $glob_path . '/debug.php' );
-require_once( $glob_path . '/conditionals.php' );
-require_once( $glob_path . '/helper.php' );
-require_once( $glob_path . '/stack-data.php' );
-require_once( $glob_path . '/tco-setup.php' );
+  public function boot() {
 
+    // Define Path / URL Constants
+    // ---------------------------
 
-//
-// Admin.
-//
+    define( 'X_TEMPLATE_PATH', get_template_directory() );
+    define( 'X_TEMPLATE_URL', get_template_directory_uri() );
 
-require_once( $admn_path . '/thumbnails/setup.php' );
-require_once( $admn_path . '/setup.php' );
-require_once( $admn_path . '/migration.php' );
-require_once( $admn_path . '/meta/setup.php' );
-require_once( $admn_path . '/sidebars.php' );
-require_once( $admn_path . '/widgets.php' );
-require_once( $admn_path . '/custom-post-types.php' );
-require_once( $admn_path . '/customizer/setup.php' );
-require_once( $admn_path . '/addons/setup.php' );
+    // Preboot
+    // -------
 
+    $x_boot_files = glob( X_TEMPLATE_PATH . '/framework/load/*.php' );
 
-//
-// Enqueue styles and scripts.
-//
+    sort( $x_boot_files );
 
-require_once( $eque_path . '/styles.php' );
-require_once( $eque_path . '/scripts.php' );
+    foreach ( $x_boot_files as $filename ) {
+      $file = basename( $filename, '.php' );
+      if ( file_exists( $filename ) && apply_filters( "x_pre_boot_$file", '__return_true' ) ) {
+        require_once( $filename );
+      }
+    }
 
 
-//
-// Global functions.
-//
+    // Set Asset Revision Constant (For Cache Busting)
+    // -----------------------------------------------
 
-require_once( $glob_path . '/meta.php' );
-require_once( $glob_path . '/featured.php' );
-require_once( $glob_path . '/pagination.php' );
-require_once( $glob_path . '/navbar.php' );
-require_once( $glob_path . '/breadcrumbs.php' );
-require_once( $glob_path . '/classes.php' );
-require_once( $glob_path . '/portfolio.php' );
-require_once( $glob_path . '/social.php' );
-require_once( $glob_path . '/content.php' );
-require_once( $glob_path . '/remove.php' );
+    define( 'X_ASSET_REV', X_VERSION );
+
+    // Preinit
+    // --------
+
+    $this->registry = x_boot_registry();
+    $this->boot_context('preinit');
+
+    // Theme Option Defaults
+    // ---------------------
+    $this->theme_option_defaults = include X_TEMPLATE_PATH . '/framework/data/option-defaults.php';
+
+    if ( is_admin() ) {
+      $this->boot_context('admin');
+    }
+
+    add_action( 'init',                               array( $this, 'init' ) );
+    add_action( 'admin_init',                         array( $this, 'ajax_init' ) );
+    add_action( 'cornerstone_before_boot_app',        array( $this, 'app_init' ) );
+    add_action( 'cornerstone_before_custom_endpoint', array( $this, 'app_init' ) );
+    add_action( 'cornerstone_before_admin_ajax',      array( $this, 'app_init' ) );
+    add_action( 'cornerstone_before_admin_ajax',      array( $this, 'ajax_init' ) );
+    add_action( 'cornerstone_before_custom_endpoint', array( $this, 'ajax_init' ) );
 
 
-//
-// Stack specific functions.
-//
 
-require_once( $func_path . '/integrity.php' );
-require_once( $func_path . '/renew.php' );
-require_once( $func_path . '/icon.php' );
-require_once( $func_path . '/ethos.php' );
+  }
 
+  public function init() {
 
-//
-// Integrated plugins.
-//
+    $this->boot_context('init');
 
-require_once( $plgn_path . '/cornerstone.php' );
+    if ( ! is_admin() ) {
+      $this->boot_context('front_end');
+    }
 
-if ( X_BBPRESS_IS_ACTIVE ) {
-  require_once( $plgn_path . '/bbpress.php' );
+    if ( is_user_logged_in() ) {
+      $this->boot_context('logged_in');
+    }
+
+  }
+
+  public function admin_init() {
+    $this->boot_context('admin_init');
+  }
+
+  public function app_init() {
+    $this->boot_context('app_init');
+  }
+
+  public function ajax_init() {
+    if ( defined( 'DOING_AJAX' ) ) {
+      $this->boot_context('ajax');
+    }
+  }
+
+  public function boot_context( $context ) {
+
+    if ( ! isset( $this->registry[$context] ) ) {
+      return;
+    }
+
+    foreach ( $this->registry[$context] as $file ) {
+      require_once( X_TEMPLATE_PATH . "/framework/$file.php" );
+    }
+
+    do_action( 'x_boot_' . $context );
+
+  }
+
+  public static function instance() {
+    if ( ! isset( self::$instance ) ) {
+      self::$instance = new X_Bootstrap();
+    }
+    return self::$instance;
+  }
+
+  public function get_theme_option_defaults() {
+    return $this->theme_option_defaults;
+  }
+
+  public function get_theme_option_default( $key ) {
+    return isset( $this->theme_option_defaults[$key]) ? $this->theme_option_defaults[$key] : false;
+  }
+
 }
 
-if ( X_BUDDYPRESS_IS_ACTIVE ) {
-  require_once( $plgn_path . '/buddypress.php' );
+function x_bootstrap() {
+  return X_Bootstrap::instance();
 }
 
-if ( X_CONVERTPLUG_IS_ACTIVE ) {
-  require_once( $plgn_path . '/convertplug.php' );
-}
+x_bootstrap()->boot();
 
-if ( X_ENVIRA_GALLERY_IS_ACTIVE ) {
-  require_once( $plgn_path . '/envira-gallery.php' );
-}
 
-if ( X_ESSENTIAL_GRID_IS_ACTIVE ) {
-  require_once( $plgn_path . '/essential-grid.php' );
-}
 
-if ( X_LAYERSLIDER_IS_ACTIVE ) {
-  require_once( $plgn_path . '/layerslider.php' );
-}
+// Content Width
+// =============================================================================
 
-if ( X_REVOLUTION_SLIDER_IS_ACTIVE ) {
-  require_once( $plgn_path . '/revolution-slider.php' );
-}
+if ( ! isset( $content_width ) ) :
 
-if ( X_SOLILOQUY_IS_ACTIVE ) {
-  require_once( $plgn_path . '/soliloquy.php' );
-}
+  $stack = x_get_stack();
 
-if ( X_VISUAL_COMOPSER_IS_ACTIVE ) {
-  require_once( $plgn_path . '/visual-composer.php' );
-}
+  switch ( $stack ) {
+    case 'integrity' :
+      $content_width = x_post_thumbnail_width() - 120;
+      break;
+    case 'renew' :
+      $content_width = x_post_thumbnail_width();
+      break;
+    case 'icon' :
+      $content_width = x_post_thumbnail_width();
+      break;
+    case 'ethos' :
+      $content_width = x_post_thumbnail_width();
+      break;
+  }
 
-if ( X_WOOCOMMERCE_IS_ACTIVE ) {
-  require_once( $plgn_path . '/woocommerce.php' );
-}
+endif;
 
-if ( X_WPML_IS_ACTIVE ) {
-  require_once( $plgn_path . '/wpml.php' );
-}
 
-if ( X_UBERMENU_IS_ACTIVE ) {
-  require_once( $plgn_path . '/ubermenu.php' );
-}
 
-if ( X_THE_GRID_IS_ACTIVE && x_is_validated() ) {
-	require_once( $plgn_path . '/the-grid.php' );
-}
+// Localization
+// =============================================================================
 
-if ( X_EP_PAYMENT_FORM_IS_ACTIVE ) {
-	require_once $plgn_path . '/estimation-form.php';
-}
+load_theme_textdomain( '__x__', X_TEMPLATE_PATH . '/framework/lang' );

@@ -6,12 +6,13 @@
 // A blank page for creating unique layouts.
 // =============================================================================
 
+if ( apply_filters( 'x_legacy_cranium_headers', true ) ) {
+  x_get_view( 'global', '_header' );
+} else {
+  get_header();
+}
+
 ?>
-
-<?php x_get_view( 'global', '_header' ); ?>
-
-  <?php x_get_view( 'global', '_slider-above' ); ?>
-  <?php x_get_view( 'global', '_slider-below' ); ?>
 
   <div class="x-main full" role="main">
     <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -26,6 +27,12 @@
     </article>
   </div>
 
-  <?php x_get_view( 'global', '_footer', 'scroll-top' ); ?>
+<?php
 
-<?php x_get_view( 'global', '_footer' ); ?>
+if ( apply_filters( 'x_legacy_cranium_footers', true ) ) {
+  x_get_view( 'global', '_footer' );
+} else {
+  get_footer();
+}
+
+?>
