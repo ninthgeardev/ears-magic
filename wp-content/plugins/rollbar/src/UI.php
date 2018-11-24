@@ -212,10 +212,7 @@ class UI
     public static function getSettingType($setting)
     {
         if (!isset(self::$setting_value_types[$setting])) {
-            throw new \Exception(
-                'Configuration option ' . 
-                $setting . ' doesn\'t exist in Rollbar.'
-            );
+            return false;
         }
         
         if (is_array(self::$setting_value_types[$setting])) {
@@ -228,10 +225,7 @@ class UI
     public static function getSettingOptions($setting)
     {
         if (!isset(self::$setting_value_types[$setting])) {
-            throw new \Exception(
-                'Configuration option ' . 
-                $setting . ' doesn\'t exist in Rollbar.'
-            );
+            return false;
         }
         
         if (is_array(self::$setting_value_types[$setting])) {
@@ -312,6 +306,8 @@ class UI
         'check_ignore' => self::SETTING_INPUT_TYPE_PHP,
         'code_version' => self::SETTING_INPUT_TYPE_TEXT,
         'custom' => self::SETTING_INPUT_TYPE_PHP,
+        'custom_data_method' => self::SETTING_INPUT_TYPE_PHP,
+        'custom_truncation' => self::SETTING_INPUT_TYPE_TEXT,
         'enable_utf8_sanitization' => self::SETTING_INPUT_TYPE_BOOLEAN,
         'enabled' => self::SETTING_INPUT_TYPE_BOOLEAN,
         'environment' => self::SETTING_INPUT_TYPE_TEXT,

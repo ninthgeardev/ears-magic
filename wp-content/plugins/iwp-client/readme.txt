@@ -2,7 +2,7 @@
 Contributors: infinitewp
 Tags: admin, administration, amazon, api, authentication, automatic, dashboard, dropbox, events, integration, manage, multisite, multiple, notification, performance, s3, security, seo, stats, tracking, infinitewp, updates, backup, restore, iwp, infinite
 Requires at least: 3.1
-Tested up to: 4.9.4
+Tested up to: 4.9.8
 Stable tag: trunk
 
 Install this plugin on unlimited sites and manage them all from a central dashboard.
@@ -47,6 +47,28 @@ Credits: [Vladimir Prelovac](http://prelovac.com/vladimir) for his worker plugin
 5. One-click updates
 
 == Changelog ==
+= 1.8.5 - Sep 4th 2018 =
+* Improvement: Multisite support for broken link checker plugin.
+* Improvement: MySQL DB dump process is improved in multicall and single call backup.
+* Improvement: Phoenix method now doesn't wait for the wp-cron to start the backup.
+* Improvement: Debug log added for few errors.
+* Improvement: If your server gets timed out, the files which are already backed up will be skipped while resume/retrying it(Phoenix backups).
+* Improvement: Phoenix Backups keep running in the background even when it's stopped from your admin panel.
+* Improvement: Phoenix Backup files are not deleted when we kill a backup process manually.
+* Fix: Multicall backup files – S3 bucket – Global users permission.
+* Fix: Broken link checker plugin unlink and mark not as broken action throws a fatal error.
+* Fix: Phoenix backup files on your server is removed when you immediately backup your site using the single/multicall method after a phoenix backup.
+* Fix: Piwik warning.
+* Fix: A few PHP warnings are fixed.
+* Fix: FTP backup keeps running if slash is added at the end of the FTP path.
+
+= 1.8.3 - May 15th 2018 =
+* Improvement: Auto cron task is enabled by default for Phoenix method backups.
+* Improvement: Calling Next Function failed error when Shell DB dump backup fails error.
+
+= 1.8.2 - Apr 11th 2018 =
+* Fix: Itheme security's action not displaying while generating Report.
+
 = 1.8.1 - Apr 3rd 2018 =
 * Feature: New backup method introduced named Phoenix.
 * Improvement: Multicall method is implemented for Restore process.
